@@ -17,6 +17,7 @@ out
 coverage
 .cache
 .vite
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
