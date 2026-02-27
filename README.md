@@ -16,7 +16,7 @@ Primary product specification:
 
 ## Working Agreement
 
-- Follow [AGENTS.md](AGENTS.md) for all task execution.
+- Follow [CLAUDE.md](CLAUDE.md) for all task execution.
 - Keep work issue-driven and scoped.
 - Prefer contract-first changes:
   1. spec/ADR/API/data contract
