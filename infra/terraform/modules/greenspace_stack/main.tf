@@ -12,8 +12,3 @@ terraform {
 locals {
   naming_prefix = "${var.project}-${var.environment}-${var.season}"
 }
-
-output "naming_prefix" {
-  description = "Deterministic naming prefix for environment-scoped resources."
-  value       = local.naming_prefix
-}
