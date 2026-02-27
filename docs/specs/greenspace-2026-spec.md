@@ -327,7 +327,7 @@ Søen:
 ## 12. AWS Architecture (Recommended MVP)
 
 ### 12.1 Frontend
-- Next.js web app deployed to AWS Amplify Hosting (or CloudFront+S3 static export if chosen).
+- Next.js web app deployed to AWS Amplify Hosting.
 - Domain mapping for `greenspace.un17hub.com`.
 
 ### 12.2 Backend
@@ -345,6 +345,53 @@ Søen:
 - HttpOnly secure session cookies for admin auth.
 - Least-privilege IAM for Lambda and SES.
 - Server-side authorization on all admin routes.
+
+### 12.5 Infrastructure as Code (Mandatory)
+- All AWS infrastructure is managed as code only (no manual console provisioning for persistent resources).
+- IaC tool: Terraform (OpenTofu-compatible HCL).
+- Resource lifecycle policy:
+  - create/update/delete through IaC pipelines only
+  - emergency console changes allowed only for break-glass incidents and must be back-ported to IaC same day
+
+### 12.6 IaC State and Environments
+- Remote state backend:
+  - S3 bucket for Terraform state
+  - DynamoDB table for state locking
+  - state versioning enabled
+- Environments:
+  - `prod` (live at `greenspace.un17hub.com`)
+  - `staging` (pre-release verification)
+- Each environment uses isolated state and isolated app/database resources.
+
+### 12.7 IaC Module Scope
+- Core network and security:
+  - VPC, subnets, security groups, IAM roles/policies
+- Data:
+  - RDS/Aurora cluster, parameter groups, backups, subnet groups
+- API runtime:
+  - Lambda functions, API Gateway routes/stages, CloudWatch log groups
+- Web hosting:
+  - Amplify app, branches, domain association
+- Messaging:
+  - SES identities/configuration sets
+- Storage/secrets:
+  - S3 buckets (assets/email maps), Secrets Manager secrets
+- DNS/TLS:
+  - Route 53 records, ACM certificates (region-appropriate)
+
+### 12.8 IaC Delivery Pipeline
+- CI/CD must run `fmt`, `validate`, and `plan` on pull requests.
+- Production `apply` requires manual approval.
+- Deployments authenticate to AWS via GitHub OIDC role assumption (no long-lived AWS keys in CI).
+- Drift detection job runs on a schedule and reports non-empty plans.
+
+### 12.9 IaC Tagging and Naming
+- All resources must have consistent tags:
+  - `project=greenspace`
+  - `season=2026`
+  - `environment=<env>`
+  - `managed_by=terraform`
+- Naming must be deterministic and environment-scoped.
 
 ## 13. Localization
 
@@ -375,8 +422,14 @@ Søen:
 
 ## 15. Implementation Phases
 
-### Phase 1: Foundation
-- Repo scaffolding and CI
+### Phase 0: IaC Foundation
+- Create IaC repository structure (`infra/` modules + environment stacks).
+- Bootstrap Terraform backend (S3 state + DynamoDB lock).
+- Configure GitHub OIDC roles and CI workflow for plan/apply.
+- Provision baseline AWS resources via IaC only.
+
+### Phase 1: Application Foundation
+- Repo scaffolding and app CI
 - DB schema + migrations
 - Seed data:
   - greenhouses
@@ -402,6 +455,7 @@ Søen:
 - Localization completeness review
 - Accessibility pass
 - Operational alerts and backup checks
+- IaC drift monitoring and disaster-recovery restore drill
 
 ## 16. Acceptance Criteria
 
@@ -415,3 +469,5 @@ Søen:
 - Every critical change appears in audit history with actor and before/after.
 - Emails are sent from `greenspace@un17hub.com` with correct language and care guidelines.
 - Admins can create/delete other admins and change own password.
+- All persistent AWS resources are defined in Terraform and deployed through CI/CD.
+- `terraform plan` (or OpenTofu equivalent) is clean after apply in each environment.
