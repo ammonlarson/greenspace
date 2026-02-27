@@ -30,6 +30,7 @@ data "aws_iam_policy_document" "api_lambda" {
     resources = ["${aws_cloudwatch_log_group.api.arn}:*"]
   }
 
+  # AWS requires wildcard resources for ENI management actions.
   statement {
     sid = "VPCNetworking"
     actions = [
@@ -40,6 +41,7 @@ data "aws_iam_policy_document" "api_lambda" {
     resources = ["*"]
   }
 
+  # Scoped to all SES identities; tighten to specific ARNs once identities are provisioned.
   statement {
     sid = "SESSendEmail"
     actions = [
@@ -97,7 +99,7 @@ data "aws_iam_policy_document" "ci_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:*"]
+      values   = ["repo:${var.github_repository}:ref:refs/heads/main"]
     }
   }
 }
