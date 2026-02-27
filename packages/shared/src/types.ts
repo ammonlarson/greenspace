@@ -22,6 +22,7 @@ export interface GreenhouseSummary {
   totalBoxes: number;
   availableBoxes: number;
   occupiedBoxes: number;
+  reservedBoxes: number;
 }
 
 /** Planter box (public-safe view) */

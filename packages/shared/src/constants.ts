@@ -99,7 +99,7 @@ export const SEED_ADMIN_EMAILS = [
   "lena@gmail.com",
 ] as const;
 
-/** Public box states (visible to public users) */
+/** Box states visible to public users. Note: "reserved" is shown but not selectable. */
 export const PUBLIC_BOX_STATES: readonly BoxState[] = [
   "available",
   "occupied",

@@ -3,6 +3,7 @@ import {
   FLOOR_DOOR_REQUIRED_NUMBERS,
   HOUSE_NUMBER_MAX,
   HOUSE_NUMBER_MIN,
+  TOTAL_BOX_COUNT,
 } from "./constants.js";
 
 export interface ValidationResult {
@@ -137,13 +138,13 @@ export function validateName(name: string): ValidationResult {
   return { valid: true };
 }
 
-/** Validate box ID is in valid range (1-29) */
+/** Validate box ID is in valid range (1-TOTAL_BOX_COUNT) */
 export function validateBoxId(boxId: number): ValidationResult {
   if (boxId == null || typeof boxId !== "number") {
     return { valid: false, error: "Box ID is required" };
   }
-  if (!Number.isInteger(boxId) || boxId < 1 || boxId > 29) {
-    return { valid: false, error: "Box ID must be between 1 and 29" };
+  if (!Number.isInteger(boxId) || boxId < 1 || boxId > TOTAL_BOX_COUNT) {
+    return { valid: false, error: `Box ID must be between 1 and ${TOTAL_BOX_COUNT}` };
   }
   return { valid: true };
 }
