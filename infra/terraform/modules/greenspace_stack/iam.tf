@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "api_secrets" {
       "secretsmanager:GetSecretValue",
     ]
     resources = [
-      "arn:aws:secretsmanager:*:*:secret:${local.naming_prefix}-*",
+      "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
     ]
   }
 }
@@ -116,7 +116,7 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
       "lambda:ListFunctions",
     ]
     resources = [
-      "arn:aws:lambda:*:*:function:${local.naming_prefix}-*",
+      "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",
     ]
   }
 
