@@ -48,6 +48,7 @@ cdk.out/
 .terraform/
 *.tfstate
 *.tfstate.*
+tfplan
 override.tf
 override.tf.json
 *_override.tf
