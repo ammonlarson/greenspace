@@ -418,11 +418,20 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
   }
 
   statement {
-    sid    = "SecretsManagerRead"
+    sid    = "SecretsManager"
     effect = "Allow"
     actions = [
+      "secretsmanager:CreateSecret",
+      "secretsmanager:DeleteSecret",
       "secretsmanager:DescribeSecret",
       "secretsmanager:GetSecretValue",
+      "secretsmanager:PutSecretValue",
+      "secretsmanager:UpdateSecret",
+      "secretsmanager:TagResource",
+      "secretsmanager:UntagResource",
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:PutResourcePolicy",
+      "secretsmanager:DeleteResourcePolicy",
     ]
     resources = [
       "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
@@ -434,6 +443,72 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     effect    = "Allow"
     actions   = ["secretsmanager:ListSecrets"]
     resources = ["*"]
+  }
+
+  statement {
+    sid    = "RDSRead"
+    effect = "Allow"
+    actions = [
+      "rds:DescribeDBInstances",
+      "rds:DescribeDBSubnetGroups",
+      "rds:DescribeDBParameterGroups",
+      "rds:DescribeDBParameters",
+      "rds:DescribeDBSnapshots",
+      "rds:ListTagsForResource",
+      "rds:DescribeDBEngineVersions",
+      "rds:DescribeOrderableDBInstanceOptions",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "RDSManage"
+    effect = "Allow"
+    actions = [
+      "rds:CreateDBInstance",
+      "rds:DeleteDBInstance",
+      "rds:ModifyDBInstance",
+      "rds:RebootDBInstance",
+      "rds:CreateDBSnapshot",
+      "rds:DeleteDBSnapshot",
+      "rds:AddTagsToResource",
+      "rds:RemoveTagsFromResource",
+    ]
+    resources = [
+      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:db:${local.naming_prefix}-*",
+      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:snapshot:${local.naming_prefix}-*",
+    ]
+  }
+
+  statement {
+    sid    = "RDSSubnetGroups"
+    effect = "Allow"
+    actions = [
+      "rds:CreateDBSubnetGroup",
+      "rds:DeleteDBSubnetGroup",
+      "rds:ModifyDBSubnetGroup",
+      "rds:AddTagsToResource",
+      "rds:RemoveTagsFromResource",
+    ]
+    resources = [
+      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:subgrp:${local.naming_prefix}-*",
+    ]
+  }
+
+  statement {
+    sid    = "RDSParameterGroups"
+    effect = "Allow"
+    actions = [
+      "rds:CreateDBParameterGroup",
+      "rds:DeleteDBParameterGroup",
+      "rds:ModifyDBParameterGroup",
+      "rds:ResetDBParameterGroup",
+      "rds:AddTagsToResource",
+      "rds:RemoveTagsFromResource",
+    ]
+    resources = [
+      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:pg:${local.naming_prefix}-*",
+    ]
   }
 }
 

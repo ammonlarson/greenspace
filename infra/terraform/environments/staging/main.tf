@@ -39,6 +39,12 @@ module "greenspace_stack" {
   public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
   private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
   log_retention_days   = 14
+
+  db_instance_class        = "db.t4g.micro"
+  db_allocated_storage     = 20
+  db_max_allocated_storage = 50
+  db_backup_retention_days = 7
+  db_multi_az              = false
 }
 
 output "naming_prefix" {
@@ -59,4 +65,16 @@ output "ci_deploy_role_arn" {
 
 output "ci_terraform_role_arn" {
   value = module.greenspace_stack.ci_terraform_role_arn
+}
+
+output "db_endpoint" {
+  value = module.greenspace_stack.db_endpoint
+}
+
+output "db_secret_arn" {
+  value = module.greenspace_stack.db_secret_arn
+}
+
+output "app_secret_arn" {
+  value = module.greenspace_stack.app_secret_arn
 }
