@@ -204,10 +204,20 @@ data "aws_iam_policy_document" "ci_terraform_state" {
   }
 
   statement {
-    sid    = "TerraformStateS3Objects"
+    sid    = "TerraformStateS3Read"
     effect = "Allow"
     actions = [
       "s3:GetObject",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.tf_state_bucket}/environments/*",
+    ]
+  }
+
+  statement {
+    sid    = "TerraformStateS3Write"
+    effect = "Allow"
+    actions = [
       "s3:PutObject",
       "s3:DeleteObject",
     ]
@@ -361,6 +371,8 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "kms:DeleteAlias",
       "kms:ListAliases",
       "kms:UpdateAlias",
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
     ]
     resources = ["*"]
   }
