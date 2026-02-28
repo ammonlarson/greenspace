@@ -69,9 +69,15 @@ export {
   normalizeApartmentKey,
   validateName,
   validateBoxId,
+  validateLanguage,
+  validateRegistrationInput,
 } from "./validators.js";
 
-export type { ValidationResult } from "./validators.js";
+export type { ValidationResult, RegistrationValidationResult } from "./validators.js";
+
+export { buildDawaAutocompleteUrl, parseDawaHouseNumber } from "./dawa.js";
+
+export type { DawaAutocompleteSuggestion, DawaAddress } from "./dawa.js";
 
 export { I18N_KEYS, LANGUAGE_LABELS } from "./i18n.js";
 

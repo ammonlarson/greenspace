@@ -5,6 +5,8 @@ import {
   HOUSE_NUMBER_MIN,
   TOTAL_BOX_COUNT,
 } from "./constants.js";
+import { LANGUAGES } from "./enums.js";
+import type { RegistrationInput } from "./types.js";
 
 export interface ValidationResult {
   valid: boolean;
@@ -147,4 +149,59 @@ export function validateBoxId(boxId: number): ValidationResult {
     return { valid: false, error: `Box ID must be between 1 and ${TOTAL_BOX_COUNT}` };
   }
   return { valid: true };
+}
+
+/** Validate language is a supported value */
+export function validateLanguage(language: string): ValidationResult {
+  if (!language || typeof language !== "string") {
+    return { valid: false, error: "Language is required" };
+  }
+  if (!(LANGUAGES as readonly string[]).includes(language)) {
+    return { valid: false, error: `Language must be one of: ${LANGUAGES.join(", ")}` };
+  }
+  return { valid: true };
+}
+
+export interface RegistrationValidationResult {
+  valid: boolean;
+  errors: Record<string, string>;
+}
+
+/** Validate a complete registration input, returning all field errors at once */
+export function validateRegistrationInput(
+  input: Partial<RegistrationInput>,
+): RegistrationValidationResult {
+  const errors: Record<string, string> = {};
+
+  const nameResult = validateName(input.name as string);
+  if (!nameResult.valid) errors["name"] = nameResult.error!;
+
+  const emailResult = validateEmail(input.email as string);
+  if (!emailResult.valid) errors["email"] = emailResult.error!;
+
+  const streetResult = validateStreet(input.street as string);
+  if (!streetResult.valid) errors["street"] = streetResult.error!;
+
+  const houseResult = validateHouseNumber(input.houseNumber as number);
+  if (!houseResult.valid) {
+    errors["houseNumber"] = houseResult.error!;
+  } else {
+    const floorDoorResult = validateFloorDoor(
+      input.houseNumber as number,
+      input.floor,
+      input.door,
+    );
+    if (!floorDoorResult.valid) errors["floorDoor"] = floorDoorResult.error!;
+  }
+
+  const boxResult = validateBoxId(input.boxId as number);
+  if (!boxResult.valid) errors["boxId"] = boxResult.error!;
+
+  const langResult = validateLanguage(input.language as string);
+  if (!langResult.valid) errors["language"] = langResult.error!;
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
 }
