@@ -1,3 +1,19 @@
+# ---------- KMS Key for data encryption (RDS + Secrets Manager) ----------
+
+resource "aws_kms_key" "data" {
+  description         = "Encryption key for ${local.naming_prefix} data (RDS, Secrets Manager)"
+  enable_key_rotation = true
+
+  tags = {
+    Name = "${local.naming_prefix}-data-key"
+  }
+}
+
+resource "aws_kms_alias" "data" {
+  name          = "alias/${local.naming_prefix}-data"
+  target_key_id = aws_kms_key.data.key_id
+}
+
 # ---------- DB Subnet Group ----------
 
 resource "aws_db_subnet_group" "main" {
@@ -44,7 +60,7 @@ resource "random_password" "db_master" {
 resource "aws_secretsmanager_secret" "db_credentials" {
   name        = "${local.naming_prefix}-db-credentials"
   description = "RDS PostgreSQL master credentials for ${local.naming_prefix}"
-  kms_key_id  = aws_kms_key.logs.arn
+  kms_key_id  = aws_kms_key.data.arn
 
   tags = {
     Name = "${local.naming_prefix}-db-credentials"
@@ -69,7 +85,7 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
 resource "aws_secretsmanager_secret" "app" {
   name        = "${local.naming_prefix}-app-secrets"
   description = "Application secrets for ${local.naming_prefix}"
-  kms_key_id  = aws_kms_key.logs.arn
+  kms_key_id  = aws_kms_key.data.arn
 
   tags = {
     Name = "${local.naming_prefix}-app-secrets"
@@ -100,7 +116,7 @@ resource "aws_db_instance" "main" {
   allocated_storage     = var.db_allocated_storage
   max_allocated_storage = var.db_max_allocated_storage
   storage_encrypted     = true
-  kms_key_id            = aws_kms_key.logs.arn
+  kms_key_id            = aws_kms_key.data.arn
 
   db_name  = var.db_name
   username = var.db_master_username
@@ -120,9 +136,10 @@ resource "aws_db_instance" "main" {
   skip_final_snapshot       = var.environment != "prod"
   final_snapshot_identifier = var.environment == "prod" ? "${local.naming_prefix}-final" : null
 
-  performance_insights_enabled = true
-  monitoring_interval          = 60
-  monitoring_role_arn          = aws_iam_role.rds_monitoring.arn
+  performance_insights_enabled    = true
+  performance_insights_kms_key_id = aws_kms_key.data.arn
+  monitoring_interval             = 60
+  monitoring_role_arn             = aws_iam_role.rds_monitoring.arn
 
   apply_immediately = var.environment != "prod"
 
