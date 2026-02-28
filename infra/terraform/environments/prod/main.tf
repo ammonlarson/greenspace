@@ -46,6 +46,10 @@ module "greenspace_stack" {
   db_max_allocated_storage = 100
   db_backup_retention_days = 35
   db_multi_az              = true
+
+  # Scoped IAM permissions (replace with actual ARNs once resources are provisioned)
+  ses_identity_arns            = ["arn:aws:ses:eu-north-1:123456789012:identity/greenspace.example.com"]
+  cloudfront_distribution_arns = ["arn:aws:cloudfront::123456789012:distribution/PROD_DIST_ID"]
 }
 
 output "naming_prefix" {

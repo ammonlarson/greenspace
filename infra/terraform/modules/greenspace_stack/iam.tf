@@ -56,7 +56,7 @@ data "aws_iam_policy_document" "api_ses" {
       "ses:SendEmail",
       "ses:SendRawEmail",
     ]
-    resources = ["*"]
+    resources = var.ses_identity_arns
   }
 }
 
@@ -141,7 +141,7 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
     actions = [
       "cloudfront:CreateInvalidation",
     ]
-    resources = ["*"]
+    resources = var.cloudfront_distribution_arns
   }
 }
 
