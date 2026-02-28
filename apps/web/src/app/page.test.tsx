@@ -7,6 +7,7 @@ import {
   LANGUAGE_LABELS,
   ORGANIZER_CONTACTS,
   BOX_CATALOG,
+  BOX_STATES,
 } from "@greenspace/shared";
 import { translations } from "@/i18n/translations";
 import { isBeforeOpening } from "@/utils/opening";
@@ -60,6 +61,23 @@ describe("translations", () => {
     expect(LANGUAGE_LABELS.da).toBe("Dansk");
     expect(LANGUAGE_LABELS.en).toBe("English");
   });
+
+  it("includes map state translations for all box states", () => {
+    for (const lang of LANGUAGES) {
+      for (const state of BOX_STATES) {
+        const key = `map.state.${state}`;
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeDefined();
+      }
+    }
+  });
+
+  it("includes map navigation translations", () => {
+    for (const lang of LANGUAGES) {
+      expect(translations[lang]["map.viewMap"]).toBeTruthy();
+      expect(translations[lang]["map.back"]).toBeTruthy();
+      expect(translations[lang]["map.legend"]).toBeTruthy();
+    }
+  });
 });
 
 describe("greenhouse data", () => {
@@ -75,6 +93,18 @@ describe("greenhouse data", () => {
     const soen = BOX_CATALOG.filter((b) => b.greenhouse === "Søen");
     expect(kronen.length).toBe(14);
     expect(soen.length).toBe(15);
+  });
+
+  it("uses global numbering 1-29", () => {
+    const ids = BOX_CATALOG.map((b) => b.id);
+    expect(ids).toEqual(Array.from({ length: 29 }, (_, i) => i + 1));
+  });
+
+  it("Kronen boxes are 1-14 and Søen boxes are 15-29", () => {
+    const kronen = BOX_CATALOG.filter((b) => b.greenhouse === "Kronen");
+    const soen = BOX_CATALOG.filter((b) => b.greenhouse === "Søen");
+    expect(kronen.map((b) => b.id)).toEqual(Array.from({ length: 14 }, (_, i) => i + 1));
+    expect(soen.map((b) => b.id)).toEqual(Array.from({ length: 15 }, (_, i) => i + 15));
   });
 });
 

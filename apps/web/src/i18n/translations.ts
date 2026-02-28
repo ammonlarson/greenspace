@@ -25,6 +25,13 @@ const da: TranslationStrings = {
   "greenhouse.available": "Ledige",
   "greenhouse.occupied": "Optaget",
   "greenhouse.reserved": "Reserveret",
+
+  "map.viewMap": "Se kort",
+  "map.back": "Tilbage til drivhuse",
+  "map.legend": "Forklaring",
+  "map.state.available": "Ledig",
+  "map.state.occupied": "Optaget",
+  "map.state.reserved": "Reserveret",
 };
 
 const en: TranslationStrings = {
@@ -50,6 +57,13 @@ const en: TranslationStrings = {
   "greenhouse.available": "Available",
   "greenhouse.occupied": "Occupied",
   "greenhouse.reserved": "Reserved",
+
+  "map.viewMap": "View map",
+  "map.back": "Back to greenhouses",
+  "map.legend": "Legend",
+  "map.state.available": "Available",
+  "map.state.occupied": "Occupied",
+  "map.state.reserved": "Reserved",
 };
 
 export const translations: Record<Language, TranslationStrings> = { da, en };
