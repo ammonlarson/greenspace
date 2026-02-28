@@ -1,9 +1,14 @@
+import { validateEmail } from "@greenspace/shared";
+import { logAuditEvent } from "../../lib/audit.js";
 import { badRequest, conflict, notFound, unauthorized } from "../../lib/errors.js";
 import { hashPassword } from "../../lib/password.js";
-import { logAuditEvent } from "../../lib/audit.js";
 import type { RequestContext, RouteResponse } from "../../router.js";
 
 export async function handleListAdmins(ctx: RequestContext): Promise<RouteResponse> {
+  if (!ctx.adminId) {
+    throw unauthorized();
+  }
+
   const admins = await ctx.db
     .selectFrom("admins")
     .select(["id", "email", "created_at"])
@@ -21,6 +26,15 @@ interface CreateAdminBody {
   password?: string;
 }
 
+function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: string }).code === "23505"
+  );
+}
+
 export async function handleCreateAdmin(ctx: RequestContext): Promise<RouteResponse> {
   const adminId = ctx.adminId;
   if (!adminId) {
@@ -33,45 +47,48 @@ export async function handleCreateAdmin(ctx: RequestContext): Promise<RouteRespo
     throw badRequest("Email and password are required");
   }
 
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.valid) {
+    throw badRequest(emailValidation.error ?? "Invalid email format");
+  }
+
   if (password.length < 8) {
     throw badRequest("Password must be at least 8 characters");
   }
 
-  const existing = await ctx.db
-    .selectFrom("admins")
-    .select("id")
-    .where("email", "=", email)
-    .executeTakeFirst();
-
-  if (existing) {
-    throw conflict("An admin with this email already exists", "ADMIN_EXISTS");
-  }
-
   const passwordHash = await hashPassword(password);
 
-  const newAdmin = await ctx.db.transaction().execute(async (trx) => {
-    const inserted = await trx
-      .insertInto("admins")
-      .values({ email })
-      .returning(["id", "email", "created_at"])
-      .executeTakeFirstOrThrow();
+  let newAdmin: { id: string; email: string; created_at: Date };
+  try {
+    newAdmin = await ctx.db.transaction().execute(async (trx) => {
+      const inserted = await trx
+        .insertInto("admins")
+        .values({ email })
+        .returning(["id", "email", "created_at"])
+        .executeTakeFirstOrThrow();
 
-    await trx
-      .insertInto("admin_credentials")
-      .values({ admin_id: inserted.id, password_hash: passwordHash })
-      .execute();
+      await trx
+        .insertInto("admin_credentials")
+        .values({ admin_id: inserted.id, password_hash: passwordHash })
+        .execute();
 
-    await logAuditEvent(trx, {
-      actor_type: "admin",
-      actor_id: adminId,
-      action: "admin_create",
-      entity_type: "admin",
-      entity_id: inserted.id,
-      after: { email: inserted.email },
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "admin_create",
+        entity_type: "admin",
+        entity_id: inserted.id,
+        after: { email: inserted.email },
+      });
+
+      return inserted;
     });
-
-    return inserted;
-  });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      throw conflict("An admin with this email already exists", "ADMIN_EXISTS");
+    }
+    throw err;
+  }
 
   return {
     statusCode: 201,
