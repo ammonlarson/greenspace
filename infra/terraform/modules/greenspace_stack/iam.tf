@@ -175,6 +175,7 @@ data "aws_iam_policy_document" "ci_terraform_assume" {
       values = [
         "repo:${var.github_repo}:ref:refs/heads/main",
         "repo:${var.github_repo}:pull_request",
+        "repo:${var.github_repo}:environment:${coalesce(var.github_environment, var.environment)}",
       ]
     }
   }

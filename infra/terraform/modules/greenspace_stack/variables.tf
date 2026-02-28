@@ -67,6 +67,12 @@ variable "tf_lock_table" {
   default     = "greenspace-2026-tflock"
 }
 
+variable "github_environment" {
+  description = "GitHub Actions environment name for OIDC trust (may differ from var.environment). Defaults to var.environment."
+  type        = string
+  default     = null
+}
+
 # ---------- Database ----------
 
 variable "db_instance_class" {

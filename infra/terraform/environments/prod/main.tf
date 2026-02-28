@@ -32,7 +32,8 @@ provider "aws" {
 
 module "greenspace_stack" {
   source      = "../../modules/greenspace_stack"
-  environment = "prod"
+  environment        = "prod"
+  github_environment = "production"
 
   vpc_cidr             = "10.1.0.0/16"
   availability_zones   = ["eu-north-1a", "eu-north-1b"]
