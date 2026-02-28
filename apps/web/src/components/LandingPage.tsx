@@ -14,6 +14,10 @@ interface LandingPageProps {
   hasAvailableBoxes?: boolean;
 }
 
+interface LandingPageProps {
+  onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
+}
+
 function getBoxCountForGreenhouse(greenhouse: Greenhouse) {
   return BOX_CATALOG.filter((b) => b.greenhouse === greenhouse).length;
 }
