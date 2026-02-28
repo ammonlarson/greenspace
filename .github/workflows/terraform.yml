@@ -288,9 +288,10 @@ jobs:
         working-directory: infra/terraform/environments/staging
         run: terraform init -input=false
 
-      - name: Terraform plan
-        working-directory: infra/terraform/environments/staging
-        run: terraform plan -input=false -no-color -out=tfplan
+      - name: Download plan from detect job
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-tfplan-staging
 
       - name: Terraform apply
         working-directory: infra/terraform/environments/staging
@@ -362,9 +363,10 @@ jobs:
         working-directory: infra/terraform/environments/prod
         run: terraform init -input=false
 
-      - name: Terraform plan
-        working-directory: infra/terraform/environments/prod
-        run: terraform plan -input=false -no-color -out=tfplan
+      - name: Download plan from detect job
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-tfplan-prod
 
       - name: Terraform apply
         working-directory: infra/terraform/environments/prod
