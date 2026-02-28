@@ -96,6 +96,10 @@ output "ses_sender_email" {
   value = module.greenspace_stack.ses_sender_email
 }
 
+output "ses_reply_to_email" {
+  value = module.greenspace_stack.ses_reply_to_email
+}
+
 output "route53_zone_id" {
   value = module.greenspace_stack.route53_zone_id
 }
