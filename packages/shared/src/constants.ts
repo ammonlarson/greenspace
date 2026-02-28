@@ -1,4 +1,4 @@
-import type { BoxState, Language } from "./enums.js";
+import type { BoxState, Language } from "./enums";
 
 export const GREENHOUSES = ["Kronen", "Søen"] as const;
 export type Greenhouse = (typeof GREENHOUSES)[number];

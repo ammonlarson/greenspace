@@ -1,4 +1,4 @@
-import type { Greenhouse } from "./constants.js";
+import type { Greenhouse } from "./constants";
 import type {
   ActorType,
   AuditAction,
@@ -7,7 +7,7 @@ import type {
   Language,
   RegistrationStatus,
   WaitlistEntryStatus,
-} from "./enums.js";
+} from "./enums";
 
 /** System settings record */
 export interface SystemSettings {
