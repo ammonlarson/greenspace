@@ -14,6 +14,7 @@ interface GreenhouseMapPageProps {
   onBack: () => void;
 }
 
+// TODO: replace with /public/boxes API fetch when API integration is wired up
 function mockBoxes(greenhouse: Greenhouse): PlanterBoxPublic[] {
   return BOX_CATALOG.filter((b) => b.greenhouse === greenhouse).map((b) => ({
     id: b.id,

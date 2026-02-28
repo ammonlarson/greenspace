@@ -24,6 +24,7 @@ export function GreenhouseCard({
     <article
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
+      aria-label={onSelect ? `${name} – ${t("map.viewMap")}` : undefined}
       onClick={onSelect}
       onKeyDown={
         onSelect

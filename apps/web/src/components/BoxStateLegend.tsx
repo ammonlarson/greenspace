@@ -1,13 +1,8 @@
 "use client";
 
-import { BOX_STATES, type BoxState } from "@greenspace/shared";
+import { BOX_STATES } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
-
-const LEGEND_COLORS: Record<BoxState, { background: string; border: string }> = {
-  available: { background: "#e8f5e9", border: "#a5d6a7" },
-  occupied: { background: "#fff3e0", border: "#ffcc80" },
-  reserved: { background: "#e3f2fd", border: "#90caf9" },
-};
+import { BOX_STATE_COLORS } from "./boxStateColors";
 
 export function BoxStateLegend() {
   const { t } = useLanguage();
@@ -19,7 +14,7 @@ export function BoxStateLegend() {
       style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
     >
       {BOX_STATES.map((state) => {
-        const colors = LEGEND_COLORS[state];
+        const colors = BOX_STATE_COLORS[state];
         return (
           <div
             key={state}

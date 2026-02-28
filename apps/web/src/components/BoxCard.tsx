@@ -2,6 +2,7 @@
 
 import type { BoxState } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { BOX_STATE_COLORS } from "./boxStateColors";
 
 interface BoxCardProps {
   id: number;
@@ -10,15 +11,9 @@ interface BoxCardProps {
   onClick?: () => void;
 }
 
-const STATE_COLORS: Record<BoxState, { background: string; text: string; border: string }> = {
-  available: { background: "#e8f5e9", text: "#2d7a3a", border: "#a5d6a7" },
-  occupied: { background: "#fff3e0", text: "#e65100", border: "#ffcc80" },
-  reserved: { background: "#e3f2fd", text: "#1565c0", border: "#90caf9" },
-};
-
 export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
   const { t } = useLanguage();
-  const colors = STATE_COLORS[state];
+  const colors = BOX_STATE_COLORS[state];
   const isClickable = state === "available" && onClick;
 
   return (
@@ -37,7 +32,7 @@ export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
         borderRadius: 8,
         background: colors.background,
         cursor: isClickable ? "pointer" : "default",
-        opacity: state === "reserved" ? 0.7 : 1,
+        opacity: state !== "available" ? 0.7 : 1,
         minWidth: 100,
         textAlign: "center",
         fontFamily: "inherit",
