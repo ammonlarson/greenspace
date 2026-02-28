@@ -18,11 +18,13 @@ export interface GreenhouseTable {
   created_at: ColumnType<Date, string | undefined, never>;
 }
 
+type BoxState = "available" | "occupied" | "reserved";
+
 export interface PlanterBoxTable {
   id: number;
   name: string;
   greenhouse_name: string;
-  state: "available" | "occupied" | "reserved";
+  state: ColumnType<BoxState, BoxState | undefined, BoxState>;
   reserved_label: string | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string>;
@@ -54,6 +56,9 @@ export interface SystemSettingsTable {
   updated_at: ColumnType<Date, string | undefined, string>;
 }
 
+type RegistrationStatus = "active" | "switched" | "removed";
+type Lang = "da" | "en";
+
 export interface RegistrationTable {
   id: Generated<string>;
   box_id: number;
@@ -64,11 +69,13 @@ export interface RegistrationTable {
   floor: string | null;
   door: string | null;
   apartment_key: string;
-  language: "da" | "en";
-  status: "active" | "switched" | "removed";
+  language: ColumnType<Lang, Lang | undefined, Lang>;
+  status: ColumnType<RegistrationStatus, RegistrationStatus | undefined, RegistrationStatus>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string>;
 }
+
+type WaitlistStatus = "waiting" | "assigned" | "cancelled";
 
 export interface WaitlistEntryTable {
   id: Generated<string>;
@@ -79,19 +86,21 @@ export interface WaitlistEntryTable {
   floor: string | null;
   door: string | null;
   apartment_key: string;
-  language: "da" | "en";
-  status: "waiting" | "assigned" | "cancelled";
+  language: ColumnType<Lang, Lang | undefined, Lang>;
+  status: ColumnType<WaitlistStatus, WaitlistStatus | undefined, WaitlistStatus>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string>;
 }
 
+type EmailDeliveryStatus = "pending" | "sent" | "failed";
+
 export interface EmailTable {
   id: Generated<string>;
   recipient_email: string;
-  language: "da" | "en";
+  language: ColumnType<Lang, Lang | undefined, Lang>;
   subject: string;
   body_html: string;
-  status: "pending" | "sent" | "failed";
+  status: ColumnType<EmailDeliveryStatus, EmailDeliveryStatus | undefined, EmailDeliveryStatus>;
   edited_before_send: ColumnType<boolean, boolean | undefined, boolean>;
   sent_at: ColumnType<Date, string | null | undefined, string | null>;
   created_at: ColumnType<Date, string | undefined, never>;

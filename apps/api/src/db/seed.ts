@@ -10,14 +10,6 @@ import {
 import type { Database } from "./types.js";
 
 /**
- * Build the opening datetime string in the configured timezone.
- * DEFAULT_OPENING_DATETIME is a local time in Europe/Copenhagen.
- */
-export function buildOpeningTimestamp(): string {
-  return `${DEFAULT_OPENING_DATETIME}+00:00`;
-}
-
-/**
  * Return greenhouse seed rows.
  */
 export function getGreenhouseRows(): Array<{ name: string }> {

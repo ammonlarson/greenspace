@@ -106,6 +106,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .execute();
 
+  // Enforce singleton row on system_settings
+  await sql`CREATE UNIQUE INDEX uq_system_settings_singleton ON system_settings ((true))`.execute(
+    db,
+  );
+
   // Registrations
   await db.schema
     .createTable("registrations")
