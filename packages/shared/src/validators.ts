@@ -173,31 +173,32 @@ export function validateRegistrationInput(
 ): RegistrationValidationResult {
   const errors: Record<string, string> = {};
 
-  const nameResult = validateName(input.name as string);
+  const nameResult = validateName((input.name ?? "") as string);
   if (!nameResult.valid) errors["name"] = nameResult.error!;
 
-  const emailResult = validateEmail(input.email as string);
+  const emailResult = validateEmail((input.email ?? "") as string);
   if (!emailResult.valid) errors["email"] = emailResult.error!;
 
-  const streetResult = validateStreet(input.street as string);
+  const streetResult = validateStreet((input.street ?? "") as string);
   if (!streetResult.valid) errors["street"] = streetResult.error!;
 
-  const houseResult = validateHouseNumber(input.houseNumber as number);
+  const houseNumber = input.houseNumber ?? NaN;
+  const houseResult = validateHouseNumber(houseNumber);
   if (!houseResult.valid) {
     errors["houseNumber"] = houseResult.error!;
   } else {
     const floorDoorResult = validateFloorDoor(
-      input.houseNumber as number,
+      houseNumber,
       input.floor,
       input.door,
     );
     if (!floorDoorResult.valid) errors["floorDoor"] = floorDoorResult.error!;
   }
 
-  const boxResult = validateBoxId(input.boxId as number);
+  const boxResult = validateBoxId((input.boxId ?? NaN) as number);
   if (!boxResult.valid) errors["boxId"] = boxResult.error!;
 
-  const langResult = validateLanguage(input.language as string);
+  const langResult = validateLanguage((input.language ?? "") as string);
   if (!langResult.valid) errors["language"] = langResult.error!;
 
   return {

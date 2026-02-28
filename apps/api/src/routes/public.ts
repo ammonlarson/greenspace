@@ -70,20 +70,25 @@ export async function handlePublicBoxes(ctx: RequestContext): Promise<RouteRespo
   };
 }
 
+interface ValidateAddressBody {
+  street?: string;
+  houseNumber?: number;
+  floor?: string | null;
+  door?: string | null;
+}
+
 export async function handleValidateAddress(ctx: RequestContext): Promise<RouteResponse> {
-  const body = ctx.body as { street?: string; houseNumber?: number; floor?: string | null; door?: string | null } | undefined;
+  const body = ctx.body as ValidateAddressBody | undefined;
   if (!body) {
     throw badRequest("Request body is required");
   }
 
-  const { street, houseNumber, floor, door } = body;
+  const street = body.street ?? "";
+  const houseNumber = body.houseNumber ?? NaN;
+  const floor = body.floor ?? null;
+  const door = body.door ?? null;
 
-  const result = validateAddress(
-    street as string,
-    houseNumber as number,
-    floor ?? null,
-    door ?? null,
-  );
+  const result = validateAddress(street, houseNumber, floor, door);
 
   if (!result.valid) {
     return {
@@ -102,13 +107,8 @@ export async function handleValidateAddress(ctx: RequestContext): Promise<RouteR
     body: {
       eligible: true,
       error: null,
-      floorDoorRequired: isFloorDoorRequired(houseNumber as number),
-      apartmentKey: normalizeApartmentKey(
-        street as string,
-        houseNumber as number,
-        floor ?? null,
-        door ?? null,
-      ),
+      floorDoorRequired: isFloorDoorRequired(houseNumber),
+      apartmentKey: normalizeApartmentKey(street, houseNumber, floor, door),
     },
   };
 }
