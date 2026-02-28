@@ -261,6 +261,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "ec2:AllocateAddress",
       "ec2:ReleaseAddress",
       "ec2:DescribeAddresses",
+      "ec2:DescribeAddressesAttribute",
       "ec2:CreateRouteTable",
       "ec2:DeleteRouteTable",
       "ec2:DescribeRouteTables",
@@ -336,6 +337,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     effect = "Allow"
     actions = [
       "iam:GetOpenIDConnectProvider",
+      "iam:ListOpenIDConnectProviders",
     ]
     resources = ["*"]
   }
@@ -369,7 +371,6 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     actions = [
       "logs:CreateLogGroup",
       "logs:DeleteLogGroup",
-      "logs:DescribeLogGroups",
       "logs:PutRetentionPolicy",
       "logs:DeleteRetentionPolicy",
       "logs:TagLogGroup",
@@ -385,6 +386,28 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "arn:aws:logs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*",
       "arn:aws:logs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*:*",
     ]
+  }
+
+  statement {
+    sid       = "CloudWatchLogsList"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["*"]
+  }
+
+  # SES v1 APIs do not support resource-level permissions; wildcard required.
+  # Remove this statement after legacy SES resources are cleaned from state.
+  statement {
+    sid    = "SESManage"
+    effect = "Allow"
+    actions = [
+      "ses:GetIdentityVerificationAttributes",
+      "ses:GetIdentityDkimAttributes",
+      "ses:DescribeConfigurationSet",
+      "ses:DeleteIdentity",
+      "ses:DeleteConfigurationSet",
+    ]
+    resources = ["*"]
   }
 
   statement {
