@@ -10,13 +10,16 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@greenspace/shared": "*"
+    "@greenspace/shared": "*",
+    "kysely": "^0.28.11",
+    "pg": "^8.19.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.16.0",
     "eslint": "^9.0.0",
+    "typescript": "^5.7.0",
     "typescript-eslint": "^8.0.0",
-    "@types/node": "^22.0.0"
+    "vitest": "^3.0.0"
   }
 }
