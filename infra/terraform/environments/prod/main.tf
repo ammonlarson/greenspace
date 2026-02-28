@@ -31,7 +31,7 @@ provider "aws" {
 }
 
 module "greenspace_stack" {
-  source      = "../../modules/greenspace_stack"
+  source             = "../../modules/greenspace_stack"
   environment        = "prod"
   github_environment = "production"
 
