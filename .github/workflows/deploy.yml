@@ -69,20 +69,20 @@ jobs:
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name greenspace-staging-2026-api \
+            --function-name "${{ vars.API_FUNCTION_NAME }}" \
             --zip-file fileb://api-lambda.zip \
             --publish
 
       - name: Wait for function to be active
         run: |
           aws lambda wait function-active-v2 \
-            --function-name greenspace-staging-2026-api
+            --function-name "${{ vars.API_FUNCTION_NAME }}"
 
       - name: Get Function URL
         id: url
         run: |
           URL=$(aws lambda get-function-url-config \
-            --function-name greenspace-staging-2026-api \
+            --function-name "${{ vars.API_FUNCTION_NAME }}" \
             --query 'FunctionUrl' --output text)
           echo "api_url=$URL" >> "$GITHUB_OUTPUT"
 
@@ -118,20 +118,20 @@ jobs:
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name greenspace-prod-2026-api \
+            --function-name "${{ vars.API_FUNCTION_NAME }}" \
             --zip-file fileb://api-lambda.zip \
             --publish
 
       - name: Wait for function to be active
         run: |
           aws lambda wait function-active-v2 \
-            --function-name greenspace-prod-2026-api
+            --function-name "${{ vars.API_FUNCTION_NAME }}"
 
       - name: Get Function URL
         id: url
         run: |
           URL=$(aws lambda get-function-url-config \
-            --function-name greenspace-prod-2026-api \
+            --function-name "${{ vars.API_FUNCTION_NAME }}" \
             --query 'FunctionUrl' --output text)
           echo "api_url=$URL" >> "$GITHUB_OUTPUT"
 

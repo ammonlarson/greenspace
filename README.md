@@ -103,12 +103,15 @@ The API runs as an AWS Lambda function with a public Function URL.
 - **Deploy workflow** (`deploy.yml`): Triggers on push to `main` when `apps/api/**` or `packages/shared/**` change. Builds the bundle, deploys to staging Lambda, runs a health check, then promotes to production (gated by the `production` environment protection rule).
 - **Lambda Function URL**: Terraform provisions the Lambda function and Function URL. The `api_base_url` output contains the public endpoint for each environment.
 
-### GitHub repository variables (deploy)
+### GitHub environment variables (deploy)
+
+Each GitHub environment (`staging`, `production`) needs these variables:
 
 | Variable                  | Purpose                                  |
 | ------------------------- | ---------------------------------------- |
-| `DEPLOY_ROLE_ARN_STAGING` | OIDC role ARN for staging API deployment |
-| `DEPLOY_ROLE_ARN_PROD`    | OIDC role ARN for production API deployment |
+| `DEPLOY_ROLE_ARN_STAGING` | OIDC role ARN for staging API deployment (repo-level) |
+| `DEPLOY_ROLE_ARN_PROD`    | OIDC role ARN for production API deployment (repo-level) |
+| `API_FUNCTION_NAME`       | Lambda function name (environment-level, e.g. `greenspace-staging-2026-api`) |
 
 ## CI / Terraform Pipeline
 

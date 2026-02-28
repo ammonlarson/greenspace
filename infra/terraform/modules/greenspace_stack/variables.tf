@@ -139,6 +139,17 @@ variable "lambda_timeout" {
   }
 }
 
+variable "lambda_reserved_concurrency" {
+  description = "Reserved concurrent executions for the API Lambda. Set to -1 for unrestricted."
+  type        = number
+  default     = 50
+
+  validation {
+    condition     = var.lambda_reserved_concurrency >= -1 && var.lambda_reserved_concurrency <= 1000
+    error_message = "lambda_reserved_concurrency must be between -1 (unrestricted) and 1000."
+  }
+}
+
 # ---------- Database ----------
 
 variable "db_instance_class" {

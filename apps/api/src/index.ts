@@ -47,17 +47,37 @@ export interface LambdaResponse {
 let router: Router | undefined;
 let db: ReturnType<typeof createDatabase> | undefined;
 
+async function resolveDbPassword(): Promise<string> {
+  if (process.env["DB_PASSWORD"]) {
+    return process.env["DB_PASSWORD"];
+  }
+  const secretArn = process.env["DB_SECRET_ARN"];
+  if (!secretArn) {
+    return "";
+  }
+  const { SecretsManagerClient, GetSecretValueCommand } = await import(
+    "@aws-sdk/client-secrets-manager"
+  );
+  const client = new SecretsManagerClient({});
+  const result = await client.send(
+    new GetSecretValueCommand({ SecretId: secretArn }),
+  );
+  const secret = JSON.parse(result.SecretString ?? "{}") as Record<string, string>;
+  return secret["password"] ?? "";
+}
+
 export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
   if (!router) {
     router = createRouter();
   }
   if (!db) {
+    const password = await resolveDbPassword();
     db = createDatabase({
       host: process.env["DB_HOST"] ?? "localhost",
       port: Number(process.env["DB_PORT"] ?? "5432"),
       database: process.env["DB_NAME"] ?? "greenspace",
       user: process.env["DB_USER"] ?? "greenspace",
-      password: process.env["DB_PASSWORD"] ?? "",
+      password,
       ssl: process.env["DB_SSL"] === "true",
     });
   }

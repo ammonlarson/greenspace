@@ -17,14 +17,16 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      DB_HOST     = aws_db_instance.main.address
-      DB_PORT     = tostring(aws_db_instance.main.port)
-      DB_NAME     = var.db_name
-      DB_USER     = var.db_master_username
-      DB_PASSWORD = random_password.db_master.result
-      DB_SSL      = "true"
+      DB_HOST       = aws_db_instance.main.address
+      DB_PORT       = tostring(aws_db_instance.main.port)
+      DB_NAME       = var.db_name
+      DB_USER       = var.db_master_username
+      DB_SECRET_ARN = aws_secretsmanager_secret.db_credentials.arn
+      DB_SSL        = "true"
     }
   }
+
+  reserved_concurrent_executions = var.lambda_reserved_concurrency
 
   logging_config {
     log_group  = aws_cloudwatch_log_group.api.name
