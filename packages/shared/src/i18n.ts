@@ -1,4 +1,4 @@
-import type { Language } from "./enums";
+import type { Language } from "./enums.js";
 
 /**
  * i18n key contracts for Danish and English.

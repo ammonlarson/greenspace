@@ -9,7 +9,7 @@ import {
   HOUSE_NUMBER_MIN,
   HOUSE_NUMBER_MAX,
   SEED_ADMIN_EMAILS,
-} from "./constants";
+} from "./constants.js";
 
 describe("GREENHOUSES", () => {
   it("contains exactly Kronen and Søen", () => {

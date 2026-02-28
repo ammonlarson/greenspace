@@ -4,7 +4,7 @@ import {
   HOUSE_NUMBER_MAX,
   HOUSE_NUMBER_MIN,
   TOTAL_BOX_COUNT,
-} from "./constants";
+} from "./constants.js";
 
 export interface ValidationResult {
   valid: boolean;

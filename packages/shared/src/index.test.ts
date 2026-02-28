@@ -9,7 +9,7 @@ import {
   normalizeApartmentKey,
   I18N_KEYS,
   LANGUAGE_LABELS,
-} from "./index";
+} from "./index.js";
 
 describe("barrel exports", () => {
   it("exports greenhouse names", () => {

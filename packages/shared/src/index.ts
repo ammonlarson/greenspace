@@ -6,7 +6,7 @@ export {
   LANGUAGES,
   AUDIT_ACTIONS,
   EMAIL_STATUSES,
-} from "./enums";
+} from "./enums.js";
 
 export type {
   BoxState,
@@ -16,7 +16,7 @@ export type {
   Language,
   AuditAction,
   EmailStatus,
-} from "./enums";
+} from "./enums.js";
 
 export {
   GREENHOUSES,
@@ -38,9 +38,9 @@ export {
   RESERVED_LABEL_DEFAULT,
   SEED_ADMIN_EMAILS,
   PUBLIC_BOX_STATES,
-} from "./constants";
+} from "./constants.js";
 
-export type { Greenhouse, BoxCatalogEntry } from "./constants";
+export type { Greenhouse, BoxCatalogEntry } from "./constants.js";
 
 export type {
   SystemSettings,
@@ -57,7 +57,7 @@ export type {
   RegistrationInput,
   WaitlistInput,
   PublicStatus,
-} from "./types";
+} from "./types.js";
 
 export {
   validateEmail,
@@ -69,10 +69,10 @@ export {
   normalizeApartmentKey,
   validateName,
   validateBoxId,
-} from "./validators";
+} from "./validators.js";
 
-export type { ValidationResult } from "./validators";
+export type { ValidationResult } from "./validators.js";
 
-export { I18N_KEYS, LANGUAGE_LABELS } from "./i18n";
+export { I18N_KEYS, LANGUAGE_LABELS } from "./i18n.js";
 
-export type { I18nKey } from "./i18n";
+export type { I18nKey } from "./i18n.js";

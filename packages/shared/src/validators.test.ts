@@ -9,7 +9,7 @@ import {
   normalizeApartmentKey,
   validateName,
   validateBoxId,
-} from "./validators";
+} from "./validators.js";
 
 describe("validateEmail", () => {
   it("accepts valid emails", () => {
