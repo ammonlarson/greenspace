@@ -51,12 +51,13 @@ resource "aws_iam_role_policy" "api_secrets" {
 
 data "aws_iam_policy_document" "api_ses" {
   statement {
+    sid    = "SESSend"
     effect = "Allow"
     actions = [
       "ses:SendEmail",
       "ses:SendRawEmail",
     ]
-    resources = ["*"]
+    resources = var.ses_identity_arns
   }
 }
 
@@ -141,7 +142,7 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
     actions = [
       "cloudfront:CreateInvalidation",
     ]
-    resources = ["*"]
+    resources = var.cloudfront_distribution_arns
   }
 }
 

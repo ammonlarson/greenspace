@@ -73,6 +73,46 @@ variable "github_environment" {
   default     = null
 }
 
+variable "ses_identity_arns" {
+  description = "SES verified identity/domain ARN(s) that the API Lambda is allowed to send from."
+  type        = list(string)
+
+  validation {
+    condition     = length(var.ses_identity_arns) > 0
+    error_message = "At least one SES identity ARN is required. Wildcard '*' is not allowed."
+  }
+
+  validation {
+    condition     = alltrue([for arn in var.ses_identity_arns : can(regex("^arn:aws:ses:", arn))])
+    error_message = "Each SES identity ARN must start with 'arn:aws:ses:'."
+  }
+
+  validation {
+    condition     = alltrue([for arn in var.ses_identity_arns : !can(regex("[*]", arn))])
+    error_message = "SES identity ARNs must not contain wildcards ('*')."
+  }
+}
+
+variable "cloudfront_distribution_arns" {
+  description = "CloudFront distribution ARN(s) that CI is allowed to create invalidations for."
+  type        = list(string)
+
+  validation {
+    condition     = length(var.cloudfront_distribution_arns) > 0
+    error_message = "At least one CloudFront distribution ARN is required. Wildcard '*' is not allowed."
+  }
+
+  validation {
+    condition     = alltrue([for arn in var.cloudfront_distribution_arns : can(regex("^arn:aws:cloudfront:", arn))])
+    error_message = "Each CloudFront distribution ARN must start with 'arn:aws:cloudfront:'."
+  }
+
+  validation {
+    condition     = alltrue([for arn in var.cloudfront_distribution_arns : !can(regex("[*]", arn))])
+    error_message = "CloudFront distribution ARNs must not contain wildcards ('*')."
+  }
+}
+
 # ---------- Database ----------
 
 variable "db_instance_class" {

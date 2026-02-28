@@ -46,6 +46,10 @@ module "greenspace_stack" {
   db_max_allocated_storage = 100
   db_backup_retention_days = 35
   db_multi_az              = true
+
+  # TODO: replace placeholder ARNs with actual values once resources are provisioned
+  ses_identity_arns            = ["arn:aws:ses:eu-north-1:222222222222:identity/greenspace.example.com"]
+  cloudfront_distribution_arns = ["arn:aws:cloudfront::222222222222:distribution/PROD_DIST_ID"]
 }
 
 output "naming_prefix" {
