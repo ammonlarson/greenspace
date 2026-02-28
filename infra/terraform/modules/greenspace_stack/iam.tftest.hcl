@@ -2,9 +2,9 @@
 # Run with: terraform test
 
 variables {
-  environment        = "test"
-  vpc_cidr           = "10.99.0.0/16"
-  availability_zones = ["eu-north-1a", "eu-north-1b"]
+  environment          = "test"
+  vpc_cidr             = "10.99.0.0/16"
+  availability_zones   = ["eu-north-1a", "eu-north-1b"]
   public_subnet_cidrs  = ["10.99.1.0/24", "10.99.2.0/24"]
   private_subnet_cidrs = ["10.99.10.0/24", "10.99.11.0/24"]
 
