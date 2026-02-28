@@ -70,12 +70,58 @@ terraform plan -out=tfplan
 terraform apply tfplan
 ```
 
-### CI Workflow
+### CI Workflow (`.github/workflows/terraform.yml`)
 
-CI runs on every pull request:
+The Terraform workflow triggers on pull requests and pushes to `main` when
+files under `infra/terraform/` change. AWS authentication uses GitHub OIDC
+(`aws-actions/configure-aws-credentials`) — no long-lived keys.
+
+#### Pull requests (internal)
+
+For PRs from the same repository, each environment runs its own plan job
+(`plan-staging`, `plan-prod`) in parallel:
+
+1. Authenticate to AWS via OIDC using the environment-specific role.
+2. `terraform init` with the real S3 backend.
+3. `terraform validate`.
+4. `terraform plan` — output is saved as a CI artifact (retained 7 days).
+
+#### Pull requests (forks)
+
+Fork PRs receive no AWS credentials. A single `validate-fork` job runs:
 
 1. `terraform fmt -check -recursive` across all Terraform files.
-2. Per environment: `terraform init -backend=false`, `terraform validate`,
-   and `terraform plan -lock=false -refresh=false`.
+2. Per environment: `terraform init -backend=false` and `terraform validate`.
 
-Production `apply` requires manual approval outside CI.
+#### Merge to main
+
+On push to `main`, apply jobs run sequentially:
+
+1. **Staging** (`apply-staging`) — auto-applies immediately using the
+   `staging` GitHub environment.
+2. **Production** (`apply-prod`) — runs only after staging succeeds. Requires
+   manual approval via the `production` GitHub environment protection rule.
+
+Both jobs use concurrency guards (`terraform-staging`, `terraform-prod`) to
+prevent parallel applies to the same environment.
+
+#### IAM roles
+
+Each environment has a `ci-terraform` IAM role assumed via OIDC. Role ARNs
+are stored in GitHub repository variables:
+
+| Variable              | Purpose                              |
+| --------------------- | ------------------------------------ |
+| `TF_ROLE_ARN_STAGING` | OIDC role ARN for staging plan/apply |
+| `TF_ROLE_ARN_PROD`    | OIDC role ARN for prod plan/apply    |
+
+#### How to verify
+
+- **PR plans**: check the `Plan (staging)` and `Plan (prod)` job logs, or
+  download the `tfplan-staging` / `tfplan-prod` artifacts from the workflow
+  run.
+- **Apply runs**: check the `Apply (staging)` and `Apply (prod)` job logs
+  under the Actions tab for the merge commit on `main`.
+- **Prod approval**: the `Apply (prod)` job will show "Waiting for review"
+  in the Actions UI until a reviewer approves the `production` environment
+  deployment.
