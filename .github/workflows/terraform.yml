@@ -144,7 +144,7 @@ jobs:
 
   apply-staging:
     name: "Apply (staging)"
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     environment: ${{ github.event_name != 'workflow_dispatch' && 'staging' || '' }}
     concurrency:
@@ -179,7 +179,7 @@ jobs:
 
   apply-prod:
     name: "Apply (prod)"
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     needs: apply-staging
     runs-on: ubuntu-latest
     environment: ${{ github.event_name != 'workflow_dispatch' && 'production' || '' }}

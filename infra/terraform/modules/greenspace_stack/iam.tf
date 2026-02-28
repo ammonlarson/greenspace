@@ -395,6 +395,8 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     resources = ["*"]
   }
 
+  # SES v1 APIs do not support resource-level permissions; wildcard required.
+  # Remove this statement after legacy SES resources are cleaned from state.
   statement {
     sid    = "SESManage"
     effect = "Allow"
