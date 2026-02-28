@@ -115,6 +115,41 @@ variable "cloudfront_distribution_arns" {
   }
 }
 
+# ---------- Lambda ----------
+
+variable "lambda_memory_size" {
+  description = "Memory allocation for the API Lambda function in MB."
+  type        = number
+  default     = 256
+
+  validation {
+    condition     = var.lambda_memory_size >= 128 && var.lambda_memory_size <= 10240
+    error_message = "lambda_memory_size must be between 128 and 10240 MB."
+  }
+}
+
+variable "lambda_timeout" {
+  description = "Timeout for the API Lambda function in seconds."
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = var.lambda_timeout >= 1 && var.lambda_timeout <= 900
+    error_message = "lambda_timeout must be between 1 and 900 seconds."
+  }
+}
+
+variable "lambda_reserved_concurrency" {
+  description = "Reserved concurrent executions for the API Lambda. Set to -1 for unrestricted."
+  type        = number
+  default     = 50
+
+  validation {
+    condition     = var.lambda_reserved_concurrency >= -1 && var.lambda_reserved_concurrency <= 1000
+    error_message = "lambda_reserved_concurrency must be between -1 (unrestricted) and 1000."
+  }
+}
+
 # ---------- Database ----------
 
 variable "db_instance_class" {

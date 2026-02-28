@@ -108,6 +108,23 @@ output "route53_nameservers" {
   value       = aws_route53_zone.main.name_servers
 }
 
+# ---------- API Runtime ----------
+
+output "api_function_name" {
+  description = "Name of the API Lambda function."
+  value       = aws_lambda_function.api.function_name
+}
+
+output "api_function_arn" {
+  description = "ARN of the API Lambda function."
+  value       = aws_lambda_function.api.arn
+}
+
+output "api_base_url" {
+  description = "Public base URL for the API (Lambda Function URL)."
+  value       = aws_lambda_function_url.api.function_url
+}
+
 # ---------- Monitoring ----------
 
 output "api_log_group_name" {
