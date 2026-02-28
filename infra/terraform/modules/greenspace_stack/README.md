@@ -21,13 +21,15 @@ prefixes and non-empty lists.
 ## SES email configuration
 
 Each environment provisions its own SES domain identity, DKIM signing, and
-configuration set. Sender and reply-to addresses default to
-`greenspace@<ses_sender_domain>` and can be overridden via variables.
+configuration set. Sender addresses default to `greenspace@<ses_sender_domain>`
+and can be overridden via `ses_sender_email`. Reply-To defaults to
+`elise7284@gmail.com` (spec default) and can be overridden via
+`ses_reply_to_email`.
 
-| Environment | Domain                 | Sender address                        |
-|-------------|------------------------|---------------------------------------|
-| staging     | `staging.un17hub.com`  | `greenspace@staging.un17hub.com`      |
-| prod        | `un17hub.com`          | `greenspace@un17hub.com`              |
+| Environment | Domain                 | Sender address                        | Reply-To                |
+|-------------|------------------------|---------------------------------------|-------------------------|
+| staging     | `staging.un17hub.com`  | `greenspace@staging.un17hub.com`      | `elise7284@gmail.com`   |
+| prod        | `un17hub.com`          | `greenspace@un17hub.com`              | `elise7284@gmail.com`   |
 
 ### DNS verification
 

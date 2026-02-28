@@ -93,7 +93,7 @@ output "ses_sender_email" {
 
 output "ses_reply_to_email" {
   description = "Default Reply-To address."
-  value       = coalesce(var.ses_reply_to_email, var.ses_sender_email, "greenspace@${var.ses_sender_domain}")
+  value       = var.ses_reply_to_email
 }
 
 # ---------- DNS ----------

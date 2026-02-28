@@ -47,7 +47,8 @@ module "greenspace_stack" {
   db_backup_retention_days = 35
   db_multi_az              = true
 
-  ses_sender_domain = "un17hub.com"
+  ses_sender_domain  = "un17hub.com"
+  ses_reply_to_email = "elise7284@gmail.com"
 
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::222222222222:distribution/PROD_DIST_ID"]
@@ -115,6 +116,10 @@ output "ses_configuration_set_name" {
 
 output "ses_sender_email" {
   value = module.greenspace_stack.ses_sender_email
+}
+
+output "ses_reply_to_email" {
+  value = module.greenspace_stack.ses_reply_to_email
 }
 
 output "route53_zone_id" {
