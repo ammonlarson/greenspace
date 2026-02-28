@@ -11,6 +11,23 @@
         "uriFormat": "%s",
         "action": "debugWithChrome"
       }
+    },
+    {
+      "name": "Start API Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "DB_PASSWORD=localdev npm run dev --workspace=@greenspace/api",
+      "preLaunchTask": "Start Database"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Start Full Stack (API + Web)",
+      "configurations": [
+        "Start API Server",
+        "Start Web Server & Open Chrome"
+      ],
+      "stopAll": true
     }
   ]
 }
