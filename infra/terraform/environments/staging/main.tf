@@ -46,9 +46,9 @@ module "greenspace_stack" {
   db_backup_retention_days = 7
   db_multi_az              = false
 
-  # Scoped IAM permissions (replace with actual ARNs once resources are provisioned)
-  ses_identity_arns            = ["arn:aws:ses:eu-north-1:123456789012:identity/greenspace-staging.example.com"]
-  cloudfront_distribution_arns = ["arn:aws:cloudfront::123456789012:distribution/STAGING_DIST_ID"]
+  # TODO: replace placeholder ARNs with actual values once resources are provisioned
+  ses_identity_arns            = ["arn:aws:ses:eu-north-1:111111111111:identity/greenspace-staging.example.com"]
+  cloudfront_distribution_arns = ["arn:aws:cloudfront::111111111111:distribution/STAGING_DIST_ID"]
 }
 
 output "naming_prefix" {

@@ -86,6 +86,11 @@ variable "ses_identity_arns" {
     condition     = alltrue([for arn in var.ses_identity_arns : can(regex("^arn:aws:ses:", arn))])
     error_message = "Each SES identity ARN must start with 'arn:aws:ses:'."
   }
+
+  validation {
+    condition     = alltrue([for arn in var.ses_identity_arns : !can(regex("[*]", arn))])
+    error_message = "SES identity ARNs must not contain wildcards ('*')."
+  }
 }
 
 variable "cloudfront_distribution_arns" {
@@ -100,6 +105,11 @@ variable "cloudfront_distribution_arns" {
   validation {
     condition     = alltrue([for arn in var.cloudfront_distribution_arns : can(regex("^arn:aws:cloudfront:", arn))])
     error_message = "Each CloudFront distribution ARN must start with 'arn:aws:cloudfront:'."
+  }
+
+  validation {
+    condition     = alltrue([for arn in var.cloudfront_distribution_arns : !can(regex("[*]", arn))])
+    error_message = "CloudFront distribution ARNs must not contain wildcards ('*')."
   }
 }
 

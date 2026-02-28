@@ -16,7 +16,7 @@ run "ses_policy_uses_scoped_arns" {
   command = plan
 
   assert {
-    condition     = !contains(jsondecode(data.aws_iam_policy_document.api_ses.json).Statement[0].Resource, "*")
+    condition     = !contains([for s in jsondecode(data.aws_iam_policy_document.api_ses.json).Statement : s if s.Sid == "SESSend"][0].Resource, "*")
     error_message = "SES send policy must not use wildcard '*' resource. Scope to specific identity ARN(s)."
   }
 }
@@ -65,6 +65,26 @@ run "cloudfront_arns_reject_invalid_prefix" {
 
   variables {
     cloudfront_distribution_arns = ["arn:aws:s3:::some-bucket"]
+  }
+
+  expect_failures = [var.cloudfront_distribution_arns]
+}
+
+run "ses_arns_reject_wildcard_in_arn" {
+  command = plan
+
+  variables {
+    ses_identity_arns = ["arn:aws:ses:*"]
+  }
+
+  expect_failures = [var.ses_identity_arns]
+}
+
+run "cloudfront_arns_reject_wildcard_in_arn" {
+  command = plan
+
+  variables {
+    cloudfront_distribution_arns = ["arn:aws:cloudfront:*"]
   }
 
   expect_failures = [var.cloudfront_distribution_arns]

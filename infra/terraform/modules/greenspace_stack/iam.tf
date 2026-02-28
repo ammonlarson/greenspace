@@ -51,6 +51,7 @@ resource "aws_iam_role_policy" "api_secrets" {
 
 data "aws_iam_policy_document" "api_ses" {
   statement {
+    sid    = "SESSend"
     effect = "Allow"
     actions = [
       "ses:SendEmail",
