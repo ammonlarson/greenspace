@@ -1,4 +1,4 @@
-# Validates that SES and CloudFront IAM policies do not use wildcard resources.
+# Validates that IAM policies do not use wildcard resources.
 # Run with: terraform test
 
 variables {
@@ -8,7 +8,7 @@ variables {
   public_subnet_cidrs  = ["10.99.1.0/24", "10.99.2.0/24"]
   private_subnet_cidrs = ["10.99.10.0/24", "10.99.11.0/24"]
 
-  ses_identity_arns            = ["arn:aws:ses:eu-north-1:000000000000:identity/test.example.com"]
+  ses_sender_domain            = "test.example.com"
   cloudfront_distribution_arns = ["arn:aws:cloudfront::000000000000:distribution/TESTDISTID"]
 }
 
@@ -30,16 +30,6 @@ run "cloudfront_policy_uses_scoped_arns" {
   }
 }
 
-run "ses_arns_reject_empty_list" {
-  command = plan
-
-  variables {
-    ses_identity_arns = []
-  }
-
-  expect_failures = [var.ses_identity_arns]
-}
-
 run "cloudfront_arns_reject_empty_list" {
   command = plan
 
@@ -48,16 +38,6 @@ run "cloudfront_arns_reject_empty_list" {
   }
 
   expect_failures = [var.cloudfront_distribution_arns]
-}
-
-run "ses_arns_reject_invalid_prefix" {
-  command = plan
-
-  variables {
-    ses_identity_arns = ["arn:aws:s3:::some-bucket"]
-  }
-
-  expect_failures = [var.ses_identity_arns]
 }
 
 run "cloudfront_arns_reject_invalid_prefix" {
@@ -70,16 +50,6 @@ run "cloudfront_arns_reject_invalid_prefix" {
   expect_failures = [var.cloudfront_distribution_arns]
 }
 
-run "ses_arns_reject_wildcard_in_arn" {
-  command = plan
-
-  variables {
-    ses_identity_arns = ["arn:aws:ses:*"]
-  }
-
-  expect_failures = [var.ses_identity_arns]
-}
-
 run "cloudfront_arns_reject_wildcard_in_arn" {
   command = plan
 
@@ -88,4 +58,14 @@ run "cloudfront_arns_reject_wildcard_in_arn" {
   }
 
   expect_failures = [var.cloudfront_distribution_arns]
+}
+
+run "ses_sender_domain_reject_invalid" {
+  command = plan
+
+  variables {
+    ses_sender_domain = "not a domain!"
+  }
+
+  expect_failures = [var.ses_sender_domain]
 }

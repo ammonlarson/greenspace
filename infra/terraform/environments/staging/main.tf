@@ -46,8 +46,9 @@ module "greenspace_stack" {
   db_backup_retention_days = 7
   db_multi_az              = false
 
-  # TODO: replace placeholder ARNs with actual values once resources are provisioned
-  ses_identity_arns            = ["arn:aws:ses:eu-north-1:111111111111:identity/greenspace-staging.example.com"]
+  ses_sender_domain = "staging.un17hub.com"
+
+  # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::111111111111:distribution/STAGING_DIST_ID"]
 }
 
@@ -81,4 +82,24 @@ output "db_secret_arn" {
 
 output "app_secret_arn" {
   value = module.greenspace_stack.app_secret_arn
+}
+
+output "ses_domain_identity_arn" {
+  value = module.greenspace_stack.ses_domain_identity_arn
+}
+
+output "ses_configuration_set_name" {
+  value = module.greenspace_stack.ses_configuration_set_name
+}
+
+output "ses_sender_email" {
+  value = module.greenspace_stack.ses_sender_email
+}
+
+output "route53_zone_id" {
+  value = module.greenspace_stack.route53_zone_id
+}
+
+output "route53_nameservers" {
+  value = module.greenspace_stack.route53_nameservers
 }
