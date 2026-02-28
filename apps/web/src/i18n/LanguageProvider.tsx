@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -33,7 +34,15 @@ function detectBrowserLanguage(): Language {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(detectBrowserLanguage);
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+
+  useEffect(() => {
+    setLanguage(detectBrowserLanguage());
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const t = useCallback(
     (key: string): string => {

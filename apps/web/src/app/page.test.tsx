@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   GREENHOUSES,
   DEFAULT_OPENING_DATETIME,
@@ -9,6 +9,7 @@ import {
   BOX_CATALOG,
 } from "@greenspace/shared";
 import { translations } from "@/i18n/translations";
+import { isBeforeOpening } from "@/utils/opening";
 
 describe("shared package integration", () => {
   it("exports greenhouses", () => {
@@ -74,5 +75,28 @@ describe("greenhouse data", () => {
     const soen = BOX_CATALOG.filter((b) => b.greenhouse === "Søen");
     expect(kronen.length).toBe(14);
     expect(soen.length).toBe(15);
+  });
+});
+
+describe("isBeforeOpening", () => {
+  it("returns true when current time is before opening", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-01T10:00:00Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("returns false when current time is after opening", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-01T10:00:00Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("returns true for the default opening datetime when well before", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    expect(isBeforeOpening(DEFAULT_OPENING_DATETIME)).toBe(true);
+    vi.useRealTimers();
   });
 });

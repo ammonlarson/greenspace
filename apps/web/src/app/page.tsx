@@ -1,32 +1,15 @@
 "use client";
 
-import {
-  DEFAULT_OPENING_DATETIME,
-  OPENING_TIMEZONE,
-} from "@greenspace/shared";
+import { DEFAULT_OPENING_DATETIME } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { PreOpenPage } from "@/components/PreOpenPage";
 import { LandingPage } from "@/components/LandingPage";
-import { useEffect, useState } from "react";
-
-function isBeforeOpening(openingIso: string): boolean {
-  const openingUtc = new Date(
-    new Date(openingIso).toLocaleString("en-US", { timeZone: OPENING_TIMEZONE }),
-  );
-  const nowInTz = new Date(
-    new Date().toLocaleString("en-US", { timeZone: OPENING_TIMEZONE }),
-  );
-  return nowInTz < openingUtc;
-}
+import { isBeforeOpening } from "@/utils/opening";
 
 export default function Home() {
   const { t } = useLanguage();
-  const [preOpen, setPreOpen] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setPreOpen(isBeforeOpening(DEFAULT_OPENING_DATETIME));
-  }, []);
+  const preOpen = isBeforeOpening(DEFAULT_OPENING_DATETIME);
 
   return (
     <main>
@@ -45,11 +28,7 @@ export default function Home() {
         <LanguageSelector />
       </header>
 
-      {preOpen === null ? (
-        <p style={{ textAlign: "center", padding: "2rem" }}>
-          {t("common.loading")}
-        </p>
-      ) : preOpen ? (
+      {preOpen ? (
         <PreOpenPage openingDatetime={DEFAULT_OPENING_DATETIME} />
       ) : (
         <LandingPage />
