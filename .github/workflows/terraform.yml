@@ -13,7 +13,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
   pull-requests: write
 
 env:
@@ -140,15 +140,134 @@ jobs:
             terraform -chdir="$ENV_DIR" validate
           done
 
-  # --------------- Merge to main: apply per environment ---------------
+  # --------------- Deploy pipeline: detect → apply staging → notify → apply prod ---------------
+
+  detect-staging:
+    name: "Detect changes (staging)"
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: terraform-deploy-staging
+      cancel-in-progress: false
+    outputs:
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: infra/terraform/environments/staging
+        run: terraform init -input=false
+
+      - name: Terraform plan (detect changes)
+        id: plan
+        working-directory: infra/terraform/environments/staging
+        shell: bash
+        run: |
+          set +e
+          terraform plan -input=false -no-color -detailed-exitcode -out=tfplan 2>&1 | tee plan-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "No changes detected"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          elif [ "$EXIT_CODE" -eq 2 ]; then
+            echo "Changes detected"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Terraform plan failed with exit code $EXIT_CODE"
+            exit 1
+          fi
+
+      - name: Upload plan artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-tfplan-staging
+          path: |
+            infra/terraform/environments/staging/tfplan
+            infra/terraform/environments/staging/plan-output.txt
+          retention-days: 7
+
+  detect-prod:
+    name: "Detect changes (prod)"
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: terraform-deploy-prod
+      cancel-in-progress: false
+    outputs:
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: infra/terraform/environments/prod
+        run: terraform init -input=false
+
+      - name: Terraform plan (detect changes)
+        id: plan
+        working-directory: infra/terraform/environments/prod
+        shell: bash
+        run: |
+          set +e
+          terraform plan -input=false -no-color -detailed-exitcode -out=tfplan 2>&1 | tee plan-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "No changes detected"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          elif [ "$EXIT_CODE" -eq 2 ]; then
+            echo "Changes detected"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Terraform plan failed with exit code $EXIT_CODE"
+            exit 1
+          fi
+
+      - name: Upload plan artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-tfplan-prod
+          path: |
+            infra/terraform/environments/prod/tfplan
+            infra/terraform/environments/prod/plan-output.txt
+          retention-days: 7
 
   apply-staging:
     name: "Apply (staging)"
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    needs: detect-staging
+    if: needs.detect-staging.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name != 'workflow_dispatch' && 'staging' || '' }}
+    environment: staging
     concurrency:
-      group: terraform-staging
+      group: terraform-deploy-staging
       cancel-in-progress: false
     steps:
       - name: Checkout
@@ -177,14 +296,52 @@ jobs:
         working-directory: infra/terraform/environments/staging
         run: terraform apply -input=false -no-color tfplan
 
+  notify-prod-ready:
+    name: "Notify prod promotion ready"
+    needs: [detect-staging, detect-prod, apply-staging]
+    if: >-
+      always() &&
+      needs.detect-prod.outputs.has_changes == 'true' &&
+      needs.detect-prod.result == 'success' &&
+      needs.detect-staging.result == 'success' &&
+      (needs.apply-staging.result == 'success' || needs.apply-staging.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post notification
+        uses: actions/github-script@v7
+        env:
+          STAGING_RESULT: ${{ needs.apply-staging.result }}
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const stagingApplied = process.env.STAGING_RESULT === 'success';
+            const stagingMsg = stagingApplied
+              ? 'Staging has been applied successfully.'
+              : 'Staging has no pending changes.';
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: [
+                '**Terraform: production deployment awaiting approval.**',
+                '',
+                `${stagingMsg} Production changes are ready for promotion.`,
+                '',
+                `@ammonl — please review and approve the production deployment in the [workflow run](${runUrl}).`,
+              ].join('\n'),
+            });
+
   apply-prod:
     name: "Apply (prod)"
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
-    needs: apply-staging
+    needs: [detect-prod, notify-prod-ready]
+    if: >-
+      always() &&
+      needs.detect-prod.outputs.has_changes == 'true' &&
+      needs.notify-prod-ready.result == 'success'
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name != 'workflow_dispatch' && 'production' || '' }}
+    environment: production
     concurrency:
-      group: terraform-prod
+      group: terraform-deploy-prod
       cancel-in-progress: false
     steps:
       - name: Checkout
