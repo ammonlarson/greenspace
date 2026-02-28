@@ -33,8 +33,26 @@ provider "aws" {
 module "greenspace_stack" {
   source      = "../../modules/greenspace_stack"
   environment = "prod"
+
+  vpc_cidr             = "10.1.0.0/16"
+  availability_zones   = ["eu-north-1a", "eu-north-1b"]
+  public_subnet_cidrs  = ["10.1.1.0/24", "10.1.2.0/24"]
+  private_subnet_cidrs = ["10.1.10.0/24", "10.1.11.0/24"]
+  log_retention_days   = 90
 }
 
 output "naming_prefix" {
   value = module.greenspace_stack.naming_prefix
+}
+
+output "vpc_id" {
+  value = module.greenspace_stack.vpc_id
+}
+
+output "api_runtime_role_arn" {
+  value = module.greenspace_stack.api_runtime_role_arn
+}
+
+output "ci_deploy_role_arn" {
+  value = module.greenspace_stack.ci_deploy_role_arn
 }
