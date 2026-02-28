@@ -12,6 +12,7 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
     path: "/test",
     body: undefined,
     headers: {},
+    params: {},
     ...overrides,
   };
 }
@@ -96,5 +97,34 @@ describe("Router", () => {
     const response = await router.handle(makeCtx({ path: "/crash" }));
     expect(response.statusCode).toBe(500);
     expect(response.body).toEqual({ error: "Internal server error" });
+  });
+
+  it("extracts path parameters from :param segments", async () => {
+    const router = new Router();
+    let captured: Record<string, string> = {};
+    router.delete("/items/:id", async (ctx) => {
+      captured = ctx.params;
+      return { statusCode: 204, body: null };
+    });
+
+    const response = await router.handle(makeCtx({ method: "DELETE", path: "/items/abc-123" }));
+    expect(response.statusCode).toBe(204);
+    expect(captured).toEqual({ id: "abc-123" });
+  });
+
+  it("returns 404 when parameterized path has wrong segment count", async () => {
+    const router = new Router();
+    router.get("/items/:id", async () => ({ statusCode: 200, body: {} }));
+
+    const response = await router.handle(makeCtx({ path: "/items/1/extra" }));
+    expect(response.statusCode).toBe(404);
+  });
+
+  it("returns 405 for wrong method on parameterized path", async () => {
+    const router = new Router();
+    router.delete("/items/:id", async () => ({ statusCode: 204, body: null }));
+
+    const response = await router.handle(makeCtx({ method: "GET", path: "/items/123" }));
+    expect(response.statusCode).toBe(405);
   });
 });
