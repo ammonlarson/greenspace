@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "api_ses" {
       "ses:SendEmail",
       "ses:SendRawEmail",
     ]
-    resources = var.ses_identity_arns
+    resources = [aws_ses_domain_identity.main.arn]
   }
 }
 
@@ -396,16 +396,43 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
   }
 
   # SES v1 APIs do not support resource-level permissions; wildcard required.
-  # Remove this statement after legacy SES resources are cleaned from state.
   statement {
     sid    = "SESManage"
     effect = "Allow"
     actions = [
+      "ses:VerifyDomainIdentity",
+      "ses:VerifyDomainDkim",
       "ses:GetIdentityVerificationAttributes",
       "ses:GetIdentityDkimAttributes",
-      "ses:DescribeConfigurationSet",
       "ses:DeleteIdentity",
+      "ses:CreateConfigurationSet",
+      "ses:DescribeConfigurationSet",
       "ses:DeleteConfigurationSet",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "Route53Zones"
+    effect = "Allow"
+    actions = [
+      "route53:CreateHostedZone",
+      "route53:DeleteHostedZone",
+      "route53:GetHostedZone",
+      "route53:ListResourceRecordSets",
+      "route53:ChangeResourceRecordSets",
+      "route53:ChangeTagsForResource",
+      "route53:ListTagsForResource",
+    ]
+    resources = ["arn:aws:route53:::hostedzone/*"]
+  }
+
+  statement {
+    sid    = "Route53Global"
+    effect = "Allow"
+    actions = [
+      "route53:ListHostedZones",
+      "route53:GetChange",
     ]
     resources = ["*"]
   }

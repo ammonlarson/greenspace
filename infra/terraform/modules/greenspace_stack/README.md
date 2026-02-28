@@ -12,10 +12,32 @@ This module will eventually compose:
 
 ## Least-privilege IAM
 
-SES send and CloudFront invalidation permissions are scoped to explicit ARNs
-supplied via the required module variables `ses_identity_arns` and
-`cloudfront_distribution_arns`. Wildcard (`*`) resources are not accepted;
-input validations enforce correct ARN prefixes and non-empty lists.
+SES send permissions are scoped to the SES domain identity provisioned by the
+module (`aws_ses_domain_identity`). CloudFront invalidation permissions are
+scoped to explicit ARNs supplied via `cloudfront_distribution_arns`. Wildcard
+(`*`) resources are not accepted; input validations enforce correct ARN
+prefixes and non-empty lists.
 
-Update these values in each environment's `main.tf` once the corresponding
-SES identities and CloudFront distributions are provisioned.
+## SES email configuration
+
+Each environment provisions its own SES domain identity, DKIM signing, and
+configuration set. Sender and reply-to addresses default to
+`greenspace@<ses_sender_domain>` and can be overridden via variables.
+
+| Environment | Domain                 | Sender address                        |
+|-------------|------------------------|---------------------------------------|
+| staging     | `staging.un17hub.com`  | `greenspace@staging.un17hub.com`      |
+| prod        | `un17hub.com`          | `greenspace@un17hub.com`              |
+
+### DNS verification
+
+Route 53 hosted zones and DNS records for SES domain verification and DKIM
+are managed by Terraform. After the first `terraform apply`:
+
+1. **Point your registrar's nameservers** to the Route 53 zone nameservers
+   (output: `route53_nameservers`).
+2. **Delegate the staging subdomain** by adding an NS record in the prod
+   Route 53 zone for `staging.un17hub.com` pointing to the staging zone's
+   nameservers.
+3. SES will verify the domain and enable DKIM signing automatically once DNS
+   propagates.

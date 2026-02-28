@@ -73,24 +73,26 @@ variable "github_environment" {
   default     = null
 }
 
-variable "ses_identity_arns" {
-  description = "SES verified identity/domain ARN(s) that the API Lambda is allowed to send from."
-  type        = list(string)
+variable "ses_sender_domain" {
+  description = "Domain name for SES sender identity and Route 53 hosted zone."
+  type        = string
 
   validation {
-    condition     = length(var.ses_identity_arns) > 0
-    error_message = "At least one SES identity ARN is required. Wildcard '*' is not allowed."
+    condition     = can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z]{2,}$", var.ses_sender_domain))
+    error_message = "ses_sender_domain must be a valid domain name (e.g. example.com)."
   }
+}
 
-  validation {
-    condition     = alltrue([for arn in var.ses_identity_arns : can(regex("^arn:aws:ses:", arn))])
-    error_message = "Each SES identity ARN must start with 'arn:aws:ses:'."
-  }
+variable "ses_sender_email" {
+  description = "Default From address for outbound email. Defaults to greenspace@<ses_sender_domain>."
+  type        = string
+  default     = null
+}
 
-  validation {
-    condition     = alltrue([for arn in var.ses_identity_arns : !can(regex("[*]", arn))])
-    error_message = "SES identity ARNs must not contain wildcards ('*')."
-  }
+variable "ses_reply_to_email" {
+  description = "Default Reply-To address. Falls back to ses_sender_email, then greenspace@<ses_sender_domain>."
+  type        = string
+  default     = null
 }
 
 variable "cloudfront_distribution_arns" {

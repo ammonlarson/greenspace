@@ -64,6 +64,50 @@ output "app_secret_arn" {
   value       = aws_secretsmanager_secret.app.arn
 }
 
+# ---------- SES ----------
+
+output "ses_domain_identity_arn" {
+  description = "ARN of the SES domain identity."
+  value       = aws_ses_domain_identity.main.arn
+}
+
+output "ses_verification_token" {
+  description = "SES domain verification token (published via Route 53)."
+  value       = aws_ses_domain_identity.main.verification_token
+}
+
+output "ses_dkim_tokens" {
+  description = "DKIM CNAME tokens for the SES domain (published via Route 53)."
+  value       = aws_ses_domain_dkim.main.dkim_tokens
+}
+
+output "ses_configuration_set_name" {
+  description = "Name of the SES configuration set for this environment."
+  value       = aws_ses_configuration_set.main.name
+}
+
+output "ses_sender_email" {
+  description = "Default From address for outbound email."
+  value       = coalesce(var.ses_sender_email, "greenspace@${var.ses_sender_domain}")
+}
+
+output "ses_reply_to_email" {
+  description = "Default Reply-To address."
+  value       = coalesce(var.ses_reply_to_email, var.ses_sender_email, "greenspace@${var.ses_sender_domain}")
+}
+
+# ---------- DNS ----------
+
+output "route53_zone_id" {
+  description = "Route 53 hosted zone ID for the sender domain."
+  value       = aws_route53_zone.main.zone_id
+}
+
+output "route53_nameservers" {
+  description = "Nameservers for the Route 53 hosted zone. Delegate these from your registrar."
+  value       = aws_route53_zone.main.name_servers
+}
+
 # ---------- Monitoring ----------
 
 output "api_log_group_name" {

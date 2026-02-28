@@ -47,9 +47,30 @@ module "greenspace_stack" {
   db_backup_retention_days = 35
   db_multi_az              = true
 
-  # TODO: replace placeholder ARNs with actual values once resources are provisioned
-  ses_identity_arns            = ["arn:aws:ses:eu-north-1:222222222222:identity/greenspace.example.com"]
+  ses_sender_domain = "un17hub.com"
+
+  # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::222222222222:distribution/PROD_DIST_ID"]
+}
+
+# ---------- Staging subdomain delegation ----------
+
+data "terraform_remote_state" "staging" {
+  backend = "s3"
+
+  config = {
+    bucket = "greenspace-2026-tfstate"
+    key    = "environments/staging/terraform.tfstate"
+    region = "eu-north-1"
+  }
+}
+
+resource "aws_route53_record" "staging_ns" {
+  zone_id = module.greenspace_stack.route53_zone_id
+  name    = "staging.un17hub.com"
+  type    = "NS"
+  ttl     = 300
+  records = data.terraform_remote_state.staging.outputs.route53_nameservers
 }
 
 output "naming_prefix" {
@@ -82,4 +103,24 @@ output "db_secret_arn" {
 
 output "app_secret_arn" {
   value = module.greenspace_stack.app_secret_arn
+}
+
+output "ses_domain_identity_arn" {
+  value = module.greenspace_stack.ses_domain_identity_arn
+}
+
+output "ses_configuration_set_name" {
+  value = module.greenspace_stack.ses_configuration_set_name
+}
+
+output "ses_sender_email" {
+  value = module.greenspace_stack.ses_sender_email
+}
+
+output "route53_zone_id" {
+  value = module.greenspace_stack.route53_zone_id
+}
+
+output "route53_nameservers" {
+  value = module.greenspace_stack.route53_nameservers
 }
