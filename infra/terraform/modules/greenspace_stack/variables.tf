@@ -55,6 +55,18 @@ variable "github_repo" {
   default     = "ammonlarson/greenspace"
 }
 
+variable "tf_state_bucket" {
+  description = "S3 bucket name for Terraform remote state."
+  type        = string
+  default     = "greenspace-2026-tfstate"
+}
+
+variable "tf_lock_table" {
+  description = "DynamoDB table name for Terraform state locking."
+  type        = string
+  default     = "greenspace-2026-tflock"
+}
+
 # ---------- Monitoring ----------
 
 variable "log_retention_days" {

@@ -1,0 +1,213 @@
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - "infra/terraform/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/terraform/**"
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  TF_VERSION: "1.7.5"
+  AWS_REGION: "eu-north-1"
+
+jobs:
+  # --------------- Pull Request: plan per environment ---------------
+
+  plan-staging:
+    name: "Plan (staging)"
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    concurrency:
+      group: terraform-staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: infra/terraform/environments/staging
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        working-directory: infra/terraform/environments/staging
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: infra/terraform/environments/staging
+        run: terraform plan -input=false -no-color -out=tfplan 2>&1 | tee plan-output.txt
+
+      - name: Upload plan artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-staging
+          path: |
+            infra/terraform/environments/staging/tfplan
+            infra/terraform/environments/staging/plan-output.txt
+          retention-days: 7
+
+  plan-prod:
+    name: "Plan (prod)"
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    concurrency:
+      group: terraform-prod
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: infra/terraform/environments/prod
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        working-directory: infra/terraform/environments/prod
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: infra/terraform/environments/prod
+        run: terraform plan -input=false -no-color -out=tfplan 2>&1 | tee plan-output.txt
+
+      - name: Upload plan artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-prod
+          path: |
+            infra/terraform/environments/prod/tfplan
+            infra/terraform/environments/prod/plan-output.txt
+          retention-days: 7
+
+  # --------------- Fork PRs: backend-disabled validate only ---------------
+
+  validate-fork:
+    name: "Validate (fork)"
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive infra/terraform
+
+      - name: Validate all environments (backend disabled)
+        run: |
+          for ENV_DIR in infra/terraform/environments/*; do
+            if [ ! -d "$ENV_DIR" ]; then
+              continue
+            fi
+            echo "--- Validating $ENV_DIR ---"
+            terraform -chdir="$ENV_DIR" init -backend=false
+            terraform -chdir="$ENV_DIR" validate
+          done
+
+  # --------------- Merge to main: apply per environment ---------------
+
+  apply-staging:
+    name: "Apply (staging)"
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      group: terraform-staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: infra/terraform/environments/staging
+        run: terraform init -input=false
+
+      - name: Terraform plan
+        working-directory: infra/terraform/environments/staging
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Terraform apply
+        working-directory: infra/terraform/environments/staging
+        run: terraform apply -input=false -no-color tfplan
+
+  apply-prod:
+    name: "Apply (prod)"
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: apply-staging
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: terraform-prod
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TF_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: infra/terraform/environments/prod
+        run: terraform init -input=false
+
+      - name: Terraform plan
+        working-directory: infra/terraform/environments/prod
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Terraform apply
+        working-directory: infra/terraform/environments/prod
+        run: terraform apply -input=false -no-color tfplan

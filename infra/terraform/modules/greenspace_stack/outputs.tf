@@ -37,6 +37,11 @@ output "ci_deploy_role_arn" {
   value       = aws_iam_role.ci_deploy.arn
 }
 
+output "ci_terraform_role_arn" {
+  description = "ARN of the CI Terraform role for plan/apply via GitHub Actions OIDC."
+  value       = aws_iam_role.ci_terraform.arn
+}
+
 # ---------- Monitoring ----------
 
 output "api_log_group_name" {
