@@ -78,8 +78,8 @@ variable "ses_sender_domain" {
   type        = string
 
   validation {
-    condition     = can(regex("^[a-z0-9][a-z0-9.-]+[a-z0-9]$", var.ses_sender_domain))
-    error_message = "ses_sender_domain must be a valid domain name."
+    condition     = can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z]{2,}$", var.ses_sender_domain))
+    error_message = "ses_sender_domain must be a valid domain name (e.g. example.com)."
   }
 }
 
@@ -90,7 +90,7 @@ variable "ses_sender_email" {
 }
 
 variable "ses_reply_to_email" {
-  description = "Default Reply-To address. Defaults to ses_sender_email."
+  description = "Default Reply-To address. Falls back to ses_sender_email, then greenspace@<ses_sender_domain>."
   type        = string
   default     = null
 }
