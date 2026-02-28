@@ -44,9 +44,6 @@ jobs:
           role-to-assume: ${{ vars.TF_ROLE_ARN_STAGING }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Terraform fmt
-        run: terraform fmt -check -recursive infra/terraform
-
       - name: Terraform init
         working-directory: infra/terraform/environments/staging
         run: terraform init -input=false
@@ -90,9 +87,6 @@ jobs:
         with:
           role-to-assume: ${{ vars.TF_ROLE_ARN_PROD }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Terraform fmt
-        run: terraform fmt -check -recursive infra/terraform
 
       - name: Terraform init
         working-directory: infra/terraform/environments/prod

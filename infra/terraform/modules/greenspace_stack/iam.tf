@@ -172,7 +172,10 @@ data "aws_iam_policy_document" "ci_terraform_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:*"]
+      values = [
+        "repo:${var.github_repo}:ref:refs/heads/main",
+        "repo:${var.github_repo}:pull_request",
+      ]
     }
   }
 }
@@ -188,17 +191,26 @@ resource "aws_iam_role" "ci_terraform" {
 
 data "aws_iam_policy_document" "ci_terraform_state" {
   statement {
-    sid    = "TerraformStateS3"
+    sid    = "TerraformStateS3List"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.tf_state_bucket}",
+    ]
+  }
+
+  statement {
+    sid    = "TerraformStateS3Objects"
     effect = "Allow"
     actions = [
       "s3:GetObject",
       "s3:PutObject",
       "s3:DeleteObject",
-      "s3:ListBucket",
     ]
     resources = [
-      "arn:aws:s3:::greenspace-2026-tfstate",
-      "arn:aws:s3:::greenspace-2026-tfstate/*",
+      "arn:aws:s3:::${var.tf_state_bucket}/environments/${var.environment}/*",
     ]
   }
 
@@ -211,7 +223,7 @@ data "aws_iam_policy_document" "ci_terraform_state" {
       "dynamodb:DeleteItem",
     ]
     resources = [
-      "arn:aws:dynamodb:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:table/greenspace-2026-tflock",
+      "arn:aws:dynamodb:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:table/${var.tf_lock_table}",
     ]
   }
 }
@@ -297,6 +309,23 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     ]
     resources = [
       "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.naming_prefix}-*",
+    ]
+  }
+
+  statement {
+    sid    = "DenySelfModify"
+    effect = "Deny"
+    actions = [
+      "iam:UpdateRole",
+      "iam:UpdateAssumeRolePolicy",
+      "iam:PutRolePolicy",
+      "iam:AttachRolePolicy",
+      "iam:DetachRolePolicy",
+      "iam:DeleteRole",
+      "iam:DeleteRolePolicy",
+    ]
+    resources = [
+      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.naming_prefix}-ci-terraform",
     ]
   }
 
@@ -394,11 +423,17 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     actions = [
       "secretsmanager:DescribeSecret",
       "secretsmanager:GetSecretValue",
-      "secretsmanager:ListSecrets",
     ]
     resources = [
       "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
     ]
+  }
+
+  statement {
+    sid       = "SecretsManagerList"
+    effect    = "Allow"
+    actions   = ["secretsmanager:ListSecrets"]
+    resources = ["*"]
   }
 }
 
