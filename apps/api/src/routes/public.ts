@@ -7,11 +7,11 @@ export async function handlePublicStatus(ctx: RequestContext): Promise<RouteResp
     .select(["opening_datetime"])
     .executeTakeFirst();
 
-  const openingDatetime = settings?.opening_datetime
-    ? new Date(settings.opening_datetime).toISOString()
+  const openingDate = settings?.opening_datetime
+    ? new Date(settings.opening_datetime)
     : null;
-
-  const isOpen = openingDatetime ? new Date(openingDatetime).getTime() <= Date.now() : false;
+  const isOpen = openingDate ? openingDate.getTime() <= Date.now() : false;
+  const openingDatetime = openingDate ? openingDate.toISOString() : null;
 
   return {
     statusCode: 200,

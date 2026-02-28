@@ -29,6 +29,7 @@ export async function handleLogin(ctx: RequestContext): Promise<RouteResponse> {
     .executeTakeFirst();
 
   if (!admin) {
+    await verifyPassword(password, "0".repeat(64) + ":" + "0".repeat(128));
     throw unauthorized("Invalid credentials");
   }
 
@@ -69,7 +70,11 @@ interface ChangePasswordBody {
 }
 
 export async function handleChangePassword(ctx: RequestContext): Promise<RouteResponse> {
-  const adminId = ctx.adminId!;
+  const adminId = ctx.adminId;
+  if (!adminId) {
+    throw unauthorized();
+  }
+
   const { currentPassword, newPassword } = (ctx.body ?? {}) as ChangePasswordBody;
 
   if (!currentPassword || !newPassword) {
