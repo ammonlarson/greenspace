@@ -146,7 +146,7 @@ jobs:
     name: "Apply (staging)"
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    environment: staging
+    environment: ${{ github.event_name != 'workflow_dispatch' && 'staging' || '' }}
     concurrency:
       group: terraform-staging
       cancel-in-progress: false
@@ -182,7 +182,7 @@ jobs:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     needs: apply-staging
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.event_name != 'workflow_dispatch' && 'production' || '' }}
     concurrency:
       group: terraform-prod
       cancel-in-progress: false
