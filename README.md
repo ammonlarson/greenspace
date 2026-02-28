@@ -53,7 +53,7 @@ Each environment defines a `ci-terraform` IAM role assumed via GitHub OIDC (`aws
 | `TF_ROLE_ARN_STAGING` | OIDC role ARN for staging plan/apply    |
 | `TF_ROLE_ARN_PROD`    | OIDC role ARN for production plan/apply |
 
-The roles grant least-privilege access to the S3 state backend, DynamoDB lock table, and the specific AWS resources managed by Terraform (VPC, IAM, KMS, CloudWatch Logs, Lambda).
+The roles grant least-privilege access to the S3 state backend, DynamoDB lock table, and the specific AWS resources managed by Terraform (VPC, IAM, KMS, CloudWatch Logs, Lambda, RDS, Secrets Manager).
 
 ### Operational safeguards
 

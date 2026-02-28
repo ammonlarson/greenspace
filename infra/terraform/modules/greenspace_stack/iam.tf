@@ -418,11 +418,20 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
   }
 
   statement {
-    sid    = "SecretsManagerRead"
+    sid    = "SecretsManager"
     effect = "Allow"
     actions = [
+      "secretsmanager:CreateSecret",
+      "secretsmanager:DeleteSecret",
       "secretsmanager:DescribeSecret",
       "secretsmanager:GetSecretValue",
+      "secretsmanager:PutSecretValue",
+      "secretsmanager:UpdateSecret",
+      "secretsmanager:TagResource",
+      "secretsmanager:UntagResource",
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:PutResourcePolicy",
+      "secretsmanager:DeleteResourcePolicy",
     ]
     resources = [
       "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
@@ -433,6 +442,37 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     sid       = "SecretsManagerList"
     effect    = "Allow"
     actions   = ["secretsmanager:ListSecrets"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "RDSManage"
+    effect = "Allow"
+    actions = [
+      "rds:CreateDBInstance",
+      "rds:DeleteDBInstance",
+      "rds:DescribeDBInstances",
+      "rds:ModifyDBInstance",
+      "rds:RebootDBInstance",
+      "rds:CreateDBSubnetGroup",
+      "rds:DeleteDBSubnetGroup",
+      "rds:DescribeDBSubnetGroups",
+      "rds:ModifyDBSubnetGroup",
+      "rds:CreateDBParameterGroup",
+      "rds:DeleteDBParameterGroup",
+      "rds:DescribeDBParameterGroups",
+      "rds:DescribeDBParameters",
+      "rds:ModifyDBParameterGroup",
+      "rds:ResetDBParameterGroup",
+      "rds:CreateDBSnapshot",
+      "rds:DeleteDBSnapshot",
+      "rds:DescribeDBSnapshots",
+      "rds:AddTagsToResource",
+      "rds:RemoveTagsFromResource",
+      "rds:ListTagsForResource",
+      "rds:DescribeDBEngineVersions",
+      "rds:DescribeOrderableDBInstanceOptions",
+    ]
     resources = ["*"]
   }
 }
