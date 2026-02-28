@@ -23,6 +23,45 @@ Primary product specification:
   2. implementation
   3. tests/validation
 
+## CI / Terraform Pipeline
+
+Two workflows handle infrastructure:
+
+- **CI (`ci.yml`)** - Runs on every PR and push to main. Validates guardrail files, runs app checks (test/lint/build), and performs lightweight `terraform fmt -check` + `terraform validate` with the backend disabled.
+- **Terraform (`terraform.yml`)** - Runs when `infra/terraform/**` files change. Authenticates to AWS via GitHub OIDC and operates per environment.
+
+### Pull requests (internal)
+
+Each environment gets its own plan job. Plan output is uploaded as a CI artifact.
+
+### Pull requests (forks)
+
+Fork PRs receive no AWS credentials. The workflow falls back to backend-disabled `validate` only.
+
+### Merge to main
+
+Staging is applied first. Production applies only after staging succeeds and requires manual approval via the `production` GitHub environment protection rule.
+
+Concurrency guards prevent simultaneous applies to the same environment.
+
+### IAM setup
+
+Each environment defines a `ci-terraform` IAM role assumed via GitHub OIDC (`aws-actions/configure-aws-credentials`). Role ARNs are stored in GitHub repository variables:
+
+| Variable              | Purpose                                 |
+| --------------------- | --------------------------------------- |
+| `TF_ROLE_ARN_STAGING` | OIDC role ARN for staging plan/apply    |
+| `TF_ROLE_ARN_PROD`    | OIDC role ARN for production plan/apply |
+
+The roles grant least-privilege access to the S3 state backend, DynamoDB lock table, and the specific AWS resources managed by Terraform (VPC, IAM, KMS, CloudWatch Logs, Lambda).
+
+### Operational safeguards
+
+- Fork PRs never receive privileged credentials.
+- `concurrency` groups prevent parallel applies per environment.
+- Prod apply is gated behind staging success and the `production` environment protection rule.
+- Plan output is saved as an artifact for audit.
+
 ## Guardrails
 
 - No manual AWS infrastructure drift: persistent resources are Terraform-managed.

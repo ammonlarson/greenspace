@@ -56,3 +56,7 @@ output "api_runtime_role_arn" {
 output "ci_deploy_role_arn" {
   value = module.greenspace_stack.ci_deploy_role_arn
 }
+
+output "ci_terraform_role_arn" {
+  value = module.greenspace_stack.ci_terraform_role_arn
+}
