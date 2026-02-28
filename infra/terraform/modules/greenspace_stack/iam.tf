@@ -92,7 +92,10 @@ data "aws_iam_policy_document" "ci_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+      values = [
+        "repo:${var.github_repo}:ref:refs/heads/main",
+        "repo:${var.github_repo}:environment:${coalesce(var.github_environment, var.environment)}",
+      ]
     }
   }
 }
@@ -114,6 +117,7 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
       "lambda:UpdateFunctionCode",
       "lambda:UpdateFunctionConfiguration",
       "lambda:GetFunction",
+      "lambda:GetFunctionUrlConfig",
       "lambda:ListFunctions",
     ]
     resources = [
@@ -475,6 +479,10 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "lambda:TagResource",
       "lambda:UntagResource",
       "lambda:ListTags",
+      "lambda:CreateFunctionUrlConfig",
+      "lambda:GetFunctionUrlConfig",
+      "lambda:UpdateFunctionUrlConfig",
+      "lambda:DeleteFunctionUrlConfig",
     ]
     resources = [
       "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",

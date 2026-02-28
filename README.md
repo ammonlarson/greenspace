@@ -95,12 +95,28 @@ The Next.js dev server starts on `http://localhost:3000` and proxies API routes 
   2. implementation
   3. tests/validation
 
+## API Deployment
+
+The API runs as an AWS Lambda function with a public Function URL.
+
+- **Build**: `npm run bundle --workspace=@greenspace/api` produces a single-file ESM bundle via esbuild.
+- **Deploy workflow** (`deploy.yml`): Triggers on push to `main` when `apps/api/**` or `packages/shared/**` change. Builds the bundle, deploys to staging Lambda, runs a health check, then promotes to production (gated by the `production` environment protection rule).
+- **Lambda Function URL**: Terraform provisions the Lambda function and Function URL. The `api_base_url` output contains the public endpoint for each environment.
+
+### GitHub repository variables (deploy)
+
+| Variable                  | Purpose                                  |
+| ------------------------- | ---------------------------------------- |
+| `DEPLOY_ROLE_ARN_STAGING` | OIDC role ARN for staging API deployment |
+| `DEPLOY_ROLE_ARN_PROD`    | OIDC role ARN for production API deployment |
+
 ## CI / Terraform Pipeline
 
-Two workflows handle infrastructure:
+Three workflows handle CI, infrastructure, and deployment:
 
 - **CI (`ci.yml`)** - Runs on every PR and push to main. Validates guardrail files, runs app checks (test/lint/build), and performs lightweight `terraform fmt -check` + `terraform validate` with the backend disabled.
 - **Terraform (`terraform.yml`)** - Runs when `infra/terraform/**` files change. Authenticates to AWS via GitHub OIDC and operates per environment.
+- **Deploy (`deploy.yml`)** - Runs when `apps/api/**` or `packages/shared/**` change on main. Builds the Lambda bundle, deploys to staging, runs a health smoke test, then deploys to production.
 
 ### Pull requests (internal)
 

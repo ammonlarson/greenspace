@@ -115,6 +115,30 @@ variable "cloudfront_distribution_arns" {
   }
 }
 
+# ---------- Lambda ----------
+
+variable "lambda_memory_size" {
+  description = "Memory allocation for the API Lambda function in MB."
+  type        = number
+  default     = 256
+
+  validation {
+    condition     = var.lambda_memory_size >= 128 && var.lambda_memory_size <= 10240
+    error_message = "lambda_memory_size must be between 128 and 10240 MB."
+  }
+}
+
+variable "lambda_timeout" {
+  description = "Timeout for the API Lambda function in seconds."
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = var.lambda_timeout >= 1 && var.lambda_timeout <= 900
+    error_message = "lambda_timeout must be between 1 and 900 seconds."
+  }
+}
+
 # ---------- Database ----------
 
 variable "db_instance_class" {

@@ -105,6 +105,14 @@ output "app_secret_arn" {
   value = module.greenspace_stack.app_secret_arn
 }
 
+output "api_function_name" {
+  value = module.greenspace_stack.api_function_name
+}
+
+output "api_base_url" {
+  value = module.greenspace_stack.api_base_url
+}
+
 output "ses_domain_identity_arn" {
   value = module.greenspace_stack.ses_domain_identity_arn
 }
