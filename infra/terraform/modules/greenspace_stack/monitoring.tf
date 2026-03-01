@@ -134,3 +134,330 @@ resource "aws_flow_log" "vpc" {
     Name = "${local.naming_prefix}-vpc-flow"
   }
 }
+
+# ---------- SNS Topic for Alarm Notifications ----------
+
+resource "aws_sns_topic" "alarms" {
+  name              = "${local.naming_prefix}-alarms"
+  kms_master_key_id = aws_kms_key.logs.id
+
+  tags = {
+    Name = "${local.naming_prefix}-alarms"
+  }
+}
+
+resource "aws_sns_topic_subscription" "alarm_email" {
+  count     = var.alarm_email != null ? 1 : 0
+  topic_arn = aws_sns_topic.alarms.arn
+  protocol  = "email"
+  endpoint  = var.alarm_email
+}
+
+# ---------- CloudWatch Alarms: Lambda ----------
+
+resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
+  alarm_name          = "${local.naming_prefix}-lambda-errors"
+  alarm_description   = "API Lambda function errors detected"
+  namespace           = "AWS/Lambda"
+  metric_name         = "Errors"
+  statistic           = "Sum"
+  period              = 300
+  evaluation_periods  = 2
+  threshold           = 0
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = aws_lambda_function.api.function_name
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-lambda-errors"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
+  alarm_name          = "${local.naming_prefix}-lambda-throttles"
+  alarm_description   = "API Lambda function throttled"
+  namespace           = "AWS/Lambda"
+  metric_name         = "Throttles"
+  statistic           = "Sum"
+  period              = 300
+  evaluation_periods  = 1
+  threshold           = 0
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = aws_lambda_function.api.function_name
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-lambda-throttles"
+  }
+}
+
+# ---------- CloudWatch Alarms: RDS ----------
+
+resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
+  alarm_name          = "${local.naming_prefix}-rds-cpu"
+  alarm_description   = "RDS CPU utilization above 80%"
+  namespace           = "AWS/RDS"
+  metric_name         = "CPUUtilization"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 3
+  threshold           = 80
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "missing"
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.main.identifier
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-rds-cpu"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds_freeable_memory" {
+  alarm_name          = "${local.naming_prefix}-rds-freeable-memory"
+  alarm_description   = "RDS freeable memory below 128 MB"
+  namespace           = "AWS/RDS"
+  metric_name         = "FreeableMemory"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  threshold           = 134217728
+  comparison_operator = "LessThanThreshold"
+  treat_missing_data  = "missing"
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.main.identifier
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-rds-freeable-memory"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds_connections" {
+  alarm_name          = "${local.naming_prefix}-rds-connections"
+  alarm_description   = "RDS database connections above threshold"
+  namespace           = "AWS/RDS"
+  metric_name         = "DatabaseConnections"
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 2
+  threshold           = var.alarm_rds_connections_threshold
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.main.identifier
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-rds-connections"
+  }
+}
+
+# ---------- CloudWatch Alarms: SES ----------
+
+resource "aws_cloudwatch_metric_alarm" "ses_bounces" {
+  alarm_name          = "${local.naming_prefix}-ses-bounces"
+  alarm_description   = "SES bounce rate is elevated"
+  namespace           = "AWS/SES"
+  metric_name         = "Bounce"
+  statistic           = "Sum"
+  period              = 3600
+  evaluation_periods  = 1
+  threshold           = 5
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-ses-bounces"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "ses_complaints" {
+  alarm_name          = "${local.naming_prefix}-ses-complaints"
+  alarm_description   = "SES complaint rate is elevated"
+  namespace           = "AWS/SES"
+  metric_name         = "Complaint"
+  statistic           = "Sum"
+  period              = 3600
+  evaluation_periods  = 1
+  threshold           = 1
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  tags = {
+    Name = "${local.naming_prefix}-ses-complaints"
+  }
+}
+
+# ---------- CloudWatch Dashboard ----------
+
+resource "aws_cloudwatch_dashboard" "main" {
+  dashboard_name = "${local.naming_prefix}-dashboard"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "text"
+        x      = 0
+        y      = 0
+        width  = 24
+        height = 1
+        properties = {
+          markdown = "# ${local.naming_prefix} – Operational Dashboard"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 1
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Lambda Invocations & Errors"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/Lambda", "Invocations", "FunctionName", aws_lambda_function.api.function_name, { stat = "Sum", label = "Invocations" }],
+            ["AWS/Lambda", "Errors", "FunctionName", aws_lambda_function.api.function_name, { stat = "Sum", label = "Errors", color = "#d62728" }],
+          ]
+          period = 300
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 8
+        y      = 1
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Lambda Duration (ms)"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/Lambda", "Duration", "FunctionName", aws_lambda_function.api.function_name, { stat = "Average", label = "Avg Duration" }],
+            ["AWS/Lambda", "Duration", "FunctionName", aws_lambda_function.api.function_name, { stat = "p99", label = "p99 Duration", color = "#ff7f0e" }],
+          ]
+          period = 300
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 16
+        y      = 1
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Lambda Throttles & Concurrent Executions"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/Lambda", "Throttles", "FunctionName", aws_lambda_function.api.function_name, { stat = "Sum", label = "Throttles" }],
+            ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", aws_lambda_function.api.function_name, { stat = "Maximum", label = "Concurrent Executions" }],
+          ]
+          period = 300
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 7
+        width  = 8
+        height = 6
+        properties = {
+          title  = "RDS CPU Utilization"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "CPU %" }],
+          ]
+          period = 300
+          view   = "timeSeries"
+          yAxis = {
+            left = { min = 0, max = 100 }
+          }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 8
+        y      = 7
+        width  = 8
+        height = 6
+        properties = {
+          title  = "RDS Freeable Memory & Connections"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Freeable Memory (bytes)" }],
+            ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Connections", yAxis = "right" }],
+          ]
+          period = 300
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 16
+        y      = 7
+        width  = 8
+        height = 6
+        properties = {
+          title  = "RDS Read/Write IOPS"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Read IOPS" }],
+            ["AWS/RDS", "WriteIOPS", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Write IOPS" }],
+          ]
+          period = 300
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 13
+        width  = 12
+        height = 6
+        properties = {
+          title  = "SES Sends, Bounces & Complaints"
+          region = data.aws_region.current.id
+          metrics = [
+            ["AWS/SES", "Send", { stat = "Sum", label = "Sends" }],
+            ["AWS/SES", "Bounce", { stat = "Sum", label = "Bounces", color = "#d62728" }],
+            ["AWS/SES", "Complaint", { stat = "Sum", label = "Complaints", color = "#ff7f0e" }],
+          ]
+          period = 3600
+          view   = "timeSeries"
+        }
+      },
+    ]
+  })
+}

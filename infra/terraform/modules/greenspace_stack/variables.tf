@@ -211,3 +211,15 @@ variable "log_retention_days" {
     error_message = "log_retention_days must be a valid CloudWatch retention value."
   }
 }
+
+variable "alarm_email" {
+  description = "Email address for CloudWatch alarm notifications. Set to null to skip subscription."
+  type        = string
+  default     = null
+}
+
+variable "alarm_rds_connections_threshold" {
+  description = "Threshold for the RDS database connections alarm. Adjust per instance class (e.g. ~85 for db.t4g.micro, ~170 for db.t4g.small)."
+  type        = number
+  default     = 80
+}
