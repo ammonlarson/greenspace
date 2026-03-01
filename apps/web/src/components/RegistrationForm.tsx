@@ -10,6 +10,7 @@ import {
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { DawaAddressInput, type DawaAddressResult } from "./DawaAddressInput";
+import { SwitchConfirmationDialog, type SwitchDetails } from "./SwitchConfirmationDialog";
 
 interface RegistrationFormProps {
   boxId: number;
@@ -27,6 +28,8 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [switchDetails, setSwitchDetails] = useState<SwitchDetails | null>(null);
+  const [confirmingSwitch, setConfirmingSwitch] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -78,6 +81,17 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
+        if (res.status === 409 && body?.code === "SWITCH_REQUIRED") {
+          setSwitchDetails({
+            existingBoxId: body.existingBoxId,
+            existingBoxName: body.existingBoxName,
+            existingGreenhouse: body.existingGreenhouse,
+            newBoxId: body.newBoxId,
+            newBoxName: body.newBoxName,
+            newGreenhouse: body.newGreenhouse,
+          });
+          return;
+        }
         setErrors([body?.error ?? t("common.error")]);
         return;
       }
@@ -88,6 +102,63 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleConfirmSwitch() {
+    if (!selectedAddress) return;
+    setConfirmingSwitch(true);
+    setErrors([]);
+    try {
+      const input = {
+        name: name.trim(),
+        email: email.trim(),
+        street: ELIGIBLE_STREET,
+        houseNumber: selectedAddress.houseNumber,
+        floor: selectedAddress.floor,
+        door: selectedAddress.door,
+        language: language as Language,
+        boxId,
+        confirmSwitch: true,
+      };
+
+      const res = await fetch("/public/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setSwitchDetails(null);
+        setErrors([body?.error ?? t("common.error")]);
+        return;
+      }
+
+      setSuccess(true);
+      setSwitchDetails(null);
+    } catch {
+      setSwitchDetails(null);
+      setErrors([t("common.error")]);
+    } finally {
+      setConfirmingSwitch(false);
+    }
+  }
+
+  function handleCancelSwitch() {
+    setSwitchDetails(null);
+  }
+
+  if (switchDetails) {
+    return (
+      <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem" }}>
+        <SwitchConfirmationDialog
+          switchDetails={switchDetails}
+          onConfirm={handleConfirmSwitch}
+          onCancel={handleCancelSwitch}
+          confirming={confirmingSwitch}
+        />
+      </section>
+    );
   }
 
   if (success) {
