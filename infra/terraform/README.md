@@ -102,11 +102,8 @@ On push to `main` (or manual dispatch from `main`), the deploy pipeline runs:
    changes are detected, downstream apply jobs are skipped.
 2. **Apply staging** (`apply-staging`) — auto-applies when staging has changes.
    Uses the `staging` GitHub environment.
-3. **Notify** (`notify-prod-ready`) — posts a commit comment mentioning
-   `@ammonl` when production changes are ready for promotion.
-4. **Apply production** (`apply-prod`) — runs after notification, gated by the
-   `production` GitHub environment protection rule (manual approval required on
-   all trigger paths, including `workflow_dispatch`).
+3. **Apply production** (`apply-prod`) — runs automatically after staging
+   succeeds (or is skipped). Uses the `production` GitHub environment.
 
 Concurrency guards (`terraform-deploy-staging`, `terraform-deploy-prod`)
 prevent parallel applies to the same environment.
@@ -130,8 +127,7 @@ are stored in GitHub repository variables:
   artifacts from the workflow run to review what will be applied.
 - **Apply runs**: check the `Apply (staging)` and `Apply (prod)` job logs
   under the Actions tab for the merge commit on `main`.
-- **Prod approval**: the `Apply (prod)` job will show "Waiting for review"
-  in the Actions UI until a reviewer approves the `production` environment
-  deployment.
+- **Prod apply**: the `Apply (prod)` job runs automatically after staging
+  succeeds (or is skipped when staging has no changes).
 - **No-change plans**: when `terraform plan` detects no changes, the detect
   job outputs `has_changes=false` and the apply job is skipped entirely.

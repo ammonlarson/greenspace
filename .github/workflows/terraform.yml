@@ -140,7 +140,7 @@ jobs:
             terraform -chdir="$ENV_DIR" validate
           done
 
-  # --------------- Deploy pipeline: detect → apply staging → notify → apply prod ---------------
+  # --------------- Deploy pipeline: detect → apply staging → apply prod ---------------
 
   detect-staging:
     name: "Detect changes (staging)"
@@ -297,8 +297,8 @@ jobs:
         working-directory: infra/terraform/environments/staging
         run: terraform apply -input=false -no-color tfplan
 
-  notify-prod-ready:
-    name: "Notify prod promotion ready"
+  apply-prod:
+    name: "Apply (prod)"
     needs: [detect-staging, detect-prod, apply-staging]
     if: >-
       always() &&
@@ -306,39 +306,6 @@ jobs:
       needs.detect-prod.result == 'success' &&
       needs.detect-staging.result == 'success' &&
       (needs.apply-staging.result == 'success' || needs.apply-staging.result == 'skipped')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Post notification
-        uses: actions/github-script@v7
-        env:
-          STAGING_RESULT: ${{ needs.apply-staging.result }}
-        with:
-          script: |
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const stagingApplied = process.env.STAGING_RESULT === 'success';
-            const stagingMsg = stagingApplied
-              ? 'Staging has been applied successfully.'
-              : 'Staging has no pending changes.';
-            await github.rest.repos.createCommitComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              commit_sha: context.sha,
-              body: [
-                '**Terraform: production deployment awaiting approval.**',
-                '',
-                `${stagingMsg} Production changes are ready for promotion.`,
-                '',
-                `@ammonl — please review and approve the production deployment in the [workflow run](${runUrl}).`,
-              ].join('\n'),
-            });
-
-  apply-prod:
-    name: "Apply (prod)"
-    needs: [detect-prod, notify-prod-ready]
-    if: >-
-      always() &&
-      needs.detect-prod.outputs.has_changes == 'true' &&
-      needs.notify-prod-ready.result == 'success'
     runs-on: ubuntu-latest
     environment: production
     concurrency:

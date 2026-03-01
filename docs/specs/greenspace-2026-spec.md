@@ -381,7 +381,7 @@ Søen:
 
 ### 12.8 IaC Delivery Pipeline
 - CI/CD must run `fmt`, `validate`, and `plan` on pull requests.
-- Production `apply` requires manual approval.
+- Production `apply` runs automatically after staging succeeds.
 - Deployments authenticate to AWS via GitHub OIDC role assumption (no long-lived AWS keys in CI).
 - Drift detection job runs on a schedule and reports non-empty plans.
 
