@@ -4,14 +4,21 @@ Greenspace is the UN17 rooftop greenhouse registration platform for the 2026 sea
 
 Primary product specification:
 - [Greenspace 2026 Spec](docs/specs/greenspace-2026-spec.md)
+- [Architecture Overview](docs/architecture.md)
 
 ## Repository Layout
 
-- `apps/web` - Next.js frontend for public and admin UI.
-- `apps/api` - API services (registration, admin operations, email workflows).
-- `packages/shared` - shared types, validation schemas, and i18n/domain constants.
-- `infra/terraform` - AWS infrastructure as code (staging and production).
-- `docs` - product specs, ADRs, API contracts, and data model docs.
+- [`apps/web`](apps/web/) - Next.js 15 frontend for public and admin UI.
+- [`apps/api`](apps/api/) - API services (registration, admin operations, email workflows).
+- [`packages/shared`](packages/shared/) - Shared types, validation schemas, and i18n/domain constants.
+- [`infra/`](infra/) - AWS infrastructure as code.
+  - [`infra/terraform`](infra/terraform/) - Terraform modules and environment stacks.
+  - [`infra/terraform/modules/greenspace_stack`](infra/terraform/modules/greenspace_stack/) - Shared AWS resource module.
+- [`docs/`](docs/) - Product specs, architecture, ADRs, API contracts, and data model docs.
+  - [`docs/architecture.md`](docs/architecture.md) - System architecture with diagrams.
+  - [`docs/api/openapi.yaml`](docs/api/openapi.yaml) - OpenAPI 3.1 contract.
+  - [`docs/data/schema.md`](docs/data/schema.md) - Data contract and invariants.
+  - [`docs/adr/`](docs/adr/) - Architecture Decision Records.
 - `.github` - CI workflows and contribution templates.
 
 ## Local Development

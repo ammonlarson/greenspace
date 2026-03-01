@@ -1,9 +1,45 @@
 # packages/shared
 
-Shared code used by `apps/web` and `apps/api`.
+Shared TypeScript code used by `apps/web` and `apps/api`.
 
-Planned contents:
-- domain constants (greenhouses, boxes, status enums)
-- validation schemas
-- shared TypeScript types
-- i18n keys and message contracts
+## Contents
+
+- **Enums** (`enums.ts`) — Box states, registration statuses, waitlist statuses, actor types, languages, audit actions, email statuses.
+- **Constants** (`constants.ts`) — Greenhouse names, 29-box catalog with global numbering, opening datetime, email sender/reply-to, organizer contacts, address eligibility rules.
+- **Types** (`types.ts`) — Interfaces for all domain entities: `PlanterBoxPublic`, `GreenhouseSummary`, `Registration`, `WaitlistEntry`, `AuditEvent`, form inputs, etc.
+- **Validators** (`validators.ts`) — Address validation (street, house number, floor/door rules), email, name, and box ID validation with typed results.
+- **i18n** (`i18n.ts`) — Translation key contracts and language display labels (`Dansk`, `English`).
+
+## Source Structure
+
+```
+src/
+├── constants.ts        Domain constants and box catalog
+├── constants.test.ts   Constant validation tests
+├── enums.ts            Status and type enums
+├── i18n.ts             i18n key contracts and language labels
+├── index.ts            Package entry point (re-exports all)
+├── index.test.ts       Export completeness tests
+├── types.ts            Domain entity interfaces
+├── validators.ts       Validation functions
+└── validators.test.ts  Validator unit tests
+```
+
+## Usage
+
+```typescript
+import {
+  BOX_CATALOG,
+  GREENHOUSES,
+  validateAddress,
+  type PlanterBoxPublic,
+} from "@greenspace/shared";
+```
+
+## Scripts
+
+```bash
+npm run build      # Compile TypeScript
+npm run test       # Run Vitest tests
+npm run typecheck  # Type checking
+```
