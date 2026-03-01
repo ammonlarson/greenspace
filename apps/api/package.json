@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "bundle": "esbuild src/lambda.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/lambda/index.mjs --external:pg-native --external:@aws-sdk/*",
+    "bundle": "esbuild src/lambda.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/lambda/index.mjs --external:pg-native --external:@aws-sdk/* --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
     "db:setup": "tsx src/db/setup.ts",
     "dev": "tsx watch src/dev-server.ts",
     "typecheck": "tsc --noEmit",
