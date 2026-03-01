@@ -138,7 +138,7 @@ Fork PRs receive no AWS credentials. The workflow falls back to backend-disabled
 
 ### Merge to main
 
-Staging is applied first. Production applies only after staging succeeds and requires manual approval via the `production` GitHub environment protection rule.
+Staging is applied first. Production applies automatically after staging succeeds.
 
 Concurrency guards prevent simultaneous applies to the same environment.
 

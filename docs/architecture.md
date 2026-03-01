@@ -351,12 +351,12 @@ graph LR
 
     MERGE[Merge to main] -->|trigger| CI_MAIN[CI Check]
     MERGE -->|infra changes| TF_STAGING[Apply Staging]
-    TF_STAGING -->|success| TF_PROD[Apply Prod<br/>manual approval]
+    TF_STAGING -->|success| TF_PROD[Apply Prod]
 ```
 
 - **CI** runs on every PR: lint, test, build for all workspaces; `terraform fmt` + `terraform validate`.
 - **Terraform** runs when `infra/terraform/**` changes: plan on PRs, apply on merge to main.
-- **Production apply** requires manual approval via GitHub environment protection rules.
+- **Production apply** runs automatically after staging succeeds.
 - **AWS auth** uses GitHub OIDC role assumption (no long-lived keys).
 
 ## Shared Package
