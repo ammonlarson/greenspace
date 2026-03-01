@@ -1,15 +1,33 @@
 "use client";
 
-import { DEFAULT_OPENING_DATETIME } from "@greenspace/shared";
+import { useState } from "react";
+import { DEFAULT_OPENING_DATETIME, type Greenhouse } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { PreOpenPage } from "@/components/PreOpenPage";
 import { LandingPage } from "@/components/LandingPage";
+import { GreenhouseMapPage } from "@/components/GreenhouseMapPage";
 import { isBeforeOpening } from "@/utils/opening";
 
 export default function Home() {
   const { t } = useLanguage();
   const preOpen = isBeforeOpening(DEFAULT_OPENING_DATETIME);
+  const [selectedGreenhouse, setSelectedGreenhouse] = useState<Greenhouse | null>(null);
+
+  function renderContent() {
+    if (preOpen) {
+      return <PreOpenPage openingDatetime={DEFAULT_OPENING_DATETIME} />;
+    }
+    if (selectedGreenhouse) {
+      return (
+        <GreenhouseMapPage
+          greenhouse={selectedGreenhouse}
+          onBack={() => setSelectedGreenhouse(null)}
+        />
+      );
+    }
+    return <LandingPage onSelectGreenhouse={setSelectedGreenhouse} />;
+  }
 
   return (
     <main>
@@ -28,11 +46,7 @@ export default function Home() {
         <LanguageSelector />
       </header>
 
-      {preOpen ? (
-        <PreOpenPage openingDatetime={DEFAULT_OPENING_DATETIME} />
-      ) : (
-        <LandingPage />
-      )}
+      {renderContent()}
     </main>
   );
 }

@@ -31,6 +31,14 @@ export const I18N_KEYS = {
     occupied: "greenhouse.occupied",
     reserved: "greenhouse.reserved",
   },
+  map: {
+    viewMap: "map.viewMap",
+    back: "map.back",
+    legend: "map.legend",
+    stateAvailable: "map.state.available",
+    stateOccupied: "map.state.occupied",
+    stateReserved: "map.state.reserved",
+  },
   registration: {
     formTitle: "registration.formTitle",
     nameLabel: "registration.nameLabel",

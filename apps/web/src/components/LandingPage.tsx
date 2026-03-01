@@ -8,11 +8,15 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseCard } from "./GreenhouseCard";
 
+interface LandingPageProps {
+  onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
+}
+
 function getBoxCountForGreenhouse(greenhouse: Greenhouse) {
   return BOX_CATALOG.filter((b) => b.greenhouse === greenhouse).length;
 }
 
-export function LandingPage() {
+export function LandingPage({ onSelectGreenhouse }: LandingPageProps) {
   const { t } = useLanguage();
 
   return (
@@ -28,6 +32,7 @@ export function LandingPage() {
               totalBoxes={total}
               availableBoxes={total}
               occupiedBoxes={0}
+              onSelect={onSelectGreenhouse ? () => onSelectGreenhouse(gh) : undefined}
             />
           );
         })}
