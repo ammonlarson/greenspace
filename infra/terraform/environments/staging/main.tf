@@ -46,6 +46,8 @@ module "greenspace_stack" {
   db_backup_retention_days = 7
   db_multi_az              = false
 
+  lambda_reserved_concurrency = -1
+
   ses_sender_domain = "staging.un17hub.com"
 
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
