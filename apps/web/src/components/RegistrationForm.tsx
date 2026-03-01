@@ -31,6 +31,21 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
   const [switchDetails, setSwitchDetails] = useState<SwitchDetails | null>(null);
   const [confirmingSwitch, setConfirmingSwitch] = useState(false);
 
+  function buildPayload(opts?: { confirmSwitch?: boolean }) {
+    if (!selectedAddress) return null;
+    return {
+      name: name.trim(),
+      email: email.trim(),
+      street: ELIGIBLE_STREET,
+      houseNumber: selectedAddress.houseNumber,
+      floor: selectedAddress.floor,
+      door: selectedAddress.door,
+      language: language as Language,
+      boxId,
+      ...opts,
+    };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors([]);
@@ -45,16 +60,8 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
       return;
     }
 
-    const input = {
-      name: name.trim(),
-      email: email.trim(),
-      street: ELIGIBLE_STREET,
-      houseNumber: selectedAddress.houseNumber,
-      floor: selectedAddress.floor,
-      door: selectedAddress.door,
-      language: language as Language,
-      boxId,
-    };
+    const input = buildPayload();
+    if (!input) return;
 
     const validation = validateRegistrationInput(input);
     if (!validation.valid) {
@@ -105,22 +112,11 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
   }
 
   async function handleConfirmSwitch() {
-    if (!selectedAddress) return;
+    const input = buildPayload({ confirmSwitch: true });
+    if (!input) return;
     setConfirmingSwitch(true);
     setErrors([]);
     try {
-      const input = {
-        name: name.trim(),
-        email: email.trim(),
-        street: ELIGIBLE_STREET,
-        houseNumber: selectedAddress.houseNumber,
-        floor: selectedAddress.floor,
-        door: selectedAddress.door,
-        language: language as Language,
-        boxId,
-        confirmSwitch: true,
-      };
-
       const res = await fetch("/public/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

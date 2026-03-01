@@ -74,7 +74,7 @@ export function SwitchConfirmationDialog({
             padding: "0.75rem",
           }}
         >
-          <div style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.25rem" }}>
+          <div style={{ fontSize: "0.8rem", color: "#767676", marginBottom: "0.25rem" }}>
             {t("registration.switchCurrentBox")}
           </div>
           <div style={{ fontWeight: 600 }}>
@@ -96,7 +96,7 @@ export function SwitchConfirmationDialog({
             padding: "0.75rem",
           }}
         >
-          <div style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.25rem" }}>
+          <div style={{ fontSize: "0.8rem", color: "#767676", marginBottom: "0.25rem" }}>
             {t("registration.switchNewBox")}
           </div>
           <div style={{ fontWeight: 600 }}>
