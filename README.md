@@ -19,6 +19,9 @@ Primary product specification:
   - [`docs/api/openapi.yaml`](docs/api/openapi.yaml) - OpenAPI 3.1 contract.
   - [`docs/data/schema.md`](docs/data/schema.md) - Data contract and invariants.
   - [`docs/adr/`](docs/adr/) - Architecture Decision Records.
+  - [`docs/runbooks/`](docs/runbooks/) - Operational runbooks.
+    - [`incident-triage.md`](docs/runbooks/incident-triage.md) - Alarm investigation and incident response.
+    - [`backup-restore.md`](docs/runbooks/backup-restore.md) - RDS backup and point-in-time restore.
 - `.github` - CI workflows and contribution templates.
 
 ## Local Development
@@ -159,6 +162,28 @@ The roles grant least-privilege access to the S3 state backend, DynamoDB lock ta
 - `concurrency` groups prevent parallel applies per environment.
 - Prod apply is gated behind staging success and the `production` environment protection rule.
 - Plan output is saved as an artifact for audit.
+
+## Monitoring & Alerting
+
+CloudWatch alarms cover the major failure modes:
+
+| Alarm | Metric | Threshold |
+|-------|--------|-----------|
+| Lambda errors | Errors > 0 | 2 consecutive 5-min periods |
+| Lambda throttles | Throttles > 0 | 1 period |
+| RDS CPU | CPUUtilization > 80% | 3 consecutive 5-min periods |
+| RDS memory | FreeableMemory < 128 MB | 2 consecutive periods |
+| RDS connections | DatabaseConnections > 80 | 2 consecutive periods |
+| SES bounces | Bounce > 5/hr | 1 period |
+| SES complaints | Complaint > 1/hr | 1 period |
+
+Alarm notifications are delivered via SNS email subscription (configured per environment via `alarm_email`).
+
+A CloudWatch dashboard aggregates Lambda, RDS, and SES metrics.
+
+**Drift detection** runs daily via `.github/workflows/drift-detection.yml`. If Terraform detects infrastructure drift, a GitHub issue is created automatically.
+
+See [docs/runbooks/](docs/runbooks/) for incident triage and backup restore procedures.
 
 ## Guardrails
 
