@@ -129,6 +129,29 @@ describe("translations", () => {
       }
     }
   });
+
+  it("includes admin translations", () => {
+    const adminKeys = [
+      "admin.link",
+      "admin.login",
+      "admin.email",
+      "admin.password",
+      "admin.loginFailed",
+      "admin.backToPublic",
+      "admin.openingTimeTitle",
+      "admin.openingTimeDescription",
+      "admin.currentValue",
+      "admin.lastUpdated",
+      "admin.newOpeningTime",
+      "admin.save",
+      "admin.settingsSaved",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of adminKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
 });
 
 describe("greenhouse data", () => {
