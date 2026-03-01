@@ -6,6 +6,13 @@ import type { RequestContext } from "./router.js";
 import { handleCreateAdmin, handleDeleteAdmin, handleListAdmins } from "./routes/admin/admins.js";
 import { handleListAuditEvents } from "./routes/admin/audit.js";
 import { handleChangePassword, handleLogin, handleLogout } from "./routes/admin/auth.js";
+import {
+  handleAssignWaitlist,
+  handleCreateRegistration,
+  handleListRegistrations,
+  handleMoveRegistration,
+  handleRemoveRegistration,
+} from "./routes/admin/registrations.js";
 import { handleHealth } from "./routes/health.js";
 import {
   handleJoinWaitlist,
@@ -44,6 +51,11 @@ export function createRouter(): Router {
   router.post("/admin/admins", requireAdmin(handleCreateAdmin));
   router.delete("/admin/admins/:id", requireAdmin(handleDeleteAdmin));
 
+  router.get("/admin/registrations", requireAdmin(handleListRegistrations));
+  router.post("/admin/registrations", requireAdmin(handleCreateRegistration));
+  router.post("/admin/registrations/move", requireAdmin(handleMoveRegistration));
+  router.post("/admin/registrations/remove", requireAdmin(handleRemoveRegistration));
+  router.post("/admin/waitlist/assign", requireAdmin(handleAssignWaitlist));
   router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
 
   return router;
