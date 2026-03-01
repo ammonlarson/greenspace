@@ -4,6 +4,7 @@ import { requireAdmin } from "./middleware/auth.js";
 import { Router } from "./router.js";
 import type { RequestContext } from "./router.js";
 import { handleCreateAdmin, handleDeleteAdmin, handleListAdmins } from "./routes/admin/admins.js";
+import { handleListAuditEvents } from "./routes/admin/audit.js";
 import { handleChangePassword, handleLogin, handleLogout } from "./routes/admin/auth.js";
 import { handleHealth } from "./routes/health.js";
 import {
@@ -42,6 +43,8 @@ export function createRouter(): Router {
   router.get("/admin/admins", requireAdmin(handleListAdmins));
   router.post("/admin/admins", requireAdmin(handleCreateAdmin));
   router.delete("/admin/admins/:id", requireAdmin(handleDeleteAdmin));
+
+  router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
 
   return router;
 }

@@ -94,6 +94,28 @@ describe("translations", () => {
       }
     }
   });
+
+  it("includes audit timeline translations", () => {
+    const auditKeys = [
+      "audit.title",
+      "audit.timestamp",
+      "audit.action",
+      "audit.actor",
+      "audit.entity",
+      "audit.details",
+      "audit.noEvents",
+      "audit.loadMore",
+      "audit.filterByAction",
+      "audit.filterByActor",
+      "audit.allActions",
+      "audit.allActors",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of auditKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
 });
 
 describe("greenhouse data", () => {
