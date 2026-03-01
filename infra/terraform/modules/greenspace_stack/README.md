@@ -1,14 +1,18 @@
 # greenspace_stack module
 
-Top-level module placeholder for Greenspace AWS resources.
+Composable Terraform module for all Greenspace AWS resources. Used by both
+the staging and production environment stacks.
 
-This module will eventually compose:
-- API Gateway + Lambda
-- RDS/Aurora
-- SES configuration
-- S3 assets bucket(s)
-- IAM roles/policies
-- DNS/TLS integration points
+## Resources provisioned
+
+| File             | Resources                                                  |
+|------------------|------------------------------------------------------------|
+| `networking.tf`  | VPC, public/private subnets, internet gateway, NAT gateway |
+| `iam.tf`         | API runtime role, CI deploy role, CI Terraform role        |
+| `database.tf`    | RDS PostgreSQL instance, subnet group, Secrets Manager     |
+| `ses.tf`         | SES domain identity, DKIM, configuration set               |
+| `dns.tf`         | Route 53 hosted zone, SES verification/DKIM DNS records    |
+| `monitoring.tf`  | CloudWatch log groups, KMS encryption key                  |
 
 ## Least-privilege IAM
 
@@ -43,3 +47,22 @@ are managed by Terraform. After the first `terraform apply`:
    nameservers.
 3. SES will verify the domain and enable DKIM signing automatically once DNS
    propagates.
+
+## Key variables
+
+| Variable                      | Description                                          |
+|-------------------------------|------------------------------------------------------|
+| `environment`                 | Deployment environment name (staging, prod)          |
+| `vpc_cidr`                    | CIDR block for the VPC                               |
+| `ses_sender_domain`           | Domain for SES identity and Route 53 zone            |
+| `ses_reply_to_email`          | Default Reply-To (defaults to `elise7284@gmail.com`) |
+| `cloudfront_distribution_arns`| CloudFront ARNs for CI invalidation permissions      |
+| `db_instance_class`           | RDS instance class                                   |
+
+See `variables.tf` for the full list with descriptions and defaults.
+
+## Testing
+
+```bash
+terraform test  # Runs iam.tftest.hcl (least-privilege validation)
+```
