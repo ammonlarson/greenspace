@@ -71,6 +71,7 @@ export {
   validateBoxId,
   validateLanguage,
   validateRegistrationInput,
+  validateWaitlistInput,
 } from "./validators.js";
 
 export type { ValidationResult, RegistrationValidationResult } from "./validators.js";

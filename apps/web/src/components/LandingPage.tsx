@@ -7,16 +7,18 @@ import {
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseCard } from "./GreenhouseCard";
+import { WaitlistBanner } from "./WaitlistBanner";
 
 interface LandingPageProps {
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
+  hasAvailableBoxes?: boolean;
 }
 
 function getBoxCountForGreenhouse(greenhouse: Greenhouse) {
   return BOX_CATALOG.filter((b) => b.greenhouse === greenhouse).length;
 }
 
-export function LandingPage({ onSelectGreenhouse }: LandingPageProps) {
+export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: LandingPageProps) {
   const { t } = useLanguage();
 
   return (
@@ -37,6 +39,7 @@ export function LandingPage({ onSelectGreenhouse }: LandingPageProps) {
           );
         })}
       </div>
+      {!hasAvailableBoxes && <WaitlistBanner />}
     </section>
   );
 }

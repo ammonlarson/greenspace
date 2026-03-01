@@ -4,9 +4,11 @@ import {
   normalizeApartmentKey,
   validateAddress,
   validateRegistrationInput,
+  validateWaitlistInput,
 } from "@greenspace/shared";
-import type { RegistrationInput } from "@greenspace/shared";
-import { badRequest } from "../lib/errors.js";
+import type { RegistrationInput, WaitlistInput } from "@greenspace/shared";
+import { logAuditEvent } from "../lib/audit.js";
+import { badRequest, conflict } from "../lib/errors.js";
 import type { RequestContext, RouteResponse } from "../router.js";
 
 export async function handlePublicStatus(ctx: RequestContext): Promise<RouteResponse> {
@@ -21,9 +23,19 @@ export async function handlePublicStatus(ctx: RequestContext): Promise<RouteResp
   const isOpen = openingDate ? openingDate.getTime() <= Date.now() : false;
   const openingDatetime = openingDate ? openingDate.toISOString() : null;
 
+  const availableCount = await ctx.db
+    .selectFrom("planter_boxes")
+    .select(ctx.db.fn.countAll<number>().as("count"))
+    .where("state", "=", "available")
+    .executeTakeFirstOrThrow();
+
   return {
     statusCode: 200,
-    body: { isOpen, openingDatetime },
+    body: {
+      isOpen,
+      openingDatetime,
+      hasAvailableBoxes: Number(availableCount.count) > 0,
+    },
   };
 }
 
@@ -140,6 +152,166 @@ export async function handleValidateRegistration(ctx: RequestContext): Promise<R
         body.door ?? null,
       ),
       floorDoorRequired: isFloorDoorRequired(body.houseNumber!),
+    },
+  };
+}
+
+function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: string }).code === "23505"
+  );
+}
+
+export async function handleJoinWaitlist(ctx: RequestContext): Promise<RouteResponse> {
+  const body = ctx.body as Partial<WaitlistInput> | undefined;
+  if (!body) {
+    throw badRequest("Request body is required");
+  }
+
+  const validation = validateWaitlistInput(body);
+  if (!validation.valid) {
+    return {
+      statusCode: 422,
+      body: { valid: false, errors: validation.errors },
+    };
+  }
+
+  const apartmentKey = normalizeApartmentKey(
+    body.street!,
+    body.houseNumber!,
+    body.floor ?? null,
+    body.door ?? null,
+  );
+
+  const availableCount = await ctx.db
+    .selectFrom("planter_boxes")
+    .select(ctx.db.fn.countAll<number>().as("count"))
+    .where("state", "=", "available")
+    .executeTakeFirstOrThrow();
+
+  if (Number(availableCount.count) > 0) {
+    throw badRequest(
+      "Boxes are still available. Please register for a box instead.",
+      "BOXES_AVAILABLE",
+    );
+  }
+
+  const existing = await ctx.db
+    .selectFrom("waitlist_entries")
+    .select(["id", "created_at"])
+    .where("apartment_key", "=", apartmentKey)
+    .where("status", "=", "waiting")
+    .executeTakeFirst();
+
+  if (existing) {
+    const position = await getWaitlistPosition(ctx, apartmentKey);
+    return {
+      statusCode: 200,
+      body: {
+        alreadyOnWaitlist: true,
+        position,
+        joinedAt: new Date(existing.created_at).toISOString(),
+      },
+    };
+  }
+
+  let entryId: string;
+  try {
+    entryId = await ctx.db.transaction().execute(async (trx) => {
+      const entry = await trx
+        .insertInto("waitlist_entries")
+        .values({
+          name: body.name!,
+          email: body.email!,
+          street: body.street!,
+          house_number: body.houseNumber!,
+          floor: body.floor ?? null,
+          door: body.door ?? null,
+          apartment_key: apartmentKey,
+          language: body.language!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow();
+
+      await logAuditEvent(trx, {
+        actor_type: "public",
+        actor_id: null,
+        action: "waitlist_add",
+        entity_type: "waitlist_entry",
+        entity_id: entry.id,
+        after: { email: body.email!, apartmentKey },
+      });
+
+      return entry.id;
+    });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      throw conflict(
+        "This apartment is already on the waitlist",
+        "ALREADY_ON_WAITLIST",
+      );
+    }
+    throw err;
+  }
+
+  const position = await getWaitlistPosition(ctx, apartmentKey);
+
+  return {
+    statusCode: 201,
+    body: {
+      alreadyOnWaitlist: false,
+      waitlistEntryId: entryId,
+      position,
+    },
+  };
+}
+
+async function getWaitlistPosition(
+  ctx: RequestContext,
+  apartmentKey: string,
+): Promise<number> {
+  const waitingEntries = await ctx.db
+    .selectFrom("waitlist_entries")
+    .select(["apartment_key"])
+    .where("status", "=", "waiting")
+    .orderBy("created_at", "asc")
+    .execute();
+
+  const index = waitingEntries.findIndex((e) => e.apartment_key === apartmentKey);
+  return index >= 0 ? index + 1 : 0;
+}
+
+export async function handleWaitlistPosition(ctx: RequestContext): Promise<RouteResponse> {
+  const apartmentKey = decodeURIComponent(ctx.params["apartmentKey"] ?? "");
+  if (!apartmentKey) {
+    throw badRequest("Apartment key is required");
+  }
+
+  const entry = await ctx.db
+    .selectFrom("waitlist_entries")
+    .select(["id", "created_at"])
+    .where("apartment_key", "=", apartmentKey)
+    .where("status", "=", "waiting")
+    .executeTakeFirst();
+
+  if (!entry) {
+    return {
+      statusCode: 200,
+      body: { onWaitlist: false, position: null },
+    };
+  }
+
+  const position = await getWaitlistPosition(ctx, apartmentKey);
+
+  return {
+    statusCode: 200,
+    body: {
+      onWaitlist: true,
+      position,
+      joinedAt: new Date(entry.created_at).toISOString(),
     },
   };
 }

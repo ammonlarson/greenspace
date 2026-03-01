@@ -11,6 +11,7 @@ import {
   validateBoxId,
   validateLanguage,
   validateRegistrationInput,
+  validateWaitlistInput,
 } from "./validators.js";
 
 describe("validateEmail", () => {
@@ -291,5 +292,61 @@ describe("validateRegistrationInput", () => {
     expect(result.valid).toBe(false);
     expect(result.errors["houseNumber"]).toBeDefined();
     expect(result.errors["floorDoor"]).toBeUndefined();
+  });
+});
+
+describe("validateWaitlistInput", () => {
+  const validInput = {
+    name: "Alice",
+    email: "alice@example.com",
+    street: "Else Alfelts Vej",
+    houseNumber: 130,
+    floor: null,
+    door: null,
+    language: "da" as const,
+  };
+
+  it("accepts a fully valid input", () => {
+    const result = validateWaitlistInput(validInput);
+    expect(result.valid).toBe(true);
+    expect(Object.keys(result.errors)).toHaveLength(0);
+  });
+
+  it("does not require boxId (unlike registration)", () => {
+    const result = validateWaitlistInput(validInput);
+    expect(result.valid).toBe(true);
+    expect(result.errors["boxId"]).toBeUndefined();
+  });
+
+  it("returns all field errors at once", () => {
+    const result = validateWaitlistInput({});
+    expect(result.valid).toBe(false);
+    expect(result.errors["name"]).toBeDefined();
+    expect(result.errors["email"]).toBeDefined();
+    expect(result.errors["street"]).toBeDefined();
+    expect(result.errors["houseNumber"]).toBeDefined();
+    expect(result.errors["language"]).toBeDefined();
+    expect(result.errors["boxId"]).toBeUndefined();
+  });
+
+  it("validates floor/door when house number requires it", () => {
+    const result = validateWaitlistInput({
+      ...validInput,
+      houseNumber: 170,
+      floor: null,
+      door: null,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors["floorDoor"]).toBeDefined();
+  });
+
+  it("passes floor/door check when provided for required house number", () => {
+    const result = validateWaitlistInput({
+      ...validInput,
+      houseNumber: 170,
+      floor: "2",
+      door: "th",
+    });
+    expect(result.valid).toBe(true);
   });
 });

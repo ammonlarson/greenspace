@@ -78,6 +78,22 @@ describe("translations", () => {
       expect(translations[lang]["map.legend"]).toBeTruthy();
     }
   });
+
+  it("includes waitlist translations", () => {
+    const waitlistKeys = [
+      "waitlist.title",
+      "waitlist.description",
+      "waitlist.joinButton",
+      "waitlist.positionLabel",
+      "waitlist.alreadyOnWaitlist",
+      "waitlist.success",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of waitlistKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
 });
 
 describe("greenhouse data", () => {

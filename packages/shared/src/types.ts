@@ -143,4 +143,5 @@ export interface WaitlistInput {
 export interface PublicStatus {
   isOpen: boolean;
   openingDatetime: string;
+  hasAvailableBoxes: boolean;
 }
