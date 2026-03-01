@@ -9,6 +9,8 @@ import {
   handlePublicBoxes,
   handlePublicGreenhouses,
   handlePublicStatus,
+  handleValidateAddress,
+  handleValidateRegistration,
 } from "./routes/public.js";
 
 export function getGreenhouses(): readonly string[] {
@@ -23,6 +25,8 @@ export function createRouter(): Router {
   router.get("/public/status", handlePublicStatus);
   router.get("/public/greenhouses", handlePublicGreenhouses);
   router.get("/public/boxes", handlePublicBoxes);
+  router.post("/public/validate-address", handleValidateAddress);
+  router.post("/public/validate-registration", handleValidateRegistration);
 
   router.post("/admin/auth/login", handleLogin);
   router.post("/admin/auth/logout", requireAdmin(handleLogout));

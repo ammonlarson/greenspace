@@ -1,4 +1,12 @@
-import { GREENHOUSES } from "@greenspace/shared";
+import {
+  GREENHOUSES,
+  isFloorDoorRequired,
+  normalizeApartmentKey,
+  validateAddress,
+  validateRegistrationInput,
+} from "@greenspace/shared";
+import type { RegistrationInput } from "@greenspace/shared";
+import { badRequest } from "../lib/errors.js";
 import type { RequestContext, RouteResponse } from "../router.js";
 
 export async function handlePublicStatus(ctx: RequestContext): Promise<RouteResponse> {
@@ -59,5 +67,79 @@ export async function handlePublicBoxes(ctx: RequestContext): Promise<RouteRespo
   return {
     statusCode: 200,
     body: publicBoxes,
+  };
+}
+
+interface ValidateAddressBody {
+  street?: string;
+  houseNumber?: number;
+  floor?: string | null;
+  door?: string | null;
+}
+
+export async function handleValidateAddress(ctx: RequestContext): Promise<RouteResponse> {
+  const body = ctx.body as ValidateAddressBody | undefined;
+  if (!body) {
+    throw badRequest("Request body is required");
+  }
+
+  const street = body.street ?? "";
+  const houseNumber = body.houseNumber ?? NaN;
+  const floor = body.floor ?? null;
+  const door = body.door ?? null;
+
+  const result = validateAddress(street, houseNumber, floor, door);
+
+  if (!result.valid) {
+    return {
+      statusCode: 200,
+      body: {
+        eligible: false,
+        error: result.error,
+        floorDoorRequired: false,
+        apartmentKey: null,
+      },
+    };
+  }
+
+  return {
+    statusCode: 200,
+    body: {
+      eligible: true,
+      error: null,
+      floorDoorRequired: isFloorDoorRequired(houseNumber),
+      apartmentKey: normalizeApartmentKey(street, houseNumber, floor, door),
+    },
+  };
+}
+
+export async function handleValidateRegistration(ctx: RequestContext): Promise<RouteResponse> {
+  const body = ctx.body as Partial<RegistrationInput> | undefined;
+  if (!body) {
+    throw badRequest("Request body is required");
+  }
+
+  const result = validateRegistrationInput(body);
+
+  if (!result.valid) {
+    return {
+      statusCode: 422,
+      body: { valid: false, errors: result.errors },
+    };
+  }
+
+  return {
+    statusCode: 200,
+    body: {
+      valid: true,
+      errors: {},
+      apartmentKey: normalizeApartmentKey(
+        body.street!,
+        body.houseNumber!,
+        body.floor ?? null,
+        body.door ?? null,
+      ),
+      floorDoorRequired: isFloorDoorRequired(body.houseNumber!),
+    },
   };
 }

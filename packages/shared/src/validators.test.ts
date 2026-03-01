@@ -9,6 +9,8 @@ import {
   normalizeApartmentKey,
   validateName,
   validateBoxId,
+  validateLanguage,
+  validateRegistrationInput,
 } from "./validators.js";
 
 describe("validateEmail", () => {
@@ -208,5 +210,86 @@ describe("validateBoxId", () => {
 
   it("rejects non-integers", () => {
     expect(validateBoxId(1.5).valid).toBe(false);
+  });
+});
+
+describe("validateLanguage", () => {
+  it("accepts da", () => {
+    expect(validateLanguage("da")).toEqual({ valid: true });
+  });
+
+  it("accepts en", () => {
+    expect(validateLanguage("en")).toEqual({ valid: true });
+  });
+
+  it("rejects unsupported language", () => {
+    const result = validateLanguage("fr");
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("must be one of");
+  });
+
+  it("rejects empty string", () => {
+    expect(validateLanguage("").valid).toBe(false);
+  });
+});
+
+describe("validateRegistrationInput", () => {
+  const validInput = {
+    name: "Alice",
+    email: "alice@example.com",
+    street: "Else Alfelts Vej",
+    houseNumber: 130,
+    floor: null,
+    door: null,
+    boxId: 1,
+    language: "da" as const,
+  };
+
+  it("accepts a fully valid input", () => {
+    const result = validateRegistrationInput(validInput);
+    expect(result.valid).toBe(true);
+    expect(Object.keys(result.errors)).toHaveLength(0);
+  });
+
+  it("returns all field errors at once", () => {
+    const result = validateRegistrationInput({});
+    expect(result.valid).toBe(false);
+    expect(result.errors["name"]).toBeDefined();
+    expect(result.errors["email"]).toBeDefined();
+    expect(result.errors["street"]).toBeDefined();
+    expect(result.errors["houseNumber"]).toBeDefined();
+    expect(result.errors["boxId"]).toBeDefined();
+    expect(result.errors["language"]).toBeDefined();
+  });
+
+  it("validates floor/door when house number requires it", () => {
+    const result = validateRegistrationInput({
+      ...validInput,
+      houseNumber: 170,
+      floor: null,
+      door: null,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors["floorDoor"]).toBeDefined();
+  });
+
+  it("passes floor/door check when provided for required house number", () => {
+    const result = validateRegistrationInput({
+      ...validInput,
+      houseNumber: 170,
+      floor: "2",
+      door: "th",
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it("skips floor/door check when house number is invalid", () => {
+    const result = validateRegistrationInput({
+      ...validInput,
+      houseNumber: 999,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors["houseNumber"]).toBeDefined();
+    expect(result.errors["floorDoor"]).toBeUndefined();
   });
 });
