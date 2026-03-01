@@ -211,3 +211,9 @@ variable "log_retention_days" {
     error_message = "log_retention_days must be a valid CloudWatch retention value."
   }
 }
+
+variable "alarm_email" {
+  description = "Email address for CloudWatch alarm notifications. Set to null to skip subscription."
+  type        = string
+  default     = null
+}

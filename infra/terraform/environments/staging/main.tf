@@ -50,8 +50,18 @@ module "greenspace_stack" {
 
   ses_sender_domain = "staging.un17hub.com"
 
+  alarm_email = "elise7284@gmail.com"
+
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::111111111111:distribution/STAGING_DIST_ID"]
+}
+
+output "alarm_sns_topic_arn" {
+  value = module.greenspace_stack.alarm_sns_topic_arn
+}
+
+output "dashboard_name" {
+  value = module.greenspace_stack.dashboard_name
 }
 
 output "naming_prefix" {
