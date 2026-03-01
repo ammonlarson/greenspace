@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   BOX_CATALOG,
   type Greenhouse,
@@ -8,6 +9,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseMap } from "./GreenhouseMap";
 import { BoxStateLegend } from "./BoxStateLegend";
+import { RegistrationForm } from "./RegistrationForm";
 
 interface GreenhouseMapPageProps {
   greenhouse: Greenhouse;
@@ -27,10 +29,20 @@ function mockBoxes(greenhouse: Greenhouse): PlanterBoxPublic[] {
 export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps) {
   const { t } = useLanguage();
   const boxes = mockBoxes(greenhouse);
+  const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
 
   const total = boxes.length;
   const available = boxes.filter((b) => b.state === "available").length;
   const occupied = boxes.filter((b) => b.state === "occupied").length;
+
+  if (selectedBoxId !== null) {
+    return (
+      <RegistrationForm
+        boxId={selectedBoxId}
+        onCancel={() => setSelectedBoxId(null)}
+      />
+    );
+  }
 
   return (
     <section style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
@@ -78,7 +90,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
       <BoxStateLegend />
 
       <div style={{ marginTop: "1.25rem" }}>
-        <GreenhouseMap boxes={boxes} />
+        <GreenhouseMap boxes={boxes} onSelectBox={setSelectedBoxId} />
       </div>
     </section>
   );

@@ -55,6 +55,48 @@ const da: TranslationStrings = {
   "audit.allActions": "Alle handlinger",
   "audit.allActors": "Alle aktørtyper",
 
+  "registration.formTitle": "Tilmeld plantekasse",
+  "registration.nameLabel": "Navn",
+  "registration.emailLabel": "E-mail",
+  "registration.streetLabel": "Gade",
+  "registration.houseNumberLabel": "Husnummer",
+  "registration.floorLabel": "Etage",
+  "registration.doorLabel": "Dør",
+  "registration.boxLabel": "Plantekasse",
+  "registration.switchWarning":
+    "Din lejlighed har allerede en aktiv tilmelding. Hvis du fortsætter, skifter du til den nye kasse, og din nuværende kasse frigives.",
+  "registration.switchConfirm": "Bekræft skifte",
+  "registration.success": "Du er nu tilmeldt!",
+  "registration.unregisterInfo":
+    "Du kan ikke selv afmelde dig. Kontakt arrangørerne via e-mail, hvis du ikke længere ønsker din plantekasse.",
+
+  "validation.emailRequired": "E-mail er påkrævet",
+  "validation.emailInvalid": "Ugyldig e-mailadresse",
+  "validation.nameRequired": "Navn er påkrævet",
+  "validation.streetInvalid": "Gaden skal være Else Alfelts Vej",
+  "validation.houseNumberInvalid": "Husnummer skal være mellem 122 og 202",
+  "validation.floorDoorRequired": "Etage og dør er påkrævet for denne adresse",
+  "validation.boxIdInvalid": "Ugyldig plantekasse",
+
+  "consent.title": "Databeskyttelse og samtykke",
+  "consent.dataCollected":
+    "Vi indsamler dit navn, din e-mailadresse, din lejlighedsadresse samt tilmeldings- og ventelisteoplysninger.",
+  "consent.purpose":
+    "Dine oplysninger bruges udelukkende til administration af plantekassesæsonen 2026 og kommunikation om ændringer i din tilmelding.",
+  "consent.retention":
+    "Driftsdata og revisionshistorik opbevares med henblik på administrativ sporbarhed.",
+  "consent.contact":
+    "Har du spørgsmål om dine data, kan du kontakte arrangørerne.",
+  "consent.acknowledgment":
+    "Jeg har læst og accepterer ovenstående vilkår for dataindsamling og brug.",
+  "consent.required":
+    "Du skal acceptere vilkårene for databeskyttelse for at fortsætte.",
+
+  "policy.oneApartmentRule":
+    "Hver lejlighed kan kun have én aktiv plantekasse. Hvis din lejlighed allerede har en tilmelding, vil en ny tilmelding erstatte den eksisterende.",
+  "policy.noSelfUnregister":
+    "Du kan ikke selv afmelde dig via systemet. Kontakt arrangørerne via e-mail, hvis du ikke længere ønsker din plantekasse.",
+
   "email.confirmationSubject":
     "Bekræftelse af din plantekasse-registrering – Greenspace 2026",
   "email.switchNote":
@@ -129,6 +171,48 @@ const en: TranslationStrings = {
   "audit.filterByActor": "Filter by actor type",
   "audit.allActions": "All actions",
   "audit.allActors": "All actor types",
+
+  "registration.formTitle": "Register for a planter box",
+  "registration.nameLabel": "Name",
+  "registration.emailLabel": "Email",
+  "registration.streetLabel": "Street",
+  "registration.houseNumberLabel": "House number",
+  "registration.floorLabel": "Floor",
+  "registration.doorLabel": "Door",
+  "registration.boxLabel": "Planter box",
+  "registration.switchWarning":
+    "Your apartment already has an active registration. If you continue, you will switch to the new box and your current box will be released.",
+  "registration.switchConfirm": "Confirm switch",
+  "registration.success": "You are now registered!",
+  "registration.unregisterInfo":
+    "You cannot unregister yourself. Contact the organizers by email if you no longer want your planter box.",
+
+  "validation.emailRequired": "Email is required",
+  "validation.emailInvalid": "Invalid email address",
+  "validation.nameRequired": "Name is required",
+  "validation.streetInvalid": "Street must be Else Alfelts Vej",
+  "validation.houseNumberInvalid": "House number must be between 122 and 202",
+  "validation.floorDoorRequired": "Floor and door are required for this address",
+  "validation.boxIdInvalid": "Invalid planter box",
+
+  "consent.title": "Data protection and consent",
+  "consent.dataCollected":
+    "We collect your name, email address, apartment address, and registration and waitlist records.",
+  "consent.purpose":
+    "Your information is used solely for administration of the 2026 planter box season and communication regarding changes to your registration.",
+  "consent.retention":
+    "Operational data and audit history are retained for administrative traceability.",
+  "consent.contact":
+    "If you have questions about your data, please contact the organizers.",
+  "consent.acknowledgment":
+    "I have read and accept the above terms for data collection and use.",
+  "consent.required":
+    "You must accept the data protection terms to continue.",
+
+  "policy.oneApartmentRule":
+    "Each apartment may only have one active planter box. If your apartment already has a registration, a new registration will replace the existing one.",
+  "policy.noSelfUnregister":
+    "You cannot unregister yourself through the system. Contact the organizers by email if you no longer want your planter box.",
 
   "email.confirmationSubject":
     "Confirmation of your planter box registration – Greenspace 2026",
