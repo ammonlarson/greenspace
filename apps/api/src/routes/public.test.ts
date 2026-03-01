@@ -12,6 +12,7 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
     path: "/public/validate-address",
     body: undefined,
     headers: {},
+    params: {},
     ...overrides,
   };
 }
