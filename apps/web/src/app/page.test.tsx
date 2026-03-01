@@ -95,6 +95,19 @@ describe("translations", () => {
     }
   });
 
+  it("includes email translations", () => {
+    const emailKeys = [
+      "email.confirmationSubject",
+      "email.switchNote",
+      "email.careGuidelines",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of emailKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
+
   it("includes audit timeline translations", () => {
     const auditKeys = [
       "audit.title",

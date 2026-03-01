@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.1000.0",
+    "@aws-sdk/client-ses": "^3.1000.0",
     "@greenspace/shared": "*",
     "kysely": "^0.28.11",
     "pg": "^8.19.0"
