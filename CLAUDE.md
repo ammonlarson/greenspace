@@ -353,5 +353,5 @@ Phase 4: Submission
 ## Project Settings
 
 - **Ticket Provider**: GitHub Issues
-- **Branch Format**: `<type>/<ticket-number>` (e.g., `feature/123`)
+- **Branch Format**: any branch name is fine
 - **Main Branch**: `main`

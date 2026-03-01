@@ -47,6 +47,8 @@ module "greenspace_stack" {
   db_backup_retention_days = 35
   db_multi_az              = true
 
+  lambda_reserved_concurrency = -1
+
   ses_sender_domain  = "un17hub.com"
   ses_reply_to_email = "elise7284@gmail.com"
 
