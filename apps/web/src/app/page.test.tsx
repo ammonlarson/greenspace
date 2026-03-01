@@ -130,6 +130,73 @@ describe("translations", () => {
     }
   });
 
+  it("includes registration form translations", () => {
+    const registrationKeys = [
+      "registration.formTitle",
+      "registration.nameLabel",
+      "registration.emailLabel",
+      "registration.streetLabel",
+      "registration.houseNumberLabel",
+      "registration.floorLabel",
+      "registration.doorLabel",
+      "registration.boxLabel",
+      "registration.switchWarning",
+      "registration.switchConfirm",
+      "registration.success",
+      "registration.unregisterInfo",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of registrationKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
+
+  it("includes validation translations", () => {
+    const validationKeys = [
+      "validation.emailRequired",
+      "validation.emailInvalid",
+      "validation.nameRequired",
+      "validation.streetInvalid",
+      "validation.houseNumberInvalid",
+      "validation.floorDoorRequired",
+      "validation.boxIdInvalid",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of validationKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
+
+  it("includes consent translations", () => {
+    const consentKeys = [
+      "consent.title",
+      "consent.dataCollected",
+      "consent.purpose",
+      "consent.retention",
+      "consent.contact",
+      "consent.acknowledgment",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of consentKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
+
+  it("includes policy translations", () => {
+    const policyKeys = [
+      "policy.oneApartmentRule",
+      "policy.noSelfUnregister",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of policyKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
+
   it("includes admin translations", () => {
     const adminKeys = [
       "admin.link",

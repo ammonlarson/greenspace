@@ -75,6 +75,11 @@ export const I18N_KEYS = {
     purpose: "consent.purpose",
     retention: "consent.retention",
     contact: "consent.contact",
+    acknowledgment: "consent.acknowledgment",
+  },
+  policy: {
+    oneApartmentRule: "policy.oneApartmentRule",
+    noSelfUnregister: "policy.noSelfUnregister",
   },
   email: {
     confirmationSubject: "email.confirmationSubject",
