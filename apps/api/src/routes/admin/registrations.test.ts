@@ -336,6 +336,92 @@ describe("handleAssignWaitlist", () => {
       expect((err as AppError).statusCode).toBe(400);
     }
   });
+
+  it("assigns waitlist entry to box and returns 201", async () => {
+    const mockDb = makeMockAssignWaitlistDb({
+      entry: {
+        id: "wl-1",
+        name: "Alice",
+        email: "alice@example.com",
+        street: "Else Alfelts Vej",
+        house_number: 130,
+        floor: null,
+        door: null,
+        apartment_key: "else alfelts vej 130",
+        language: "da",
+        status: "waiting",
+      },
+      box: { id: 5, state: "available" },
+      existingReg: undefined,
+      newRegId: "reg-from-wl",
+    });
+
+    const result = await handleAssignWaitlist(
+      makeCtx({
+        db: mockDb,
+        body: { waitlistEntryId: "wl-1", boxId: 5 },
+      }),
+    );
+    expect(result.statusCode).toBe(201);
+    const body = result.body as Record<string, unknown>;
+    expect(body.registrationId).toBe("reg-from-wl");
+    expect(body.waitlistEntryId).toBe("wl-1");
+    expect(body.boxId).toBe(5);
+  });
+
+  it("throws 409 when box is occupied", async () => {
+    const mockDb = makeMockAssignWaitlistDb({
+      entry: {
+        id: "wl-1",
+        name: "Alice",
+        email: "alice@example.com",
+        street: "Else Alfelts Vej",
+        house_number: 130,
+        floor: null,
+        door: null,
+        apartment_key: "else alfelts vej 130",
+        language: "da",
+        status: "waiting",
+      },
+      box: { id: 5, state: "occupied" },
+      existingReg: undefined,
+    });
+
+    try {
+      await handleAssignWaitlist(
+        makeCtx({
+          db: mockDb,
+          body: { waitlistEntryId: "wl-1", boxId: 5 },
+        }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(409);
+      expect((err as AppError).code).toBe("BOX_OCCUPIED");
+    }
+  });
+
+  it("throws 404 when waitlist entry not found", async () => {
+    const mockDb = makeMockAssignWaitlistDb({
+      entry: undefined,
+      box: { id: 5, state: "available" },
+      existingReg: undefined,
+    });
+
+    try {
+      await handleAssignWaitlist(
+        makeCtx({
+          db: mockDb,
+          body: { waitlistEntryId: "wl-missing", boxId: 5 },
+        }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(404);
+    }
+  });
 });
 
 describe("handleNotificationPreview", () => {
@@ -526,6 +612,118 @@ function makeMockTrxDb(opts: {
         execute: vi.fn().mockResolvedValue(undefined),
       }),
     })),
+  };
+
+  const topLevelInsertInto = vi.fn().mockImplementation(() => ({
+    values: vi.fn().mockReturnValue({
+      returning: vi.fn().mockReturnValue({
+        execute: vi.fn().mockResolvedValue([{ id: "email-mock-id" }]),
+      }),
+      execute: vi.fn().mockResolvedValue(undefined),
+    }),
+  }));
+
+  const topLevelUpdateTable = vi.fn().mockReturnValue({
+    set: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    }),
+  });
+
+  return {
+    transaction: vi.fn().mockReturnValue({
+      execute: vi.fn().mockImplementation(
+        async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
+      ),
+    }),
+    insertInto: topLevelInsertInto,
+    updateTable: topLevelUpdateTable,
+  } as unknown as Kysely<Database>;
+}
+
+interface MockAssignWaitlistOpts {
+  entry?: {
+    id: string;
+    name: string;
+    email: string;
+    street: string;
+    house_number: number;
+    floor: string | null;
+    door: string | null;
+    apartment_key: string;
+    language: string;
+    status: string;
+  };
+  box?: { id: number; state: string };
+  existingReg?: { id: string };
+  newRegId?: string;
+}
+
+function makeMockAssignWaitlistDb(opts: MockAssignWaitlistOpts): Kysely<Database> {
+  const mockTrx = {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "waitlist_entries") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.entry),
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "planter_boxes") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.box),
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "registrations") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+              }),
+            }),
+          }),
+        };
+      }
+      return {};
+    }),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+    insertInto: vi.fn().mockImplementation((table: string) => {
+      if (table === "registrations") {
+        return {
+          values: vi.fn().mockReturnValue({
+            returning: vi.fn().mockReturnValue({
+              execute: vi.fn().mockResolvedValue([{ id: opts.newRegId ?? "reg-id" }]),
+            }),
+          }),
+        };
+      }
+      if (table === "audit_events") {
+        return {
+          values: vi.fn().mockReturnValue({
+            execute: vi.fn().mockResolvedValue(undefined),
+          }),
+        };
+      }
+      return {};
+    }),
   };
 
   const topLevelInsertInto = vi.fn().mockImplementation(() => ({

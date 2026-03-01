@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BOX_CATALOG,
   type Greenhouse,
@@ -10,14 +10,14 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseMap } from "./GreenhouseMap";
 import { BoxStateLegend } from "./BoxStateLegend";
 import { RegistrationForm } from "./RegistrationForm";
+import { WaitlistForm } from "./WaitlistForm";
 
 interface GreenhouseMapPageProps {
   greenhouse: Greenhouse;
   onBack: () => void;
 }
 
-// TODO: replace with /public/boxes API fetch when API integration is wired up
-function mockBoxes(greenhouse: Greenhouse): PlanterBoxPublic[] {
+function fallbackBoxes(greenhouse: Greenhouse): PlanterBoxPublic[] {
   return BOX_CATALOG.filter((b) => b.greenhouse === greenhouse).map((b) => ({
     id: b.id,
     name: b.name,
@@ -26,20 +26,54 @@ function mockBoxes(greenhouse: Greenhouse): PlanterBoxPublic[] {
   }));
 }
 
+type PageView = "map" | "register" | "waitlist";
+
 export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps) {
   const { t } = useLanguage();
-  const boxes = mockBoxes(greenhouse);
+  const [allBoxes, setAllBoxes] = useState<PlanterBoxPublic[] | null>(null);
+  const [pageView, setPageView] = useState<PageView>("map");
   const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchBoxes() {
+      try {
+        const res = await fetch("/public/boxes");
+        if (res.ok) {
+          setAllBoxes(await res.json());
+        }
+      } catch {
+        /* fall back to static catalog */
+      }
+    }
+    fetchBoxes();
+  }, []);
+
+  const boxes = (allBoxes ?? fallbackBoxes(greenhouse)).filter(
+    (b) => b.greenhouse === greenhouse,
+  );
 
   const total = boxes.length;
   const available = boxes.filter((b) => b.state === "available").length;
   const occupied = boxes.filter((b) => b.state === "occupied").length;
+  const hasAvailable = available > 0;
 
-  if (selectedBoxId !== null) {
+  if (pageView === "register" && selectedBoxId !== null) {
     return (
       <RegistrationForm
         boxId={selectedBoxId}
-        onCancel={() => setSelectedBoxId(null)}
+        onCancel={() => {
+          setSelectedBoxId(null);
+          setPageView("map");
+        }}
+        onBoxUnavailable={() => setPageView("waitlist")}
+      />
+    );
+  }
+
+  if (pageView === "waitlist") {
+    return (
+      <WaitlistForm
+        onCancel={() => setPageView("map")}
       />
     );
   }
@@ -90,8 +124,51 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
       <BoxStateLegend />
 
       <div style={{ marginTop: "1.25rem" }}>
-        <GreenhouseMap boxes={boxes} onSelectBox={setSelectedBoxId} />
+        <GreenhouseMap
+          boxes={boxes}
+          onSelectBox={(id) => {
+            setSelectedBoxId(id);
+            setPageView("register");
+          }}
+        />
       </div>
+
+      {!hasAvailable && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <section
+            style={{
+              border: "1px solid #e0c547",
+              borderRadius: 8,
+              backgroundColor: "#fef9e7",
+              padding: "1.25rem",
+            }}
+          >
+            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>
+              {t("waitlist.title")}
+            </h3>
+            <p style={{ margin: "0 0 0.75rem", color: "#555", fontSize: "0.95rem" }}>
+              {t("waitlist.description")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPageView("waitlist")}
+              style={{
+                padding: "0.5rem 1rem",
+                background: "#b8860b",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+              }}
+            >
+              {t("waitlist.joinButton")}
+            </button>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

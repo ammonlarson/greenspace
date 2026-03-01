@@ -15,6 +15,7 @@ type View = "public" | "admin";
 interface PublicStatus {
   isOpen: boolean;
   openingDatetime: string | null;
+  hasAvailableBoxes: boolean;
 }
 
 export default function Home() {
@@ -60,7 +61,12 @@ export default function Home() {
         />
       );
     }
-    return <LandingPage onSelectGreenhouse={setSelectedGreenhouse} />;
+    return (
+      <LandingPage
+        onSelectGreenhouse={setSelectedGreenhouse}
+        hasAvailableBoxes={status?.hasAvailableBoxes ?? true}
+      />
+    );
   }
 
   return (
