@@ -53,6 +53,15 @@ export const I18N_KEYS = {
     success: "registration.success",
     unregisterInfo: "registration.unregisterInfo",
   },
+  address: {
+    searchPlaceholder: "address.searchPlaceholder",
+    searchHint: "address.searchHint",
+    noResults: "address.noResults",
+    selectedAddress: "address.selectedAddress",
+    changeAddress: "address.changeAddress",
+    ineligible: "address.ineligible",
+    floorDoorHint: "address.floorDoorHint",
+  },
   waitlist: {
     title: "waitlist.title",
     joinButton: "waitlist.joinButton",

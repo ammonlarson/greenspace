@@ -33,6 +33,16 @@ const da: TranslationStrings = {
   "map.state.occupied": "Optaget",
   "map.state.reserved": "Reserveret",
 
+  "address.searchPlaceholder": "Søg din adresse...",
+  "address.searchHint":
+    "Skriv dit husnummer for at finde din adresse (Else Alfelts Vej 122–202)",
+  "address.noResults": "Ingen adresser fundet. Kontrollér at husnummeret er korrekt.",
+  "address.selectedAddress": "Valgt adresse",
+  "address.changeAddress": "Skift adresse",
+  "address.ineligible": "Denne adresse er ikke berettiget til tilmelding.",
+  "address.floorDoorHint":
+    "Etage og dør er påkrævet for denne adresse. Vælg den specifikke lejlighed fra forslagene.",
+
   "waitlist.title": "Venteliste",
   "waitlist.description":
     "Alle plantekasser er i øjeblikket optaget. Du kan skrive dig op på ventelisten, og vi kontakter dig, når en plantekasse bliver ledig.",
@@ -149,6 +159,16 @@ const en: TranslationStrings = {
   "map.state.available": "Available",
   "map.state.occupied": "Occupied",
   "map.state.reserved": "Reserved",
+
+  "address.searchPlaceholder": "Search your address...",
+  "address.searchHint":
+    "Type your house number to find your address (Else Alfelts Vej 122–202)",
+  "address.noResults": "No addresses found. Check that the house number is correct.",
+  "address.selectedAddress": "Selected address",
+  "address.changeAddress": "Change address",
+  "address.ineligible": "This address is not eligible for registration.",
+  "address.floorDoorHint":
+    "Floor and door are required for this address. Select the specific apartment from the suggestions.",
 
   "waitlist.title": "Waitlist",
   "waitlist.description":
