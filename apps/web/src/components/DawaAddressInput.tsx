@@ -30,6 +30,7 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchSuggestions = useCallback(async (q: string) => {
@@ -38,16 +39,24 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
       return;
     }
 
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     try {
       const url = buildDawaAutocompleteUrl(q);
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: controller.signal });
       if (res.ok) {
         const data: DawaAutocompleteSuggestion[] = await res.json();
         setSuggestions(data);
         setShowDropdown(data.length > 0);
+      } else {
+        setSuggestions([]);
+        setShowDropdown(false);
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -69,7 +78,12 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
   function handleSelectSuggestion(suggestion: DawaAutocompleteSuggestion) {
     const addr = suggestion.adresse;
     const parsed = parseDawaHouseNumber(addr.husnr);
-    if (!parsed) return;
+    if (!parsed) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      setQuery("");
+      return;
+    }
 
     const result: DawaAddressResult = {
       houseNumber: parsed,
@@ -114,12 +128,15 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (abortRef.current) abortRef.current.abort();
     };
   }, []);
 
   if (selectedAddress) {
     const needsFloorDoor = isFloorDoorRequired(selectedAddress.houseNumber);
-    const hasFloorDoor = selectedAddress.floor && selectedAddress.door;
+    const hasFloor = selectedAddress.floor != null && selectedAddress.floor.trim().length > 0;
+    const hasDoor = selectedAddress.door != null && selectedAddress.door.trim().length > 0;
+    const hasFloorDoor = hasFloor && hasDoor;
 
     return (
       <div style={{ marginBottom: "1rem" }}>
@@ -184,6 +201,7 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
         aria-expanded={showDropdown}
         aria-autocomplete="list"
         aria-controls="dawa-suggestions"
+        aria-activedescendant={highlightIndex >= 0 ? `dawa-suggestion-${highlightIndex}` : undefined}
         style={inputStyle}
       />
 
@@ -217,7 +235,8 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
         >
           {suggestions.map((s, i) => (
             <li
-              key={s.tekst}
+              id={`dawa-suggestion-${i}`}
+              key={`${s.tekst}-${i}`}
               role="option"
               aria-selected={i === highlightIndex}
               onMouseDown={() => handleSelectSuggestion(s)}
