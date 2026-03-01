@@ -140,7 +140,7 @@ jobs:
             terraform -chdir="$ENV_DIR" validate
           done
 
-  # --------------- Deploy pipeline: detect → apply staging → notify → apply prod ---------------
+  # --------------- Deploy pipeline: detect → apply staging → apply prod ---------------
 
   detect-staging:
     name: "Detect changes (staging)"
@@ -299,11 +299,12 @@ jobs:
 
   apply-prod:
     name: "Apply (prod)"
-    needs: [detect-prod, apply-staging]
+    needs: [detect-staging, detect-prod, apply-staging]
     if: >-
       always() &&
       needs.detect-prod.outputs.has_changes == 'true' &&
       needs.detect-prod.result == 'success' &&
+      needs.detect-staging.result == 'success' &&
       (needs.apply-staging.result == 'success' || needs.apply-staging.result == 'skipped')
     runs-on: ubuntu-latest
     environment: production

@@ -127,8 +127,7 @@ are stored in GitHub repository variables:
   artifacts from the workflow run to review what will be applied.
 - **Apply runs**: check the `Apply (staging)` and `Apply (prod)` job logs
   under the Actions tab for the merge commit on `main`.
-- **Prod approval**: the `Apply (prod)` job will show "Waiting for review"
-  in the Actions UI until a reviewer approves the `production` environment
-  deployment.
+- **Prod apply**: the `Apply (prod)` job runs automatically after staging
+  succeeds (or is skipped when staging has no changes).
 - **No-change plans**: when `terraform plan` detects no changes, the detect
   job outputs `has_changes=false` and the apply job is skipped entirely.
