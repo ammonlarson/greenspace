@@ -41,6 +41,19 @@ const da: TranslationStrings = {
   "waitlist.alreadyOnWaitlist":
     "Din lejlighed er allerede på ventelisten. Din plads i køen er bevaret.",
   "waitlist.success": "Du er nu på ventelisten!",
+
+  "audit.title": "Hændelseslog",
+  "audit.timestamp": "Tidsstempel",
+  "audit.action": "Handling",
+  "audit.actor": "Aktør",
+  "audit.entity": "Enhed",
+  "audit.details": "Detaljer",
+  "audit.noEvents": "Ingen hændelser fundet",
+  "audit.loadMore": "Indlæs flere",
+  "audit.filterByAction": "Filtrer efter handling",
+  "audit.filterByActor": "Filtrer efter aktørtype",
+  "audit.allActions": "Alle handlinger",
+  "audit.allActors": "Alle aktørtyper",
 };
 
 const en: TranslationStrings = {
@@ -82,6 +95,19 @@ const en: TranslationStrings = {
   "waitlist.alreadyOnWaitlist":
     "Your apartment is already on the waitlist. Your position in the queue has been preserved.",
   "waitlist.success": "You are now on the waitlist!",
+
+  "audit.title": "Audit Log",
+  "audit.timestamp": "Timestamp",
+  "audit.action": "Action",
+  "audit.actor": "Actor",
+  "audit.entity": "Entity",
+  "audit.details": "Details",
+  "audit.noEvents": "No events found",
+  "audit.loadMore": "Load more",
+  "audit.filterByAction": "Filter by action",
+  "audit.filterByActor": "Filter by actor type",
+  "audit.allActions": "All actions",
+  "audit.allActors": "All actor types",
 };
 
 export const translations: Record<Language, TranslationStrings> = { da, en };
