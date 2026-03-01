@@ -18,6 +18,10 @@ interface NotificationInput {
   bodyHtml?: string;
 }
 
+/**
+ * Send a notification email if requested by the admin.
+ * Errors are caught and logged — they never fail the caller.
+ */
 async function sendNotificationIfRequested(
   db: Kysely<Database> | Transaction<Database>,
   adminId: string,
@@ -30,57 +34,63 @@ async function sendNotificationIfRequested(
     return;
   }
 
-  const sendEmail = notification.sendEmail ?? true;
+  try {
+    const sendEmail = notification.sendEmail ?? true;
 
-  if (!sendEmail) {
+    if (!sendEmail) {
+      await logAuditEvent(db, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "notification_skipped",
+        entity_type: entityType,
+        entity_id: entityId,
+        after: {
+          notification_action: previewInput.action,
+          recipient_email: previewInput.recipientEmail,
+        },
+      });
+      return;
+    }
+
+    const defaultTemplate = buildAdminNotification(previewInput);
+    const subject = notification.subject ?? defaultTemplate.subject;
+    const bodyHtml = notification.bodyHtml ?? defaultTemplate.bodyHtml;
+    const edited =
+      (notification.subject != null && notification.subject !== defaultTemplate.subject) ||
+      (notification.bodyHtml != null && notification.bodyHtml !== defaultTemplate.bodyHtml);
+
+    const emailId = await queueAndSendEmail(db, {
+      recipientEmail: previewInput.recipientEmail,
+      language: previewInput.language,
+      subject,
+      bodyHtml,
+    });
+
+    if (emailId && edited) {
+      await db
+        .updateTable("emails")
+        .set({ edited_before_send: true })
+        .where("id", "=", emailId)
+        .execute();
+    }
+
     await logAuditEvent(db, {
       actor_type: "admin",
       actor_id: adminId,
-      action: "notification_skipped",
+      action: "notification_sent",
       entity_type: entityType,
       entity_id: entityId,
       after: {
         notification_action: previewInput.action,
         recipient_email: previewInput.recipientEmail,
+        email_id: emailId,
+        edited_before_send: edited,
+        subject,
       },
     });
-    return;
+  } catch (err) {
+    console.error("Failed to process notification:", err);
   }
-
-  const defaultTemplate = buildAdminNotification(previewInput);
-  const subject = notification?.subject ?? defaultTemplate.subject;
-  const bodyHtml = notification?.bodyHtml ?? defaultTemplate.bodyHtml;
-  const edited = !!(notification?.subject || notification?.bodyHtml);
-
-  const emailId = await queueAndSendEmail(db, {
-    recipientEmail: previewInput.recipientEmail,
-    language: previewInput.language,
-    subject,
-    bodyHtml,
-  });
-
-  if (emailId && edited) {
-    await db
-      .updateTable("emails")
-      .set({ edited_before_send: true })
-      .where("id", "=", emailId)
-      .execute();
-  }
-
-  await logAuditEvent(db, {
-    actor_type: "admin",
-    actor_id: adminId,
-    action: "notification_sent",
-    entity_type: entityType,
-    entity_id: entityId,
-    after: {
-      notification_action: previewInput.action,
-      recipient_email: previewInput.recipientEmail,
-      email_id: emailId,
-      edited_before_send: edited,
-      subject,
-    },
-  });
 }
 
 export async function handleListRegistrations(ctx: RequestContext): Promise<RouteResponse> {
@@ -650,19 +660,21 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
   };
 }
 
+interface NotificationPreviewBody {
+  action?: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  language?: string;
+  boxId?: number;
+  oldBoxId?: number;
+}
+
 export async function handleNotificationPreview(ctx: RequestContext): Promise<RouteResponse> {
   if (!ctx.adminId) {
     throw unauthorized();
   }
 
-  const body = (ctx.body ?? {}) as {
-    action?: string;
-    recipientName?: string;
-    recipientEmail?: string;
-    language?: string;
-    boxId?: number;
-    oldBoxId?: number;
-  };
+  const body = (ctx.body ?? {}) as NotificationPreviewBody;
 
   const { action, recipientName, recipientEmail, language, boxId } = body;
 
@@ -670,8 +682,8 @@ export async function handleNotificationPreview(ctx: RequestContext): Promise<Ro
     throw badRequest("action, recipientName, recipientEmail, language, and boxId are required");
   }
 
-  const validActions: AdminNotificationAction[] = ["add", "move", "remove", "waitlist_assign"];
-  if (!validActions.includes(action as AdminNotificationAction)) {
+  const validActions = new Set<string>(["add", "move", "remove", "waitlist_assign"]);
+  if (!validActions.has(action)) {
     throw badRequest("action must be one of: add, move, remove, waitlist_assign");
   }
 
