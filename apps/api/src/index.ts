@@ -4,6 +4,7 @@ import { requireAdmin } from "./middleware/auth.js";
 import { Router } from "./router.js";
 import type { RequestContext } from "./router.js";
 import { handleCreateAdmin, handleDeleteAdmin, handleListAdmins } from "./routes/admin/admins.js";
+import { handleListAuditEvents } from "./routes/admin/audit.js";
 import { handleChangePassword, handleLogin, handleLogout } from "./routes/admin/auth.js";
 import {
   handleAssignWaitlist,
@@ -55,6 +56,7 @@ export function createRouter(): Router {
   router.post("/admin/registrations/move", requireAdmin(handleMoveRegistration));
   router.post("/admin/registrations/remove", requireAdmin(handleRemoveRegistration));
   router.post("/admin/waitlist/assign", requireAdmin(handleAssignWaitlist));
+  router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
 
   return router;
 }
