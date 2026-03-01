@@ -81,6 +81,21 @@ export const I18N_KEYS = {
     switchNote: "email.switchNote",
     careGuidelines: "email.careGuidelines",
   },
+  admin: {
+    link: "admin.link",
+    login: "admin.login",
+    email: "admin.email",
+    password: "admin.password",
+    loginFailed: "admin.loginFailed",
+    backToPublic: "admin.backToPublic",
+    openingTimeTitle: "admin.openingTimeTitle",
+    openingTimeDescription: "admin.openingTimeDescription",
+    currentValue: "admin.currentValue",
+    lastUpdated: "admin.lastUpdated",
+    newOpeningTime: "admin.newOpeningTime",
+    save: "admin.save",
+    settingsSaved: "admin.settingsSaved",
+  },
 } as const;
 
 export type I18nKey = string;

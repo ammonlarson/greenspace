@@ -61,6 +61,20 @@ const da: TranslationStrings = {
     "Din tidligere plantekasse er blevet frigivet, og din registrering er flyttet til den nye kasse.",
   "email.careGuidelines":
     "Vand regelmæssigt, brug økologisk jord, hold din kasse ren, respektér naboernes planter, og høst kun fra din egen kasse.",
+
+  "admin.link": "Admin",
+  "admin.login": "Log ind",
+  "admin.email": "E-mail",
+  "admin.password": "Adgangskode",
+  "admin.loginFailed": "Login mislykkedes",
+  "admin.backToPublic": "Tilbage til offentlig side",
+  "admin.openingTimeTitle": "Åbningstidspunkt for tilmelding",
+  "admin.openingTimeDescription": "Angiv hvornår tilmeldingen åbner",
+  "admin.currentValue": "Nuværende",
+  "admin.lastUpdated": "Sidst opdateret",
+  "admin.newOpeningTime": "Nyt åbningstidspunkt",
+  "admin.save": "Gem",
+  "admin.settingsSaved": "Indstilling gemt",
 };
 
 const en: TranslationStrings = {
@@ -122,6 +136,20 @@ const en: TranslationStrings = {
     "Your previous planter box has been released and your registration has been moved to the new box.",
   "email.careGuidelines":
     "Water regularly, use organic soil, keep your box tidy, respect neighbors' plants, and only harvest from your own box.",
+
+  "admin.link": "Admin",
+  "admin.login": "Log in",
+  "admin.email": "Email",
+  "admin.password": "Password",
+  "admin.loginFailed": "Login failed",
+  "admin.backToPublic": "Back to public site",
+  "admin.openingTimeTitle": "Registration opening time",
+  "admin.openingTimeDescription": "Set when registration opens",
+  "admin.currentValue": "Current",
+  "admin.lastUpdated": "Last updated",
+  "admin.newOpeningTime": "New opening time",
+  "admin.save": "Save",
+  "admin.settingsSaved": "Setting saved",
 };
 
 export const translations: Record<Language, TranslationStrings> = { da, en };

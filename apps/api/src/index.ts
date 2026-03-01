@@ -13,6 +13,10 @@ import {
   handleMoveRegistration,
   handleRemoveRegistration,
 } from "./routes/admin/registrations.js";
+import {
+  handleGetOpeningTime,
+  handleUpdateOpeningTime,
+} from "./routes/admin/settings.js";
 import { handleHealth } from "./routes/health.js";
 import {
   handleJoinWaitlist,
@@ -57,6 +61,9 @@ export function createRouter(): Router {
   router.post("/admin/registrations/remove", requireAdmin(handleRemoveRegistration));
   router.post("/admin/waitlist/assign", requireAdmin(handleAssignWaitlist));
   router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
+
+  router.get("/admin/settings/opening-time", requireAdmin(handleGetOpeningTime));
+  router.patch("/admin/settings/opening-time", requireAdmin(handleUpdateOpeningTime));
 
   return router;
 }
