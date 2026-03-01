@@ -54,6 +54,13 @@ const da: TranslationStrings = {
   "audit.filterByActor": "Filtrer efter aktørtype",
   "audit.allActions": "Alle handlinger",
   "audit.allActors": "Alle aktørtyper",
+
+  "email.confirmationSubject":
+    "Bekræftelse af din plantekasse-registrering – Greenspace 2026",
+  "email.switchNote":
+    "Din tidligere plantekasse er blevet frigivet, og din registrering er flyttet til den nye kasse.",
+  "email.careGuidelines":
+    "Vand regelmæssigt, brug økologisk jord, hold din kasse ren, respektér naboernes planter, og høst kun fra din egen kasse.",
 };
 
 const en: TranslationStrings = {
@@ -108,6 +115,13 @@ const en: TranslationStrings = {
   "audit.filterByActor": "Filter by actor type",
   "audit.allActions": "All actions",
   "audit.allActors": "All actor types",
+
+  "email.confirmationSubject":
+    "Confirmation of your planter box registration – Greenspace 2026",
+  "email.switchNote":
+    "Your previous planter box has been released and your registration has been moved to the new box.",
+  "email.careGuidelines":
+    "Water regularly, use organic soil, keep your box tidy, respect neighbors' plants, and only harvest from your own box.",
 };
 
 export const translations: Record<Language, TranslationStrings> = { da, en };

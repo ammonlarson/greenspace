@@ -8,6 +8,8 @@ import {
 } from "@greenspace/shared";
 import type { RegistrationInput, WaitlistInput } from "@greenspace/shared";
 import { logAuditEvent } from "../lib/audit.js";
+import { buildConfirmationEmail } from "../lib/email-templates.js";
+import { queueAndSendEmail } from "../lib/email-service.js";
 import { badRequest, conflict } from "../lib/errors.js";
 import type { RequestContext, RouteResponse } from "../router.js";
 
@@ -304,6 +306,7 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
     return {
       type: "created" as const,
       registrationId: newReg.id,
+      switchedFromBoxId: existingReg?.box_id,
     };
   });
 
@@ -317,6 +320,21 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
       },
     };
   }
+
+  const emailContent = buildConfirmationEmail({
+    recipientName: body.name,
+    recipientEmail: body.email,
+    language: body.language,
+    boxId: body.boxId,
+    switchedFromBoxId: result.switchedFromBoxId,
+  });
+
+  await queueAndSendEmail(ctx.db, {
+    recipientEmail: body.email,
+    language: body.language,
+    subject: emailContent.subject,
+    bodyHtml: emailContent.bodyHtml,
+  });
 
   return {
     statusCode: 200,

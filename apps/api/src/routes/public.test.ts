@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { Kysely } from "kysely";
 import type { Database } from "../db/types.js";
 import type { RequestContext } from "../router.js";
 import { AppError } from "../lib/errors.js";
+import { setSesClient } from "../lib/email-service.js";
 import {
   handleJoinWaitlist,
   handlePublicRegister,
@@ -146,6 +147,11 @@ describe("handlePublicRegister", () => {
     boxId: 1,
     language: "da",
   };
+
+  beforeEach(() => {
+    const mockSes = { send: vi.fn().mockResolvedValue({}) };
+    setSesClient(mockSes as never);
+  });
 
   it("throws badRequest when body is missing", async () => {
     try {
@@ -428,6 +434,32 @@ function makeMockDbForRegister(opts: MockRegisterOpts): Kysely<Database> {
       execute: vi.fn().mockImplementation(
         async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
       ),
+    }),
+    insertInto: vi.fn().mockImplementation((table: string) => {
+      if (table === "emails") {
+        return {
+          values: vi.fn().mockReturnValue({
+            returning: vi.fn().mockReturnValue({
+              execute: vi.fn().mockResolvedValue([{ id: "email-1" }]),
+            }),
+          }),
+        };
+      }
+      if (table === "audit_events") {
+        return {
+          values: vi.fn().mockReturnValue({
+            execute: vi.fn().mockResolvedValue(undefined),
+          }),
+        };
+      }
+      return {};
+    }),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
     }),
   } as unknown as Kysely<Database>;
 }
