@@ -6,7 +6,7 @@ import {
   TOTAL_BOX_COUNT,
 } from "./constants.js";
 import { LANGUAGES } from "./enums.js";
-import type { RegistrationInput } from "./types.js";
+import type { RegistrationInput, WaitlistInput } from "./types.js";
 
 export interface ValidationResult {
   valid: boolean;
@@ -197,6 +197,43 @@ export function validateRegistrationInput(
 
   const boxResult = validateBoxId((input.boxId ?? NaN) as number);
   if (!boxResult.valid) errors["boxId"] = boxResult.error!;
+
+  const langResult = validateLanguage((input.language ?? "") as string);
+  if (!langResult.valid) errors["language"] = langResult.error!;
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+}
+
+/** Validate a complete waitlist input, returning all field errors at once */
+export function validateWaitlistInput(
+  input: Partial<WaitlistInput>,
+): RegistrationValidationResult {
+  const errors: Record<string, string> = {};
+
+  const nameResult = validateName((input.name ?? "") as string);
+  if (!nameResult.valid) errors["name"] = nameResult.error!;
+
+  const emailResult = validateEmail((input.email ?? "") as string);
+  if (!emailResult.valid) errors["email"] = emailResult.error!;
+
+  const streetResult = validateStreet((input.street ?? "") as string);
+  if (!streetResult.valid) errors["street"] = streetResult.error!;
+
+  const houseNumber = input.houseNumber ?? NaN;
+  const houseResult = validateHouseNumber(houseNumber);
+  if (!houseResult.valid) {
+    errors["houseNumber"] = houseResult.error!;
+  } else {
+    const floorDoorResult = validateFloorDoor(
+      houseNumber,
+      input.floor,
+      input.door,
+    );
+    if (!floorDoorResult.valid) errors["floorDoor"] = floorDoorResult.error!;
+  }
 
   const langResult = validateLanguage((input.language ?? "") as string);
   if (!langResult.valid) errors["language"] = langResult.error!;

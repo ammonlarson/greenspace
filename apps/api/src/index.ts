@@ -7,11 +7,13 @@ import { handleCreateAdmin, handleDeleteAdmin, handleListAdmins } from "./routes
 import { handleChangePassword, handleLogin, handleLogout } from "./routes/admin/auth.js";
 import { handleHealth } from "./routes/health.js";
 import {
+  handleJoinWaitlist,
   handlePublicBoxes,
   handlePublicGreenhouses,
   handlePublicStatus,
   handleValidateAddress,
   handleValidateRegistration,
+  handleWaitlistPosition,
 } from "./routes/public.js";
 
 export function getGreenhouses(): readonly string[] {
@@ -28,6 +30,8 @@ export function createRouter(): Router {
   router.get("/public/boxes", handlePublicBoxes);
   router.post("/public/validate-address", handleValidateAddress);
   router.post("/public/validate-registration", handleValidateRegistration);
+  router.post("/public/waitlist", handleJoinWaitlist);
+  router.get("/public/waitlist/position/:apartmentKey", handleWaitlistPosition);
 
   router.post("/admin/auth/login", handleLogin);
   router.post("/admin/auth/logout", requireAdmin(handleLogout));

@@ -32,6 +32,15 @@ const da: TranslationStrings = {
   "map.state.available": "Ledig",
   "map.state.occupied": "Optaget",
   "map.state.reserved": "Reserveret",
+
+  "waitlist.title": "Venteliste",
+  "waitlist.description":
+    "Alle plantekasser er i øjeblikket optaget. Du kan skrive dig op på ventelisten, og vi kontakter dig, når en plantekasse bliver ledig.",
+  "waitlist.joinButton": "Skriv dig op på ventelisten",
+  "waitlist.positionLabel": "Din plads på ventelisten",
+  "waitlist.alreadyOnWaitlist":
+    "Din lejlighed er allerede på ventelisten. Din plads i køen er bevaret.",
+  "waitlist.success": "Du er nu på ventelisten!",
 };
 
 const en: TranslationStrings = {
@@ -64,6 +73,15 @@ const en: TranslationStrings = {
   "map.state.available": "Available",
   "map.state.occupied": "Occupied",
   "map.state.reserved": "Reserved",
+
+  "waitlist.title": "Waitlist",
+  "waitlist.description":
+    "All planter boxes are currently taken. You can join the waitlist and we will contact you when a box becomes available.",
+  "waitlist.joinButton": "Join the waitlist",
+  "waitlist.positionLabel": "Your position on the waitlist",
+  "waitlist.alreadyOnWaitlist":
+    "Your apartment is already on the waitlist. Your position in the queue has been preserved.",
+  "waitlist.success": "You are now on the waitlist!",
 };
 
 export const translations: Record<Language, TranslationStrings> = { da, en };
