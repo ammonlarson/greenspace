@@ -223,7 +223,7 @@ describe("handlePublicRegister", () => {
     }
   });
 
-  it("returns 409 when apartment has existing registration and no confirmSwitch", async () => {
+  it("returns 409 with switch details when apartment has existing registration and no confirmSwitch", async () => {
     const pastDate = new Date(Date.now() - 86400000);
     const mockDb = makeMockDbForRegister({
       openingDatetime: pastDate,
@@ -236,6 +236,11 @@ describe("handlePublicRegister", () => {
     const body = res.body as Record<string, unknown>;
     expect(body.code).toBe("SWITCH_REQUIRED");
     expect(body.existingBoxId).toBe(5);
+    expect(body.existingBoxName).toBeDefined();
+    expect(body.existingGreenhouse).toBeDefined();
+    expect(body.newBoxId).toBe(1);
+    expect(body.newBoxName).toBeDefined();
+    expect(body.newGreenhouse).toBeDefined();
   });
 
   it("creates registration for new apartment (no existing)", async () => {

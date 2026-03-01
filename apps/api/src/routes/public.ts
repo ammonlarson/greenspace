@@ -1,4 +1,5 @@
 import {
+  BOX_CATALOG,
   GREENHOUSES,
   isFloorDoorRequired,
   normalizeApartmentKey,
@@ -217,9 +218,16 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
       .executeTakeFirst();
 
     if (existingReg && !body.confirmSwitch) {
+      const existingBox = BOX_CATALOG.find((b) => b.id === existingReg.box_id);
+      const newBox = BOX_CATALOG.find((b) => b.id === body.boxId);
       return {
         type: "switch_required" as const,
         existingBoxId: existingReg.box_id,
+        existingBoxName: existingBox?.name ?? `#${existingReg.box_id}`,
+        existingGreenhouse: existingBox?.greenhouse ?? "Unknown",
+        newBoxId: body.boxId,
+        newBoxName: newBox?.name ?? `#${body.boxId}`,
+        newGreenhouse: newBox?.greenhouse ?? "Unknown",
       };
     }
 
@@ -317,6 +325,11 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
         error: "Apartment already has an active registration",
         code: "SWITCH_REQUIRED",
         existingBoxId: result.existingBoxId,
+        existingBoxName: result.existingBoxName,
+        existingGreenhouse: result.existingGreenhouse,
+        newBoxId: result.newBoxId,
+        newBoxName: result.newBoxName,
+        newGreenhouse: result.newGreenhouse,
       },
     };
   }

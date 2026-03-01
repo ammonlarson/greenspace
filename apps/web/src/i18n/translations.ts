@@ -66,6 +66,12 @@ const da: TranslationStrings = {
   "registration.switchWarning":
     "Din lejlighed har allerede en aktiv tilmelding. Hvis du fortsætter, skifter du til den nye kasse, og din nuværende kasse frigives.",
   "registration.switchConfirm": "Bekræft skifte",
+  "registration.switchTitle": "Bekræft kasseskifte",
+  "registration.switchCurrentBox": "Din nuværende kasse",
+  "registration.switchNewBox": "Ny kasse",
+  "registration.switchExplainer":
+    "Hver lejlighed kan kun have én aktiv plantekasse. Hvis du fortsætter, vil din nuværende kasse blive frigivet, og du vil blive tilmeldt den nye kasse. Denne handling kan ikke fortrydes.",
+  "registration.switchKeep": "Behold nuværende kasse",
   "registration.success": "Du er nu tilmeldt!",
   "registration.unregisterInfo":
     "Du kan ikke selv afmelde dig. Kontakt arrangørerne via e-mail, hvis du ikke længere ønsker din plantekasse.",
@@ -183,6 +189,12 @@ const en: TranslationStrings = {
   "registration.switchWarning":
     "Your apartment already has an active registration. If you continue, you will switch to the new box and your current box will be released.",
   "registration.switchConfirm": "Confirm switch",
+  "registration.switchTitle": "Confirm box switch",
+  "registration.switchCurrentBox": "Your current box",
+  "registration.switchNewBox": "New box",
+  "registration.switchExplainer":
+    "Each apartment may only have one active planter box. If you continue, your current box will be released and you will be registered for the new box. This action cannot be undone.",
+  "registration.switchKeep": "Keep current box",
   "registration.success": "You are now registered!",
   "registration.unregisterInfo":
     "You cannot unregister yourself. Contact the organizers by email if you no longer want your planter box.",
