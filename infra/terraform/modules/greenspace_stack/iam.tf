@@ -483,6 +483,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "lambda:GetFunctionUrlConfig",
       "lambda:UpdateFunctionUrlConfig",
       "lambda:DeleteFunctionUrlConfig",
+      "lambda:ListVersionsByFunction",
     ]
     resources = [
       "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",
