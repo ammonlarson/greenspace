@@ -397,6 +397,16 @@ export async function handleJoinWaitlist(ctx: RequestContext): Promise<RouteResp
     .executeTakeFirst();
 
   if (existing) {
+    await logAuditEvent(ctx.db, {
+      actor_type: "public",
+      actor_id: null,
+      action: "waitlist_reorder_preserve",
+      entity_type: "waitlist_entry",
+      entity_id: existing.id,
+      before: { apartment_key: apartmentKey, created_at: existing.created_at },
+      after: { apartment_key: apartmentKey, created_at: existing.created_at },
+    });
+
     const position = await getWaitlistPosition(ctx, apartmentKey);
     return {
       statusCode: 200,
@@ -463,15 +473,23 @@ async function getWaitlistPosition(
   ctx: RequestContext,
   apartmentKey: string,
 ): Promise<number> {
-  const waitingEntries = await ctx.db
+  const entry = await ctx.db
     .selectFrom("waitlist_entries")
-    .select(["apartment_key"])
+    .select(["created_at"])
+    .where("apartment_key", "=", apartmentKey)
     .where("status", "=", "waiting")
-    .orderBy("created_at", "asc")
-    .execute();
+    .executeTakeFirst();
 
-  const index = waitingEntries.findIndex((e) => e.apartment_key === apartmentKey);
-  return index >= 0 ? index + 1 : 0;
+  if (!entry) return 0;
+
+  const result = await ctx.db
+    .selectFrom("waitlist_entries")
+    .select(ctx.db.fn.countAll<number>().as("position"))
+    .where("status", "=", "waiting")
+    .where("created_at", "<=", entry.created_at)
+    .executeTakeFirstOrThrow();
+
+  return Number(result.position);
 }
 
 export async function handleWaitlistPosition(ctx: RequestContext): Promise<RouteResponse> {

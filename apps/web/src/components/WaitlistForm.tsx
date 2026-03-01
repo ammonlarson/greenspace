@@ -2,26 +2,23 @@
 
 import { useState } from "react";
 import {
-  BOX_CATALOG,
   ELIGIBLE_STREET,
   HOUSE_NUMBER_MIN,
   HOUSE_NUMBER_MAX,
   ORGANIZER_CONTACTS,
   isFloorDoorRequired,
-  validateRegistrationInput,
+  validateWaitlistInput,
   type Language,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { WaitlistBanner } from "./WaitlistBanner";
 
-interface RegistrationFormProps {
-  boxId: number;
+interface WaitlistFormProps {
   onCancel: () => void;
-  onBoxUnavailable?: () => void;
 }
 
-export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: RegistrationFormProps) {
+export function WaitlistForm({ onCancel }: WaitlistFormProps) {
   const { language, t } = useLanguage();
-  const box = BOX_CATALOG.find((b) => b.id === boxId);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -31,7 +28,11 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
   const [consentChecked, setConsentChecked] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [result, setResult] = useState<{
+    alreadyOnWaitlist: boolean;
+    position: number;
+    joinedAt?: string;
+  } | null>(null);
 
   const parsedHouseNumber = parseInt(houseNumber, 10);
   const needsFloorDoor = !isNaN(parsedHouseNumber) && isFloorDoorRequired(parsedHouseNumber);
@@ -53,10 +54,9 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
       floor: floor.trim() || null,
       door: door.trim() || null,
       language: language as Language,
-      boxId,
     };
 
-    const validation = validateRegistrationInput(input);
+    const validation = validateWaitlistInput(input);
     if (!validation.valid) {
       const fieldErrors: string[] = [];
       if (validation.errors["name"]) fieldErrors.push(t("validation.nameRequired"));
@@ -66,30 +66,30 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
       }
       if (validation.errors["houseNumber"]) fieldErrors.push(t("validation.houseNumberInvalid"));
       if (validation.errors["floorDoor"]) fieldErrors.push(t("validation.floorDoorRequired"));
-      if (validation.errors["boxId"]) fieldErrors.push(t("validation.boxIdInvalid"));
       setErrors(fieldErrors.length > 0 ? fieldErrors : [t("common.error")]);
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await fetch("/public/register", {
+      const res = await fetch("/public/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
 
+      const body = await res.json().catch(() => null);
+
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        if (body?.code === "BOX_UNAVAILABLE" && onBoxUnavailable) {
-          onBoxUnavailable();
-          return;
-        }
         setErrors([body?.error ?? t("common.error")]);
         return;
       }
 
-      setSuccess(true);
+      setResult({
+        alreadyOnWaitlist: body.alreadyOnWaitlist ?? false,
+        position: body.position ?? 0,
+        joinedAt: body.joinedAt,
+      });
     } catch {
       setErrors([t("common.error")]);
     } finally {
@@ -97,20 +97,21 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
     }
   }
 
-  if (success) {
+  if (result) {
     return (
       <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem" }}>
-        <h2 style={{ color: "#2d7a3a" }}>{t("registration.success")}</h2>
-        <p style={{ marginTop: "1rem" }}>
-          {t("registration.unregisterInfo")}
-        </p>
+        <h2 style={{ color: "#b8860b" }}>{t("waitlist.success")}</h2>
+        <WaitlistBanner
+          position={result.position}
+          alreadyOnWaitlist={result.alreadyOnWaitlist}
+        />
         <button
           type="button"
           onClick={onCancel}
           style={{
             marginTop: "1.5rem",
             padding: "0.5rem 1rem",
-            background: "#2d7a3a",
+            background: "#b8860b",
             color: "#fff",
             border: "none",
             borderRadius: 6,
@@ -144,36 +145,19 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
         &larr; {t("common.cancel")}
       </button>
 
-      <h2 style={{ margin: "0 0 0.25rem" }}>{t("registration.formTitle")}</h2>
-      {box && (
-        <p style={{ color: "#555", margin: "0 0 1.5rem" }}>
-          {t("registration.boxLabel")}: <strong>#{box.id} {box.name}</strong> ({box.greenhouse})
-        </p>
-      )}
-
-      {/* Policy notices */}
-      <div
-        style={{
-          background: "#f5f5f0",
-          borderRadius: 8,
-          padding: "1rem",
-          marginBottom: "1.25rem",
-          fontSize: "0.9rem",
-          lineHeight: 1.5,
-        }}
-      >
-        <p style={{ margin: "0 0 0.5rem" }}>{t("policy.oneApartmentRule")}</p>
-        <p style={{ margin: 0 }}>{t("policy.noSelfUnregister")}</p>
-      </div>
+      <h2 style={{ margin: "0 0 0.25rem" }}>{t("waitlist.title")}</h2>
+      <p style={{ color: "#555", margin: "0 0 1.5rem", fontSize: "0.95rem" }}>
+        {t("waitlist.description")}
+      </p>
 
       <form onSubmit={handleSubmit}>
         {/* Name */}
         <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-name" style={labelStyle}>
+          <label htmlFor="wl-name" style={labelStyle}>
             {t("registration.nameLabel")} *
           </label>
           <input
-            id="reg-name"
+            id="wl-name"
             type="text"
             required
             value={name}
@@ -184,11 +168,11 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
         {/* Email */}
         <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-email" style={labelStyle}>
+          <label htmlFor="wl-email" style={labelStyle}>
             {t("registration.emailLabel")} *
           </label>
           <input
-            id="reg-email"
+            id="wl-email"
             type="email"
             required
             value={email}
@@ -199,11 +183,11 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
         {/* Street (fixed) */}
         <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-street" style={labelStyle}>
+          <label htmlFor="wl-street" style={labelStyle}>
             {t("registration.streetLabel")}
           </label>
           <input
-            id="reg-street"
+            id="wl-street"
             type="text"
             value={ELIGIBLE_STREET}
             disabled
@@ -213,11 +197,11 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
         {/* House number */}
         <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-house" style={labelStyle}>
+          <label htmlFor="wl-house" style={labelStyle}>
             {t("registration.houseNumberLabel")} *
           </label>
           <input
-            id="reg-house"
+            id="wl-house"
             type="number"
             required
             min={HOUSE_NUMBER_MIN}
@@ -230,11 +214,11 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
         {/* Floor */}
         <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-floor" style={labelStyle}>
+          <label htmlFor="wl-floor" style={labelStyle}>
             {t("registration.floorLabel")} {needsFloorDoor ? "*" : ""}
           </label>
           <input
-            id="reg-floor"
+            id="wl-floor"
             type="text"
             required={needsFloorDoor}
             value={floor}
@@ -245,11 +229,11 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
         {/* Door */}
         <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-door" style={labelStyle}>
+          <label htmlFor="wl-door" style={labelStyle}>
             {t("registration.doorLabel")} {needsFloorDoor ? "*" : ""}
           </label>
           <input
-            id="reg-door"
+            id="wl-door"
             type="text"
             required={needsFloorDoor}
             value={door}
@@ -332,7 +316,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
           style={{
             width: "100%",
             padding: "0.75rem",
-            background: submitting ? "#999" : "#2d7a3a",
+            background: submitting ? "#999" : "#b8860b",
             color: "#fff",
             border: "none",
             borderRadius: 6,
@@ -342,7 +326,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
             fontWeight: 600,
           }}
         >
-          {submitting ? t("common.loading") : t("common.submit")}
+          {submitting ? t("common.loading") : t("waitlist.joinButton")}
         </button>
       </form>
     </section>

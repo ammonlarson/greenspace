@@ -323,6 +323,70 @@ describe("handleJoinWaitlist", () => {
   });
 });
 
+describe("handleJoinWaitlist (happy path)", () => {
+  const validWaitlistBody = {
+    name: "Alice",
+    email: "alice@example.com",
+    street: "Else Alfelts Vej",
+    houseNumber: 130,
+    floor: null,
+    door: null,
+    language: "da",
+  };
+
+  it("creates a new waitlist entry when no boxes available and apartment not on waitlist", async () => {
+    const mockDb = makeMockDbForWaitlist({
+      availableCount: 0,
+      existingEntry: undefined,
+      newEntryId: "wl-1",
+      positionEntryCreatedAt: "2026-03-01T10:00:00Z",
+      positionCount: 1,
+    });
+
+    const res = await handleJoinWaitlist(makeCtx({ db: mockDb, body: validWaitlistBody }));
+    expect(res.statusCode).toBe(201);
+    const body = res.body as Record<string, unknown>;
+    expect(body.alreadyOnWaitlist).toBe(false);
+    expect(body.waitlistEntryId).toBe("wl-1");
+    expect(body.position).toBe(1);
+  });
+
+  it("returns existing entry when apartment is already on waitlist, preserving original timestamp", async () => {
+    const existingCreatedAt = "2026-03-01T08:00:00Z";
+    const mockDb = makeMockDbForWaitlist({
+      availableCount: 0,
+      existingEntry: { id: "wl-existing", created_at: existingCreatedAt },
+      positionEntryCreatedAt: existingCreatedAt,
+      positionCount: 3,
+    });
+
+    const res = await handleJoinWaitlist(makeCtx({ db: mockDb, body: validWaitlistBody }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.alreadyOnWaitlist).toBe(true);
+    expect(body.position).toBe(3);
+    expect(body.joinedAt).toBe(new Date(existingCreatedAt).toISOString());
+  });
+
+  it("logs waitlist_reorder_preserve audit event for duplicate apartment", async () => {
+    const existingCreatedAt = "2026-03-01T08:00:00Z";
+    const mockDb = makeMockDbForWaitlist({
+      availableCount: 0,
+      existingEntry: { id: "wl-existing", created_at: existingCreatedAt },
+      positionEntryCreatedAt: existingCreatedAt,
+      positionCount: 1,
+    });
+
+    await handleJoinWaitlist(makeCtx({ db: mockDb, body: validWaitlistBody }));
+
+    const insertCalls = (mockDb.insertInto as ReturnType<typeof vi.fn>).mock.calls;
+    const auditCalls = insertCalls.filter(
+      (call: string[]) => call[0] === "audit_events",
+    );
+    expect(auditCalls.length).toBeGreaterThan(0);
+  });
+});
+
 describe("handleWaitlistPosition", () => {
   it("throws badRequest when apartmentKey param is missing", async () => {
     try {
@@ -460,6 +524,130 @@ function makeMockDbForRegister(opts: MockRegisterOpts): Kysely<Database> {
           execute: vi.fn().mockResolvedValue(undefined),
         }),
       }),
+    }),
+  } as unknown as Kysely<Database>;
+}
+
+interface MockWaitlistOpts {
+  availableCount: number;
+  existingEntry?: { id: string; created_at: string };
+  newEntryId?: string;
+  positionEntryCreatedAt?: string;
+  positionCount?: number;
+}
+
+function makeMockDbForWaitlist(opts: MockWaitlistOpts): Kysely<Database> {
+  let waitlistCallNum = 0;
+
+  const mockTrx = {
+    insertInto: vi.fn().mockImplementation((table: string) => {
+      if (table === "waitlist_entries") {
+        return {
+          values: vi.fn().mockReturnValue({
+            returning: vi.fn().mockReturnValue({
+              executeTakeFirstOrThrow: vi.fn().mockResolvedValue({
+                id: opts.newEntryId ?? "wl-id",
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "audit_events") {
+        return {
+          values: vi.fn().mockReturnValue({
+            execute: vi.fn().mockResolvedValue(undefined),
+          }),
+        };
+      }
+      return {};
+    }),
+  };
+
+  const asFn = vi.fn().mockReturnValue("position");
+  const countAllFn = vi.fn().mockReturnValue({ as: asFn });
+  const fnObj = { countAll: countAllFn };
+
+  function makeWaitlistSelect() {
+    waitlistCallNum++;
+    const n = waitlistCallNum;
+
+    // Call 1: check existing entry by apartment_key (executeTakeFirst)
+    if (n === 1) {
+      return {
+        select: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              executeTakeFirst: vi.fn().mockResolvedValue(opts.existingEntry),
+            }),
+          }),
+        }),
+      };
+    }
+
+    // Call 2: getWaitlistPosition first query - get entry's created_at (executeTakeFirst)
+    if (n === 2) {
+      return {
+        select: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              executeTakeFirst: vi.fn().mockResolvedValue(
+                opts.positionEntryCreatedAt
+                  ? { created_at: opts.positionEntryCreatedAt }
+                  : undefined,
+              ),
+            }),
+          }),
+        }),
+      };
+    }
+
+    // Call 3: getWaitlistPosition second query - COUNT (executeTakeFirstOrThrow)
+    return {
+      select: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            executeTakeFirstOrThrow: vi.fn().mockResolvedValue({
+              position: opts.positionCount ?? 0,
+            }),
+          }),
+        }),
+      }),
+    };
+  }
+
+  return {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "planter_boxes") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              executeTakeFirstOrThrow: vi.fn().mockResolvedValue({
+                count: opts.availableCount,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "waitlist_entries") {
+        return makeWaitlistSelect();
+      }
+      return {};
+    }),
+    fn: fnObj,
+    transaction: vi.fn().mockReturnValue({
+      execute: vi.fn().mockImplementation(
+        async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
+      ),
+    }),
+    insertInto: vi.fn().mockImplementation((table: string) => {
+      if (table === "audit_events") {
+        return {
+          values: vi.fn().mockReturnValue({
+            execute: vi.fn().mockResolvedValue(undefined),
+          }),
+        };
+      }
+      return {};
     }),
   } as unknown as Kysely<Database>;
 }
