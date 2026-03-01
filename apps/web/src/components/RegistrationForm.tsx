@@ -40,7 +40,7 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
     setErrors([]);
 
     if (!consentChecked) {
-      setErrors([t("consent.acknowledgment")]);
+      setErrors([t("consent.required")]);
       return;
     }
 
@@ -59,7 +59,10 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
     if (!validation.valid) {
       const fieldErrors: string[] = [];
       if (validation.errors["name"]) fieldErrors.push(t("validation.nameRequired"));
-      if (validation.errors["email"]) fieldErrors.push(t("validation.emailInvalid"));
+      if (validation.errors["email"]) {
+        const isRequired = validation.errors["email"].toLowerCase().includes("required");
+        fieldErrors.push(t(isRequired ? "validation.emailRequired" : "validation.emailInvalid"));
+      }
       if (validation.errors["houseNumber"]) fieldErrors.push(t("validation.houseNumberInvalid"));
       if (validation.errors["floorDoor"]) fieldErrors.push(t("validation.floorDoorRequired"));
       if (validation.errors["boxId"]) fieldErrors.push(t("validation.boxIdInvalid"));

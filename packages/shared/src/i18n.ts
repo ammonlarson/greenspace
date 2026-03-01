@@ -76,6 +76,7 @@ export const I18N_KEYS = {
     retention: "consent.retention",
     contact: "consent.contact",
     acknowledgment: "consent.acknowledgment",
+    required: "consent.required",
   },
   policy: {
     oneApartmentRule: "policy.oneApartmentRule",

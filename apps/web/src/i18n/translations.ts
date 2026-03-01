@@ -89,6 +89,8 @@ const da: TranslationStrings = {
     "Har du spørgsmål om dine data, kan du kontakte arrangørerne.",
   "consent.acknowledgment":
     "Jeg har læst og accepterer ovenstående vilkår for dataindsamling og brug.",
+  "consent.required":
+    "Du skal acceptere vilkårene for databeskyttelse for at fortsætte.",
 
   "policy.oneApartmentRule":
     "Hver lejlighed kan kun have én aktiv plantekasse. Hvis din lejlighed allerede har en tilmelding, vil en ny tilmelding erstatte den eksisterende.",
@@ -204,6 +206,8 @@ const en: TranslationStrings = {
     "If you have questions about your data, please contact the organizers.",
   "consent.acknowledgment":
     "I have read and accept the above terms for data collection and use.",
+  "consent.required":
+    "You must accept the data protection terms to continue.",
 
   "policy.oneApartmentRule":
     "Each apartment may only have one active planter box. If your apartment already has a registration, a new registration will replace the existing one.",

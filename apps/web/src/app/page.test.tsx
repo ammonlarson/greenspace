@@ -177,6 +177,7 @@ describe("translations", () => {
       "consent.retention",
       "consent.contact",
       "consent.acknowledgment",
+      "consent.required",
     ];
     for (const lang of LANGUAGES) {
       for (const key of consentKeys) {
