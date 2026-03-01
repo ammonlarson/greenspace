@@ -50,6 +50,8 @@ aws rds restore-db-instance-to-point-in-time \
 
 **Important:** Always restore to a **new** instance. Never restore in-place on the production instance.
 
+**Note:** The example uses `--no-multi-az` for faster initial restore. For production promotion, add `--multi-az` to match the production configuration.
+
 ### 3. Wait for the restored instance to become available
 
 ```bash

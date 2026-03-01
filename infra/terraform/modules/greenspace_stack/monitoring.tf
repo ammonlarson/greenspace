@@ -138,7 +138,8 @@ resource "aws_flow_log" "vpc" {
 # ---------- SNS Topic for Alarm Notifications ----------
 
 resource "aws_sns_topic" "alarms" {
-  name = "${local.naming_prefix}-alarms"
+  name              = "${local.naming_prefix}-alarms"
+  kms_master_key_id = aws_kms_key.logs.id
 
   tags = {
     Name = "${local.naming_prefix}-alarms"
@@ -214,7 +215,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   evaluation_periods  = 3
   threshold           = 80
   comparison_operator = "GreaterThanThreshold"
-  treat_missing_data  = "breaching"
+  treat_missing_data  = "missing"
 
   dimensions = {
     DBInstanceIdentifier = aws_db_instance.main.identifier
@@ -238,7 +239,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_freeable_memory" {
   evaluation_periods  = 2
   threshold           = 134217728
   comparison_operator = "LessThanThreshold"
-  treat_missing_data  = "breaching"
+  treat_missing_data  = "missing"
 
   dimensions = {
     DBInstanceIdentifier = aws_db_instance.main.identifier
@@ -260,7 +261,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections" {
   statistic           = "Average"
   period              = 300
   evaluation_periods  = 2
-  threshold           = 80
+  threshold           = var.alarm_rds_connections_threshold
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
 
@@ -291,6 +292,7 @@ resource "aws_cloudwatch_metric_alarm" "ses_bounces" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
 
   tags = {
     Name = "${local.naming_prefix}-ses-bounces"
@@ -310,6 +312,7 @@ resource "aws_cloudwatch_metric_alarm" "ses_complaints" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
 
   tags = {
     Name = "${local.naming_prefix}-ses-complaints"

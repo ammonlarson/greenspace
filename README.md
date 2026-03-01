@@ -22,9 +22,6 @@ Primary product specification:
   - [`docs/runbooks/`](docs/runbooks/) - Operational runbooks.
     - [`incident-triage.md`](docs/runbooks/incident-triage.md) - Alarm investigation and incident response.
     - [`backup-restore.md`](docs/runbooks/backup-restore.md) - RDS backup and point-in-time restore.
-  - [`docs/runbooks/`](docs/runbooks/) - Operational runbooks.
-    - [`incident-triage.md`](docs/runbooks/incident-triage.md) - Alert investigation and incident response.
-    - [`backup-restore.md`](docs/runbooks/backup-restore.md) - RDS backup and point-in-time restore.
 - `.github` - CI workflows and contribution templates.
 
 ## Local Development

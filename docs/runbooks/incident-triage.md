@@ -56,7 +56,8 @@ This runbook covers initial triage steps when a CloudWatch alarm fires or an ope
 
 1. Check current reserved concurrency setting in Terraform variables.
 2. Review concurrent executions metric on the dashboard.
-3. If traffic is legitimate, increase `lambda_reserved_concurrency` via Terraform.
+3. If `lambda_reserved_concurrency` is set to `-1` (unrestricted), throttles indicate an **account-level** concurrent execution limit has been reached, not a function-level issue. Check the AWS Lambda service quota.
+4. If traffic is legitimate, increase `lambda_reserved_concurrency` via Terraform or request an account-level limit increase.
 
 ### 5. Investigate RDS issues
 

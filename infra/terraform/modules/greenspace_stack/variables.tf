@@ -217,3 +217,9 @@ variable "alarm_email" {
   type        = string
   default     = null
 }
+
+variable "alarm_rds_connections_threshold" {
+  description = "Threshold for the RDS database connections alarm. Adjust per instance class (e.g. ~85 for db.t4g.micro, ~170 for db.t4g.small)."
+  type        = number
+  default     = 80
+}
