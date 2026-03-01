@@ -23,6 +23,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
       const res = await fetch("/admin/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 

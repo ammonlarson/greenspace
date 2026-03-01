@@ -1,12 +1,10 @@
 import { OPENING_TIMEZONE } from "@greenspace/shared";
-import { badRequest, unauthorized } from "../../lib/errors.js";
+import type { Transaction } from "kysely";
+import { badRequest } from "../../lib/errors.js";
+import type { Database } from "../../db/types.js";
 import type { RequestContext, RouteResponse } from "../../router.js";
 
 export async function handleGetOpeningTime(ctx: RequestContext): Promise<RouteResponse> {
-  if (!ctx.adminId) {
-    throw unauthorized();
-  }
-
   const settings = await ctx.db
     .selectFrom("system_settings")
     .select(["opening_datetime", "updated_at"])
@@ -31,10 +29,6 @@ interface UpdateOpeningTimeBody {
 }
 
 export async function handleUpdateOpeningTime(ctx: RequestContext): Promise<RouteResponse> {
-  if (!ctx.adminId) {
-    throw unauthorized();
-  }
-
   const { openingDatetime } = (ctx.body ?? {}) as UpdateOpeningTimeBody;
 
   if (!openingDatetime) {
@@ -58,30 +52,33 @@ export async function handleUpdateOpeningTime(ctx: RequestContext): Promise<Rout
   const beforeDatetime = new Date(current.opening_datetime).toISOString();
   const afterDatetime = parsed.toISOString();
   const now = new Date().toISOString();
+  const adminId = ctx.adminId!;
 
-  await ctx.db
-    .updateTable("system_settings")
-    .set({
-      opening_datetime: afterDatetime,
-      updated_at: now,
-    })
-    .where("id", "=", current.id)
-    .execute();
+  await ctx.db.transaction().execute(async (trx: Transaction<Database>) => {
+    await trx
+      .updateTable("system_settings")
+      .set({
+        opening_datetime: afterDatetime,
+        updated_at: now,
+      })
+      .where("id", "=", current.id)
+      .execute();
 
-  await ctx.db
-    .insertInto("audit_events")
-    .values({
-      timestamp: now,
-      actor_type: "admin",
-      actor_id: ctx.adminId,
-      action: "opening_datetime_change",
-      entity_type: "system_settings",
-      entity_id: current.id,
-      before: JSON.stringify({ opening_datetime: beforeDatetime }),
-      after: JSON.stringify({ opening_datetime: afterDatetime }),
-      reason: null,
-    })
-    .execute();
+    await trx
+      .insertInto("audit_events")
+      .values({
+        timestamp: now,
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "opening_datetime_change",
+        entity_type: "system_settings",
+        entity_id: current.id,
+        before: JSON.stringify({ opening_datetime: beforeDatetime }),
+        after: JSON.stringify({ opening_datetime: afterDatetime }),
+        reason: null,
+      })
+      .execute();
+  });
 
   return {
     statusCode: 200,

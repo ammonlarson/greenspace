@@ -10,8 +10,13 @@ interface OpeningTimeData {
   updatedAt: string | null;
 }
 
+const LOCALE_MAP: Record<string, string> = {
+  da: "da-DK",
+  en: "en-GB",
+};
+
 export function AdminSettings() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [data, setData] = useState<OpeningTimeData | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [saving, setSaving] = useState(false);
@@ -19,7 +24,9 @@ export function AdminSettings() {
 
   const fetchSettings = useCallback(async () => {
     try {
-      const res = await fetch("/admin/settings/opening-time");
+      const res = await fetch("/admin/settings/opening-time", {
+        credentials: "include",
+      });
       if (res.ok) {
         const body: OpeningTimeData = await res.json();
         setData(body);
@@ -46,6 +53,7 @@ export function AdminSettings() {
       const res = await fetch("/admin/settings/opening-time", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ openingDatetime: isoValue }),
       });
 
@@ -77,12 +85,12 @@ export function AdminSettings() {
         <div style={{ marginBottom: "1rem", fontSize: "0.9rem", color: "#555" }}>
           <p style={{ margin: "0.25rem 0" }}>
             <strong>{t("admin.currentValue")}:</strong>{" "}
-            {formatDisplay(data.openingDatetime)}
+            {formatDisplay(data.openingDatetime, language)}
           </p>
           {data.updatedAt && (
             <p style={{ margin: "0.25rem 0" }}>
               <strong>{t("admin.lastUpdated")}:</strong>{" "}
-              {formatDisplay(data.updatedAt)}
+              {formatDisplay(data.updatedAt, language)}
             </p>
           )}
         </div>
@@ -143,8 +151,8 @@ function toLocalInput(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function formatDisplay(iso: string): string {
-  return new Date(iso).toLocaleString("da-DK", {
+function formatDisplay(iso: string, language: string): string {
+  return new Date(iso).toLocaleString(LOCALE_MAP[language] ?? language, {
     timeZone: OPENING_TIMEZONE,
     dateStyle: "long",
     timeStyle: "short",
