@@ -1,7 +1,97 @@
 import { normalizeApartmentKey } from "@greenspace/shared";
+import type { Language } from "@greenspace/shared";
+import type { Kysely, Transaction } from "kysely";
 import { logAuditEvent } from "../../lib/audit.js";
+import {
+  buildAdminNotification,
+  type AdminNotificationAction,
+  type NotificationPreviewInput,
+} from "../../lib/admin-email-templates.js";
+import { queueAndSendEmail } from "../../lib/email-service.js";
 import { badRequest, conflict, notFound, unauthorized } from "../../lib/errors.js";
+import type { Database } from "../../db/types.js";
 import type { RequestContext, RouteResponse } from "../../router.js";
+
+interface NotificationInput {
+  sendEmail?: boolean;
+  subject?: string;
+  bodyHtml?: string;
+}
+
+/**
+ * Send a notification email if requested by the admin.
+ * Errors are caught and logged — they never fail the caller.
+ */
+async function sendNotificationIfRequested(
+  db: Kysely<Database> | Transaction<Database>,
+  adminId: string,
+  notification: NotificationInput | undefined,
+  previewInput: NotificationPreviewInput,
+  entityType: string,
+  entityId: string,
+): Promise<void> {
+  if (!notification) {
+    return;
+  }
+
+  try {
+    const sendEmail = notification.sendEmail ?? true;
+
+    if (!sendEmail) {
+      await logAuditEvent(db, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "notification_skipped",
+        entity_type: entityType,
+        entity_id: entityId,
+        after: {
+          notification_action: previewInput.action,
+          recipient_email: previewInput.recipientEmail,
+        },
+      });
+      return;
+    }
+
+    const defaultTemplate = buildAdminNotification(previewInput);
+    const subject = notification.subject ?? defaultTemplate.subject;
+    const bodyHtml = notification.bodyHtml ?? defaultTemplate.bodyHtml;
+    const edited =
+      (notification.subject != null && notification.subject !== defaultTemplate.subject) ||
+      (notification.bodyHtml != null && notification.bodyHtml !== defaultTemplate.bodyHtml);
+
+    const emailId = await queueAndSendEmail(db, {
+      recipientEmail: previewInput.recipientEmail,
+      language: previewInput.language,
+      subject,
+      bodyHtml,
+    });
+
+    if (emailId && edited) {
+      await db
+        .updateTable("emails")
+        .set({ edited_before_send: true })
+        .where("id", "=", emailId)
+        .execute();
+    }
+
+    await logAuditEvent(db, {
+      actor_type: "admin",
+      actor_id: adminId,
+      action: "notification_sent",
+      entity_type: entityType,
+      entity_id: entityId,
+      after: {
+        notification_action: previewInput.action,
+        recipient_email: previewInput.recipientEmail,
+        email_id: emailId,
+        edited_before_send: edited,
+        subject,
+      },
+    });
+  } catch (err) {
+    console.error("Failed to process notification:", err);
+  }
+}
 
 export async function handleListRegistrations(ctx: RequestContext): Promise<RouteResponse> {
   if (!ctx.adminId) {
@@ -43,6 +133,7 @@ interface CreateRegistrationBody {
   floor?: string | null;
   door?: string | null;
   language?: string;
+  notification?: NotificationInput;
 }
 
 export async function handleCreateRegistration(ctx: RequestContext): Promise<RouteResponse> {
@@ -143,6 +234,21 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
     return newReg;
   });
 
+  await sendNotificationIfRequested(
+    ctx.db,
+    adminId,
+    body.notification,
+    {
+      action: "add",
+      recipientName: name,
+      recipientEmail: email,
+      language: language as Language,
+      boxId,
+    },
+    "registration",
+    result.id,
+  );
+
   return {
     statusCode: 201,
     body: { id: result.id, boxId, apartmentKey },
@@ -152,6 +258,7 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
 interface MoveRegistrationBody {
   registrationId?: string;
   newBoxId?: number;
+  notification?: NotificationInput;
 }
 
 export async function handleMoveRegistration(ctx: RequestContext): Promise<RouteResponse> {
@@ -167,10 +274,10 @@ export async function handleMoveRegistration(ctx: RequestContext): Promise<Route
     throw badRequest("registrationId and newBoxId are required");
   }
 
-  await ctx.db.transaction().execute(async (trx) => {
+  const moveResult = await ctx.db.transaction().execute(async (trx) => {
     const reg = await trx
       .selectFrom("registrations")
-      .select(["id", "box_id", "status"])
+      .select(["id", "box_id", "name", "email", "language", "status"])
       .where("id", "=", registrationId)
       .forUpdate()
       .executeTakeFirst();
@@ -259,7 +366,30 @@ export async function handleMoveRegistration(ctx: RequestContext): Promise<Route
       before: { state: newBox.state },
       after: { state: "occupied" },
     });
+
+    return {
+      oldBoxId,
+      recipientName: reg.name,
+      recipientEmail: reg.email,
+      language: reg.language as Language,
+    };
   });
+
+  await sendNotificationIfRequested(
+    ctx.db,
+    adminId,
+    body.notification,
+    {
+      action: "move",
+      recipientName: moveResult.recipientName,
+      recipientEmail: moveResult.recipientEmail,
+      language: moveResult.language,
+      boxId: newBoxId,
+      oldBoxId: moveResult.oldBoxId,
+    },
+    "registration",
+    registrationId,
+  );
 
   return {
     statusCode: 200,
@@ -270,6 +400,7 @@ export async function handleMoveRegistration(ctx: RequestContext): Promise<Route
 interface RemoveRegistrationBody {
   registrationId?: string;
   makeBoxPublic?: boolean;
+  notification?: NotificationInput;
 }
 
 export async function handleRemoveRegistration(ctx: RequestContext): Promise<RouteResponse> {
@@ -286,10 +417,10 @@ export async function handleRemoveRegistration(ctx: RequestContext): Promise<Rou
     throw badRequest("registrationId is required");
   }
 
-  await ctx.db.transaction().execute(async (trx) => {
+  const removeResult = await ctx.db.transaction().execute(async (trx) => {
     const reg = await trx
       .selectFrom("registrations")
-      .select(["id", "box_id", "status", "name", "email", "apartment_key"])
+      .select(["id", "box_id", "status", "name", "email", "language", "apartment_key"])
       .where("id", "=", registrationId)
       .forUpdate()
       .executeTakeFirst();
@@ -339,7 +470,29 @@ export async function handleRemoveRegistration(ctx: RequestContext): Promise<Rou
       before: { state: "occupied" },
       after: { state: newBoxState, reserved_label: reservedLabel },
     });
+
+    return {
+      boxId: reg.box_id,
+      recipientName: reg.name,
+      recipientEmail: reg.email,
+      language: reg.language as Language,
+    };
   });
+
+  await sendNotificationIfRequested(
+    ctx.db,
+    adminId,
+    body.notification,
+    {
+      action: "remove",
+      recipientName: removeResult.recipientName,
+      recipientEmail: removeResult.recipientEmail,
+      language: removeResult.language,
+      boxId: removeResult.boxId,
+    },
+    "registration",
+    registrationId,
+  );
 
   return {
     statusCode: 200,
@@ -350,6 +503,7 @@ export async function handleRemoveRegistration(ctx: RequestContext): Promise<Rou
 interface AssignWaitlistBody {
   waitlistEntryId?: string;
   boxId?: number;
+  notification?: NotificationInput;
 }
 
 export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteResponse> {
@@ -473,8 +627,28 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
       after: { state: "occupied" },
     });
 
-    return { registrationId: newReg.id };
+    return {
+      registrationId: newReg.id,
+      recipientName: entry.name,
+      recipientEmail: entry.email,
+      language: entry.language as Language,
+    };
   });
+
+  await sendNotificationIfRequested(
+    ctx.db,
+    adminId,
+    body.notification,
+    {
+      action: "waitlist_assign",
+      recipientName: result.recipientName,
+      recipientEmail: result.recipientEmail,
+      language: result.language,
+      boxId,
+    },
+    "registration",
+    result.registrationId,
+  );
 
   return {
     statusCode: 201,
@@ -483,5 +657,55 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
       waitlistEntryId,
       boxId,
     },
+  };
+}
+
+interface NotificationPreviewBody {
+  action?: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  language?: string;
+  boxId?: number;
+  oldBoxId?: number;
+}
+
+export async function handleNotificationPreview(ctx: RequestContext): Promise<RouteResponse> {
+  if (!ctx.adminId) {
+    throw unauthorized();
+  }
+
+  const body = (ctx.body ?? {}) as NotificationPreviewBody;
+
+  const { action, recipientName, recipientEmail, language, boxId } = body;
+
+  if (!action || !recipientName || !recipientEmail || !language || !boxId) {
+    throw badRequest("action, recipientName, recipientEmail, language, and boxId are required");
+  }
+
+  const validActions = new Set<string>(["add", "move", "remove", "waitlist_assign"]);
+  if (!validActions.has(action)) {
+    throw badRequest("action must be one of: add, move, remove, waitlist_assign");
+  }
+
+  if (language !== "da" && language !== "en") {
+    throw badRequest("language must be 'da' or 'en'");
+  }
+
+  if (action === "move" && !body.oldBoxId) {
+    throw badRequest("oldBoxId is required for move action");
+  }
+
+  const preview = buildAdminNotification({
+    action: action as AdminNotificationAction,
+    recipientName,
+    recipientEmail,
+    language: language as Language,
+    boxId,
+    oldBoxId: body.oldBoxId,
+  });
+
+  return {
+    statusCode: 200,
+    body: preview,
   };
 }
