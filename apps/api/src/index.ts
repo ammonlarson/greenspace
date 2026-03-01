@@ -11,6 +11,7 @@ import {
   handleCreateRegistration,
   handleListRegistrations,
   handleMoveRegistration,
+  handleNotificationPreview,
   handleRemoveRegistration,
 } from "./routes/admin/registrations.js";
 import {
@@ -60,6 +61,7 @@ export function createRouter(): Router {
   router.post("/admin/registrations/move", requireAdmin(handleMoveRegistration));
   router.post("/admin/registrations/remove", requireAdmin(handleRemoveRegistration));
   router.post("/admin/waitlist/assign", requireAdmin(handleAssignWaitlist));
+  router.post("/admin/notifications/preview", requireAdmin(handleNotificationPreview));
   router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
 
   router.get("/admin/settings/opening-time", requireAdmin(handleGetOpeningTime));

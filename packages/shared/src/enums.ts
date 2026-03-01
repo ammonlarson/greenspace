@@ -34,6 +34,8 @@ export const AUDIT_ACTIONS = [
   "admin_delete",
   "admin_password_change",
   "email_sent",
+  "notification_sent",
+  "notification_skipped",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
