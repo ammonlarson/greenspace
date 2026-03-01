@@ -58,6 +58,10 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
     throw badRequest("boxId, name, email, street, houseNumber, and language are required");
   }
 
+  if (language !== "da" && language !== "en") {
+    throw badRequest("language must be 'da' or 'en'");
+  }
+
   const apartmentKey = normalizeApartmentKey(
     street,
     houseNumber,
@@ -168,6 +172,7 @@ export async function handleMoveRegistration(ctx: RequestContext): Promise<Route
       .selectFrom("registrations")
       .select(["id", "box_id", "status"])
       .where("id", "=", registrationId)
+      .forUpdate()
       .executeTakeFirst();
 
     if (!reg) {
@@ -180,6 +185,17 @@ export async function handleMoveRegistration(ctx: RequestContext): Promise<Route
     const oldBoxId = reg.box_id;
     if (oldBoxId === newBoxId) {
       throw badRequest("New box must be different from current box");
+    }
+
+    const oldBox = await trx
+      .selectFrom("planter_boxes")
+      .select(["id", "state"])
+      .where("id", "=", oldBoxId)
+      .forUpdate()
+      .executeTakeFirst();
+
+    if (!oldBox) {
+      throw badRequest("Current box not found");
     }
 
     const newBox = await trx
@@ -275,6 +291,7 @@ export async function handleRemoveRegistration(ctx: RequestContext): Promise<Rou
       .selectFrom("registrations")
       .select(["id", "box_id", "status", "name", "email", "apartment_key"])
       .where("id", "=", registrationId)
+      .forUpdate()
       .executeTakeFirst();
 
     if (!reg) {
@@ -356,6 +373,7 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
         "floor", "door", "apartment_key", "language", "status",
       ])
       .where("id", "=", waitlistEntryId)
+      .forUpdate()
       .executeTakeFirst();
 
     if (!entry) {

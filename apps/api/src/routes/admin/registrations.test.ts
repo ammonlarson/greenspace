@@ -128,6 +128,56 @@ describe("handleCreateRegistration", () => {
   });
 });
 
+describe("handleCreateRegistration (happy path)", () => {
+  it("creates registration and returns 201", async () => {
+    const mockDb = makeMockTrxDb({
+      boxResult: { id: 1, state: "available" },
+      existingReg: undefined,
+    });
+
+    const result = await handleCreateRegistration(
+      makeCtx({
+        db: mockDb,
+        body: {
+          boxId: 1,
+          name: "Alice",
+          email: "a@b.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+          language: "da",
+        },
+      }),
+    );
+    expect(result.statusCode).toBe(201);
+    const body = result.body as Record<string, unknown>;
+    expect(body.id).toBe("new-reg-id");
+    expect(body.boxId).toBe(1);
+    expect(body.apartmentKey).toBe("else alfelts vej 130");
+  });
+
+  it("throws 400 for invalid language", async () => {
+    try {
+      await handleCreateRegistration(
+        makeCtx({
+          body: {
+            boxId: 1,
+            name: "Alice",
+            email: "a@b.com",
+            street: "Else Alfelts Vej",
+            houseNumber: 130,
+            language: "fr",
+          },
+        }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("language must be 'da' or 'en'");
+    }
+  });
+});
+
 describe("handleMoveRegistration", () => {
   it("throws 401 when adminId is missing", async () => {
     try {
