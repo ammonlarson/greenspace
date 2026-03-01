@@ -198,6 +198,23 @@ describe("translations", () => {
     }
   });
 
+  it("includes address/DAWA translations", () => {
+    const addressKeys = [
+      "address.searchPlaceholder",
+      "address.searchHint",
+      "address.noResults",
+      "address.selectedAddress",
+      "address.changeAddress",
+      "address.ineligible",
+      "address.floorDoorHint",
+    ];
+    for (const lang of LANGUAGES) {
+      for (const key of addressKeys) {
+        expect(translations[lang][key], `${lang}.${key} missing`).toBeTruthy();
+      }
+    }
+  });
+
   it("includes admin translations", () => {
     const adminKeys = [
       "admin.link",
