@@ -6,6 +6,8 @@ import { AppError } from "../lib/errors.js";
 import { setSesClient } from "../lib/email-service.js";
 import {
   handleJoinWaitlist,
+  handlePublicBoxes,
+  handlePublicGreenhouses,
   handlePublicRegister,
   handleValidateAddress,
   handleValidateRegistration,
@@ -352,6 +354,187 @@ describe("handleWaitlistPosition", () => {
     const body = res.body as Record<string, unknown>;
     expect(body.onWaitlist).toBe(false);
     expect(body.position).toBeNull();
+  });
+});
+
+describe("handlePublicGreenhouses", () => {
+  it("returns greenhouse summaries with live box counts", async () => {
+    const mockBoxes = [
+      { greenhouse_name: "Kronen", state: "available" },
+      { greenhouse_name: "Kronen", state: "occupied" },
+      { greenhouse_name: "Kronen", state: "available" },
+      { greenhouse_name: "Søen", state: "occupied" },
+      { greenhouse_name: "Søen", state: "reserved" },
+    ];
+    const executeFn = vi.fn().mockResolvedValue(mockBoxes);
+    const selectFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicGreenhouses(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Array<Record<string, unknown>>;
+    expect(body).toHaveLength(2);
+
+    const kronen = body.find((g) => g.name === "Kronen")!;
+    expect(kronen.totalBoxes).toBe(3);
+    expect(kronen.availableBoxes).toBe(2);
+    expect(kronen.occupiedBoxes).toBe(1);
+    expect(kronen.reservedBoxes).toBe(0);
+
+    const soen = body.find((g) => g.name === "Søen")!;
+    expect(soen.totalBoxes).toBe(2);
+    expect(soen.availableBoxes).toBe(0);
+    expect(soen.occupiedBoxes).toBe(1);
+    expect(soen.reservedBoxes).toBe(1);
+  });
+
+  it("returns zero counts when no boxes exist", async () => {
+    const executeFn = vi.fn().mockResolvedValue([]);
+    const selectFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicGreenhouses(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Array<Record<string, unknown>>;
+    for (const gh of body) {
+      expect(gh.totalBoxes).toBe(0);
+      expect(gh.availableBoxes).toBe(0);
+      expect(gh.occupiedBoxes).toBe(0);
+      expect(gh.reservedBoxes).toBe(0);
+    }
+  });
+});
+
+describe("handlePublicBoxes", () => {
+  it("returns all boxes with live state", async () => {
+    const mockRows = [
+      { id: 1, name: "Linaria", greenhouse_name: "Kronen", state: "available" },
+      { id: 2, name: "Harebell", greenhouse_name: "Kronen", state: "occupied" },
+      { id: 15, name: "Robin", greenhouse_name: "Søen", state: "reserved" },
+    ];
+    const executeFn = vi.fn().mockResolvedValue(mockRows);
+    const orderByFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFn = vi.fn().mockReturnValue({ orderBy: orderByFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicBoxes(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Array<Record<string, unknown>>;
+    expect(body).toHaveLength(3);
+
+    expect(body[0]).toEqual({ id: 1, name: "Linaria", greenhouse: "Kronen", state: "available" });
+    expect(body[1]).toEqual({ id: 2, name: "Harebell", greenhouse: "Kronen", state: "occupied" });
+    expect(body[2]).toEqual({ id: 15, name: "Robin", greenhouse: "Søen", state: "reserved" });
+  });
+
+  it("returns empty array when no boxes exist", async () => {
+    const executeFn = vi.fn().mockResolvedValue([]);
+    const orderByFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFn = vi.fn().mockReturnValue({ orderBy: orderByFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicBoxes(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it("maps greenhouse_name to greenhouse in response", async () => {
+    const mockRows = [
+      { id: 1, name: "Linaria", greenhouse_name: "Kronen", state: "occupied" },
+    ];
+    const executeFn = vi.fn().mockResolvedValue(mockRows);
+    const orderByFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFn = vi.fn().mockReturnValue({ orderBy: orderByFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicBoxes(makeCtx({ db: mockDb }));
+    const body = res.body as Array<Record<string, unknown>>;
+    expect(body[0].greenhouse).toBe("Kronen");
+    expect(body[0]).not.toHaveProperty("greenhouse_name");
+  });
+});
+
+describe("stale-state regression", () => {
+  it("greenhouses endpoint reflects occupied state after registration", async () => {
+    const boxesBeforeReg = [
+      { greenhouse_name: "Kronen", state: "available" },
+      { greenhouse_name: "Kronen", state: "available" },
+    ];
+    const executeFn1 = vi.fn().mockResolvedValue(boxesBeforeReg);
+    const selectFn1 = vi.fn().mockReturnValue({ execute: executeFn1 });
+    const selectFromFn1 = vi.fn().mockReturnValue({ select: selectFn1 });
+    const db1 = { selectFrom: selectFromFn1 } as unknown as Kysely<Database>;
+
+    const resBefore = await handlePublicGreenhouses(makeCtx({ db: db1 }));
+    const before = (resBefore.body as Array<Record<string, unknown>>).find((g) => g.name === "Kronen")!;
+    expect(before.availableBoxes).toBe(2);
+    expect(before.occupiedBoxes).toBe(0);
+
+    const boxesAfterReg = [
+      { greenhouse_name: "Kronen", state: "available" },
+      { greenhouse_name: "Kronen", state: "occupied" },
+    ];
+    const executeFn2 = vi.fn().mockResolvedValue(boxesAfterReg);
+    const selectFn2 = vi.fn().mockReturnValue({ execute: executeFn2 });
+    const selectFromFn2 = vi.fn().mockReturnValue({ select: selectFn2 });
+    const db2 = { selectFrom: selectFromFn2 } as unknown as Kysely<Database>;
+
+    const resAfter = await handlePublicGreenhouses(makeCtx({ db: db2 }));
+    const after = (resAfter.body as Array<Record<string, unknown>>).find((g) => g.name === "Kronen")!;
+    expect(after.availableBoxes).toBe(1);
+    expect(after.occupiedBoxes).toBe(1);
+  });
+
+  it("boxes endpoint reflects state change after switch", async () => {
+    const boxesBefore = [
+      { id: 1, name: "Linaria", greenhouse_name: "Kronen", state: "occupied" },
+      { id: 2, name: "Harebell", greenhouse_name: "Kronen", state: "available" },
+    ];
+    const exec1 = vi.fn().mockResolvedValue(boxesBefore);
+    const order1 = vi.fn().mockReturnValue({ execute: exec1 });
+    const sel1 = vi.fn().mockReturnValue({ orderBy: order1 });
+    const from1 = vi.fn().mockReturnValue({ select: sel1 });
+    const db1 = { selectFrom: from1 } as unknown as Kysely<Database>;
+
+    const resBefore = await handlePublicBoxes(makeCtx({ db: db1 }));
+    const before = resBefore.body as Array<Record<string, unknown>>;
+    expect(before[0].state).toBe("occupied");
+    expect(before[1].state).toBe("available");
+
+    const boxesAfterSwitch = [
+      { id: 1, name: "Linaria", greenhouse_name: "Kronen", state: "available" },
+      { id: 2, name: "Harebell", greenhouse_name: "Kronen", state: "occupied" },
+    ];
+    const exec2 = vi.fn().mockResolvedValue(boxesAfterSwitch);
+    const order2 = vi.fn().mockReturnValue({ execute: exec2 });
+    const sel2 = vi.fn().mockReturnValue({ orderBy: order2 });
+    const from2 = vi.fn().mockReturnValue({ select: sel2 });
+    const db2 = { selectFrom: from2 } as unknown as Kysely<Database>;
+
+    const resAfter = await handlePublicBoxes(makeCtx({ db: db2 }));
+    const after = resAfter.body as Array<Record<string, unknown>>;
+    expect(after[0].state).toBe("available");
+    expect(after[1].state).toBe("occupied");
+  });
+
+  it("boxes endpoint reflects admin reserve state", async () => {
+    const rows = [
+      { id: 1, name: "Linaria", greenhouse_name: "Kronen", state: "reserved" },
+    ];
+    const executeFn = vi.fn().mockResolvedValue(rows);
+    const orderByFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFn = vi.fn().mockReturnValue({ orderBy: orderByFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicBoxes(makeCtx({ db: mockDb }));
+    const body = res.body as Array<Record<string, unknown>>;
+    expect(body[0].state).toBe("reserved");
   });
 });
 
