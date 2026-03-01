@@ -288,6 +288,9 @@ graph TB
 
         subgraph "Monitoring"
             CW[CloudWatch<br/>Log Groups]
+            ALARMS[CloudWatch<br/>Alarms]
+            DASH[CloudWatch<br/>Dashboard]
+            SNS[SNS<br/>Alarm Notifications]
         end
 
         subgraph "State Backend"
@@ -336,7 +339,7 @@ infra/terraform/
         ├── database.tf        RDS, Secrets Manager
         ├── ses.tf             SES identity, DKIM, config set
         ├── dns.tf             Route 53 zone and records
-        ├── monitoring.tf      CloudWatch, KMS
+        ├── monitoring.tf      CloudWatch, KMS, Alarms, Dashboard, SNS
         ├── variables.tf       Input variables
         ├── outputs.tf         Module outputs
         └── iam.tftest.hcl     Least-privilege validation tests
@@ -356,6 +359,7 @@ graph LR
 
 - **CI** runs on every PR: lint, test, build for all workspaces; `terraform fmt` + `terraform validate`.
 - **Terraform** runs when `infra/terraform/**` changes: plan on PRs, apply on merge to main.
+- **Drift detection** runs daily via `drift-detection.yml`; creates a GitHub issue if drift is found.
 - **Production apply** runs automatically after staging succeeds.
 - **AWS auth** uses GitHub OIDC role assumption (no long-lived keys).
 
