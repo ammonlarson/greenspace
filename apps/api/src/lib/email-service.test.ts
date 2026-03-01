@@ -159,4 +159,16 @@ describe("queueAndSendEmail", () => {
 
     expect(db.insertInto).toHaveBeenCalledWith("audit_events");
   });
+
+  it("returns null and does not throw when DB insert fails", async () => {
+    const { db, mocks } = createMockDb();
+    mocks.executeFn.mockRejectedValue(new Error("DB connection lost"));
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const id = await queueAndSendEmail(db, emailInput);
+
+    expect(id).toBeNull();
+    consoleSpy.mockRestore();
+  });
 });

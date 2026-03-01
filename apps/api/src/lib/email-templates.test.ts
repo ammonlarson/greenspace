@@ -100,4 +100,29 @@ describe("buildConfirmationEmail", () => {
     expect(result.bodyHtml).not.toContain("<script>");
     expect(result.bodyHtml).toContain("&lt;script&gt;");
   });
+
+  it("escapes single quotes in recipient name", () => {
+    const result = buildConfirmationEmail({
+      ...baseData,
+      recipientName: "O'Brien",
+    });
+    expect(result.bodyHtml).toContain("O&#39;Brien");
+  });
+
+  it("handles unknown box ID gracefully", () => {
+    const result = buildConfirmationEmail({ ...baseData, boxId: 999 });
+    expect(result.bodyHtml).toContain("#999");
+    expect(result.bodyHtml).toContain("Unknown");
+  });
+
+  it("includes Søen switch note for Søen-to-Søen switch", () => {
+    const result = buildConfirmationEmail({
+      ...baseData,
+      boxId: 20,
+      switchedFromBoxId: 25,
+    });
+    expect(result.bodyHtml).toContain("ff9800");
+    expect(result.bodyHtml).toContain("Gray goose");
+    expect(result.bodyHtml).toContain("Søen");
+  });
 });

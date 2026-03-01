@@ -29,25 +29,32 @@ interface QueueEmailInput {
 
 /**
  * Queue a confirmation email in the database and attempt to send it via SES.
- * Email send failures are caught and logged — they never fail the caller.
+ * Email failures are caught and logged — they never fail the caller.
  */
 export async function queueAndSendEmail(
   db: Kysely<Database> | Transaction<Database>,
   input: QueueEmailInput,
-): Promise<string> {
-  const [row] = await db
-    .insertInto("emails")
-    .values({
-      recipient_email: input.recipientEmail,
-      language: input.language,
-      subject: input.subject,
-      body_html: input.bodyHtml,
-      status: "pending",
-    })
-    .returning(["id"])
-    .execute();
+): Promise<string | null> {
+  let emailId: string;
 
-  const emailId = row.id;
+  try {
+    const [row] = await db
+      .insertInto("emails")
+      .values({
+        recipient_email: input.recipientEmail,
+        language: input.language,
+        subject: input.subject,
+        body_html: input.bodyHtml,
+        status: "pending",
+      })
+      .returning(["id"])
+      .execute();
+
+    emailId = row.id;
+  } catch (err) {
+    console.error("Failed to queue email:", err);
+    return null;
+  }
 
   try {
     await sendViaSes(input);
@@ -73,11 +80,15 @@ export async function queueAndSendEmail(
   } catch (err) {
     console.error("Failed to send email via SES:", err);
 
-    await db
-      .updateTable("emails")
-      .set({ status: "failed" })
-      .where("id", "=", emailId)
-      .execute();
+    try {
+      await db
+        .updateTable("emails")
+        .set({ status: "failed" })
+        .where("id", "=", emailId)
+        .execute();
+    } catch (updateErr) {
+      console.error("Failed to update email status:", updateErr);
+    }
   }
 
   return emailId;
