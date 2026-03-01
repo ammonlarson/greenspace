@@ -236,11 +236,11 @@ describe("handlePublicRegister", () => {
     const body = res.body as Record<string, unknown>;
     expect(body.code).toBe("SWITCH_REQUIRED");
     expect(body.existingBoxId).toBe(5);
-    expect(body.existingBoxName).toBeDefined();
-    expect(body.existingGreenhouse).toBeDefined();
+    expect(body.existingBoxName).toBe("Daisy");
+    expect(body.existingGreenhouse).toBe("Kronen");
     expect(body.newBoxId).toBe(1);
-    expect(body.newBoxName).toBeDefined();
-    expect(body.newGreenhouse).toBeDefined();
+    expect(body.newBoxName).toBe("Linaria");
+    expect(body.newGreenhouse).toBe("Kronen");
   });
 
   it("creates registration for new apartment (no existing)", async () => {

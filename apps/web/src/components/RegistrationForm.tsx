@@ -38,6 +38,20 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
   const parsedHouseNumber = parseInt(houseNumber, 10);
   const needsFloorDoor = !isNaN(parsedHouseNumber) && isFloorDoorRequired(parsedHouseNumber);
 
+  function buildPayload(opts?: { confirmSwitch?: boolean }) {
+    return {
+      name: name.trim(),
+      email: email.trim(),
+      street: ELIGIBLE_STREET,
+      houseNumber: parsedHouseNumber,
+      floor: floor.trim() || null,
+      door: door.trim() || null,
+      language: language as Language,
+      boxId,
+      ...opts,
+    };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors([]);
@@ -47,16 +61,7 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
       return;
     }
 
-    const input = {
-      name: name.trim(),
-      email: email.trim(),
-      street: ELIGIBLE_STREET,
-      houseNumber: parsedHouseNumber,
-      floor: floor.trim() || null,
-      door: door.trim() || null,
-      language: language as Language,
-      boxId,
-    };
+    const input = buildPayload();
 
     const validation = validateRegistrationInput(input);
     if (!validation.valid) {
@@ -110,17 +115,7 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
     setConfirmingSwitch(true);
     setErrors([]);
     try {
-      const input = {
-        name: name.trim(),
-        email: email.trim(),
-        street: ELIGIBLE_STREET,
-        houseNumber: parsedHouseNumber,
-        floor: floor.trim() || null,
-        door: door.trim() || null,
-        language: language as Language,
-        boxId,
-        confirmSwitch: true,
-      };
+      const input = buildPayload({ confirmSwitch: true });
 
       const res = await fetch("/public/register", {
         method: "POST",
