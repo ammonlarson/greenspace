@@ -10,6 +10,7 @@ import {
   handleJoinWaitlist,
   handlePublicBoxes,
   handlePublicGreenhouses,
+  handlePublicRegister,
   handlePublicStatus,
   handleValidateAddress,
   handleValidateRegistration,
@@ -30,6 +31,7 @@ export function createRouter(): Router {
   router.get("/public/boxes", handlePublicBoxes);
   router.post("/public/validate-address", handleValidateAddress);
   router.post("/public/validate-registration", handleValidateRegistration);
+  router.post("/public/register", handlePublicRegister);
   router.post("/public/waitlist", handleJoinWaitlist);
   router.get("/public/waitlist/position/:apartmentKey", handleWaitlistPosition);
 

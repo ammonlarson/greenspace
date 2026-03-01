@@ -5,6 +5,7 @@ import type { RequestContext } from "../router.js";
 import { AppError } from "../lib/errors.js";
 import {
   handleJoinWaitlist,
+  handlePublicRegister,
   handleValidateAddress,
   handleValidateRegistration,
   handleWaitlistPosition,
@@ -134,6 +135,139 @@ describe("handleValidateRegistration", () => {
   });
 });
 
+describe("handlePublicRegister", () => {
+  const validRegBody = {
+    name: "Alice",
+    email: "alice@example.com",
+    street: "Else Alfelts Vej",
+    houseNumber: 130,
+    floor: null,
+    door: null,
+    boxId: 1,
+    language: "da",
+  };
+
+  it("throws badRequest when body is missing", async () => {
+    try {
+      await handlePublicRegister(makeCtx({ body: undefined }));
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+    }
+  });
+
+  it("returns 422 for invalid input", async () => {
+    const res = await handlePublicRegister(makeCtx({ body: {} }));
+    expect(res.statusCode).toBe(422);
+    const body = res.body as Record<string, unknown>;
+    expect(body.valid).toBe(false);
+  });
+
+  it("throws badRequest when registration is not open", async () => {
+    const futureDate = new Date(Date.now() + 86400000);
+    const executeTakeFirstFn = vi.fn().mockResolvedValue({
+      opening_datetime: futureDate,
+    });
+    const selectFn = vi.fn().mockReturnValue({ executeTakeFirst: executeTakeFirstFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    try {
+      await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("Registration is not yet open");
+    }
+  });
+
+  it("throws badRequest when box not found", async () => {
+    const pastDate = new Date(Date.now() - 86400000);
+    const mockDb = makeMockDbForRegister({
+      openingDatetime: pastDate,
+      box: undefined,
+    });
+
+    try {
+      await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("Box not found");
+    }
+  });
+
+  it("throws 409 when box is not available", async () => {
+    const pastDate = new Date(Date.now() - 86400000);
+    const mockDb = makeMockDbForRegister({
+      openingDatetime: pastDate,
+      box: { id: 1, state: "occupied" },
+    });
+
+    try {
+      await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(409);
+      expect((err as AppError).code).toBe("BOX_UNAVAILABLE");
+    }
+  });
+
+  it("returns 409 when apartment has existing registration and no confirmSwitch", async () => {
+    const pastDate = new Date(Date.now() - 86400000);
+    const mockDb = makeMockDbForRegister({
+      openingDatetime: pastDate,
+      box: { id: 1, state: "available" },
+      existingReg: { id: "reg-old", box_id: 5, name: "Alice", email: "a@b.com", status: "active" },
+    });
+
+    const res = await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+    expect(res.statusCode).toBe(409);
+    const body = res.body as Record<string, unknown>;
+    expect(body.code).toBe("SWITCH_REQUIRED");
+    expect(body.existingBoxId).toBe(5);
+  });
+
+  it("creates registration for new apartment (no existing)", async () => {
+    const pastDate = new Date(Date.now() - 86400000);
+    const mockDb = makeMockDbForRegister({
+      openingDatetime: pastDate,
+      box: { id: 1, state: "available" },
+      existingReg: undefined,
+      newRegId: "reg-new",
+    });
+
+    const res = await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.registrationId).toBe("reg-new");
+    expect(body.boxId).toBe(1);
+    expect(body.apartmentKey).toBe("else alfelts vej 130");
+  });
+
+  it("performs switch when confirmSwitch is true", async () => {
+    const pastDate = new Date(Date.now() - 86400000);
+    const mockDb = makeMockDbForRegister({
+      openingDatetime: pastDate,
+      box: { id: 1, state: "available" },
+      existingReg: { id: "reg-old", box_id: 5, name: "Alice", email: "a@b.com", status: "active" },
+      newRegId: "reg-new",
+    });
+
+    const res = await handlePublicRegister(
+      makeCtx({ db: mockDb, body: { ...validRegBody, confirmSwitch: true } }),
+    );
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.registrationId).toBe("reg-new");
+    expect(body.boxId).toBe(1);
+  });
+});
+
 describe("handleJoinWaitlist", () => {
   const validWaitlistBody = {
     name: "Alice",
@@ -214,3 +348,86 @@ describe("handleWaitlistPosition", () => {
     expect(body.position).toBeNull();
   });
 });
+
+interface MockRegisterOpts {
+  openingDatetime: Date;
+  box?: { id: number; state: string };
+  existingReg?: { id: string; box_id: number; name: string; email: string; status: string };
+  newRegId?: string;
+}
+
+function makeMockDbForRegister(opts: MockRegisterOpts): Kysely<Database> {
+  const settingsResult = { opening_datetime: opts.openingDatetime };
+
+  const mockTrx = {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "planter_boxes") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.box),
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "registrations") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+              }),
+            }),
+          }),
+        };
+      }
+      return {};
+    }),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+    insertInto: vi.fn().mockImplementation((table: string) => {
+      if (table === "registrations") {
+        return {
+          values: vi.fn().mockReturnValue({
+            returning: vi.fn().mockReturnValue({
+              execute: vi.fn().mockResolvedValue([{ id: opts.newRegId ?? "reg-id" }]),
+            }),
+          }),
+        };
+      }
+      if (table === "audit_events") {
+        return {
+          values: vi.fn().mockReturnValue({
+            execute: vi.fn().mockResolvedValue(undefined),
+          }),
+        };
+      }
+      return {};
+    }),
+  };
+
+  return {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "system_settings") {
+        return {
+          select: vi.fn().mockReturnValue({
+            executeTakeFirst: vi.fn().mockResolvedValue(settingsResult),
+          }),
+        };
+      }
+      return {};
+    }),
+    transaction: vi.fn().mockReturnValue({
+      execute: vi.fn().mockImplementation(
+        async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
+      ),
+    }),
+  } as unknown as Kysely<Database>;
+}

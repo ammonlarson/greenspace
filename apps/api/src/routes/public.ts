@@ -156,6 +156,178 @@ export async function handleValidateRegistration(ctx: RequestContext): Promise<R
   };
 }
 
+interface RegisterBody extends RegistrationInput {
+  confirmSwitch?: boolean;
+}
+
+export async function handlePublicRegister(ctx: RequestContext): Promise<RouteResponse> {
+  const body = ctx.body as RegisterBody | undefined;
+  if (!body) {
+    throw badRequest("Request body is required");
+  }
+
+  const validation = validateRegistrationInput(body);
+  if (!validation.valid) {
+    return { statusCode: 422, body: { valid: false, errors: validation.errors } };
+  }
+
+  const settings = await ctx.db
+    .selectFrom("system_settings")
+    .select(["opening_datetime"])
+    .executeTakeFirst();
+
+  const openingDate = settings?.opening_datetime
+    ? new Date(settings.opening_datetime)
+    : null;
+  const isOpen = openingDate ? openingDate.getTime() <= Date.now() : false;
+
+  if (!isOpen) {
+    throw badRequest("Registration is not yet open");
+  }
+
+  const apartmentKey = normalizeApartmentKey(
+    body.street,
+    body.houseNumber,
+    body.floor ?? null,
+    body.door ?? null,
+  );
+
+  const result = await ctx.db.transaction().execute(async (trx) => {
+    const box = await trx
+      .selectFrom("planter_boxes")
+      .select(["id", "state"])
+      .where("id", "=", body.boxId)
+      .forUpdate()
+      .executeTakeFirst();
+
+    if (!box) {
+      throw badRequest("Box not found");
+    }
+    if (box.state !== "available") {
+      throw conflict("Box is not available", "BOX_UNAVAILABLE");
+    }
+
+    const existingReg = await trx
+      .selectFrom("registrations")
+      .select(["id", "box_id", "name", "email", "status"])
+      .where("apartment_key", "=", apartmentKey)
+      .where("status", "=", "active")
+      .executeTakeFirst();
+
+    if (existingReg && !body.confirmSwitch) {
+      return {
+        type: "switch_required" as const,
+        existingBoxId: existingReg.box_id,
+      };
+    }
+
+    if (existingReg) {
+      await trx
+        .updateTable("registrations")
+        .set({ status: "switched", updated_at: new Date().toISOString() })
+        .where("id", "=", existingReg.id)
+        .execute();
+
+      await trx
+        .updateTable("planter_boxes")
+        .set({ state: "available", updated_at: new Date().toISOString() })
+        .where("id", "=", existingReg.box_id)
+        .execute();
+
+      await logAuditEvent(trx, {
+        actor_type: "public",
+        actor_id: null,
+        action: "registration_switch",
+        entity_type: "registration",
+        entity_id: existingReg.id,
+        before: { box_id: existingReg.box_id, status: "active" },
+        after: { box_id: existingReg.box_id, status: "switched" },
+      });
+
+      await logAuditEvent(trx, {
+        actor_type: "public",
+        actor_id: null,
+        action: "box_state_change",
+        entity_type: "planter_box",
+        entity_id: String(existingReg.box_id),
+        before: { state: "occupied" },
+        after: { state: "available" },
+      });
+    }
+
+    const [newReg] = await trx
+      .insertInto("registrations")
+      .values({
+        box_id: body.boxId,
+        name: body.name,
+        email: body.email,
+        street: body.street,
+        house_number: body.houseNumber,
+        floor: body.floor ?? null,
+        door: body.door ?? null,
+        apartment_key: apartmentKey,
+        language: body.language,
+        status: "active",
+      })
+      .returning(["id"])
+      .execute();
+
+    await trx
+      .updateTable("planter_boxes")
+      .set({ state: "occupied", updated_at: new Date().toISOString() })
+      .where("id", "=", body.boxId)
+      .execute();
+
+    await logAuditEvent(trx, {
+      actor_type: "public",
+      actor_id: null,
+      action: "registration_create",
+      entity_type: "registration",
+      entity_id: newReg.id,
+      after: {
+        box_id: body.boxId,
+        apartment_key: apartmentKey,
+        status: "active",
+      },
+    });
+
+    await logAuditEvent(trx, {
+      actor_type: "public",
+      actor_id: null,
+      action: "box_state_change",
+      entity_type: "planter_box",
+      entity_id: String(body.boxId),
+      before: { state: "available" },
+      after: { state: "occupied" },
+    });
+
+    return {
+      type: "created" as const,
+      registrationId: newReg.id,
+    };
+  });
+
+  if (result.type === "switch_required") {
+    return {
+      statusCode: 409,
+      body: {
+        error: "Apartment already has an active registration",
+        code: "SWITCH_REQUIRED",
+        existingBoxId: result.existingBoxId,
+      },
+    };
+  }
+
+  return {
+    statusCode: 200,
+    body: {
+      registrationId: result.registrationId,
+      boxId: body.boxId,
+      apartmentKey,
+    },
+  };
+}
+
 function isUniqueViolation(err: unknown): boolean {
   return (
     typeof err === "object" &&
