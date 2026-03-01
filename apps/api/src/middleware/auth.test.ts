@@ -12,6 +12,7 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
     path: "/admin/test",
     body: undefined,
     headers: {},
+    params: {},
     ...overrides,
   };
 }

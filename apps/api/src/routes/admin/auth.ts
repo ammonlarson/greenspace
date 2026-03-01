@@ -1,3 +1,4 @@
+import { logAuditEvent } from "../../lib/audit.js";
 import { badRequest, unauthorized } from "../../lib/errors.js";
 import { hashPassword, verifyPassword } from "../../lib/password.js";
 import {
@@ -101,11 +102,21 @@ export async function handleChangePassword(ctx: RequestContext): Promise<RouteRe
   }
 
   const newHash = await hashPassword(newPassword);
-  await ctx.db
-    .updateTable("admin_credentials")
-    .set({ password_hash: newHash, updated_at: new Date().toISOString() })
-    .where("admin_id", "=", adminId)
-    .execute();
+  await ctx.db.transaction().execute(async (trx) => {
+    await trx
+      .updateTable("admin_credentials")
+      .set({ password_hash: newHash, updated_at: new Date().toISOString() })
+      .where("admin_id", "=", adminId)
+      .execute();
+
+    await logAuditEvent(trx, {
+      actor_type: "admin",
+      actor_id: adminId,
+      action: "admin_password_change",
+      entity_type: "admin",
+      entity_id: adminId,
+    });
+  });
 
   return {
     statusCode: 200,

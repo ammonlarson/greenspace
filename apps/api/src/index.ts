@@ -3,6 +3,7 @@ import { createDatabase } from "./db/connection.js";
 import { requireAdmin } from "./middleware/auth.js";
 import { Router } from "./router.js";
 import type { RequestContext } from "./router.js";
+import { handleCreateAdmin, handleDeleteAdmin, handleListAdmins } from "./routes/admin/admins.js";
 import { handleChangePassword, handleLogin, handleLogout } from "./routes/admin/auth.js";
 import { handleHealth } from "./routes/health.js";
 import {
@@ -31,6 +32,10 @@ export function createRouter(): Router {
   router.post("/admin/auth/login", handleLogin);
   router.post("/admin/auth/logout", requireAdmin(handleLogout));
   router.post("/admin/auth/change-password", requireAdmin(handleChangePassword));
+
+  router.get("/admin/admins", requireAdmin(handleListAdmins));
+  router.post("/admin/admins", requireAdmin(handleCreateAdmin));
+  router.delete("/admin/admins/:id", requireAdmin(handleDeleteAdmin));
 
   return router;
 }
@@ -110,6 +115,7 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
     path: event.path,
     body,
     headers: normalizedHeaders,
+    params: {},
   };
 
   const response = await router.handle(ctx);
