@@ -14,6 +14,32 @@ interface AuditQueryParams {
   cursor?: string;
 }
 
+interface DecodedCursor {
+  timestamp: string;
+  id: string;
+}
+
+function encodeCursor(timestamp: string, id: string): string {
+  return Buffer.from(JSON.stringify({ timestamp, id })).toString("base64");
+}
+
+function decodeCursor(cursor: string): DecodedCursor | null {
+  try {
+    const parsed = JSON.parse(Buffer.from(cursor, "base64").toString("utf8"));
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      typeof parsed.timestamp === "string" &&
+      typeof parsed.id === "string"
+    ) {
+      return parsed as DecodedCursor;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const MAX_PAGE_SIZE = 100;
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -93,14 +119,33 @@ export async function handleListAuditEvents(ctx: RequestContext): Promise<RouteR
   }
 
   if (params.cursor) {
-    query = query.where("id", "<", params.cursor);
+    if (typeof params.cursor !== "string") {
+      throw badRequest("Invalid cursor format");
+    }
+    const decoded = decodeCursor(params.cursor);
+    if (!decoded) {
+      throw badRequest("Invalid cursor format");
+    }
+    const cursorDate = new Date(decoded.timestamp);
+    if (isNaN(cursorDate.getTime())) {
+      throw badRequest("Invalid cursor format");
+    }
+    query = query.where((eb) =>
+      eb.or([
+        eb("timestamp", "<", cursorDate),
+        eb.and([eb("timestamp", "=", cursorDate), eb("id", "<", decoded.id)]),
+      ]),
+    );
   }
 
   const rows = await query.execute();
 
   const hasMore = rows.length > limit;
   const events = hasMore ? rows.slice(0, limit) : rows;
-  const nextCursor = hasMore ? events[events.length - 1].id : null;
+  const lastEvent = events[events.length - 1];
+  const nextCursor = hasMore && lastEvent
+    ? encodeCursor(new Date(lastEvent.timestamp).toISOString(), lastEvent.id)
+    : null;
 
   return {
     statusCode: 200,

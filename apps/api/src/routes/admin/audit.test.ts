@@ -17,6 +17,19 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
   };
 }
 
+function createMockDb(rows: unknown[]) {
+  const executeFn = vi.fn().mockResolvedValue(rows);
+  const limitFn = vi.fn().mockReturnValue({ execute: executeFn, where: vi.fn().mockReturnValue({ execute: executeFn }) });
+  const orderBy2 = vi.fn().mockReturnValue({ limit: limitFn });
+  const orderBy1 = vi.fn().mockReturnValue({ orderBy: orderBy2 });
+  const selectFn = vi.fn().mockReturnValue({ orderBy: orderBy1 });
+  const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+  return {
+    db: { selectFrom: selectFromFn } as unknown as Kysely<Database>,
+    mocks: { executeFn, limitFn, orderBy2, orderBy1, selectFn, selectFromFn },
+  };
+}
+
 describe("handleListAuditEvents", () => {
   it("throws 401 when adminId is missing", async () => {
     try {
@@ -80,6 +93,20 @@ describe("handleListAuditEvents", () => {
     }
   });
 
+  it("throws 400 for invalid cursor format", async () => {
+    const { db } = createMockDb([]);
+    try {
+      await handleListAuditEvents(
+        makeCtx({ adminId: "admin-1", db, body: { cursor: "not-valid-base64-json" } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toContain("cursor");
+    }
+  });
+
   it("returns events with pagination from mock db", async () => {
     const mockEvents = [
       {
@@ -96,16 +123,10 @@ describe("handleListAuditEvents", () => {
       },
     ];
 
-    const executeFn = vi.fn().mockResolvedValue(mockEvents);
-    const limitFn = vi.fn().mockReturnValue({ execute: executeFn });
-    const orderBy2 = vi.fn().mockReturnValue({ limit: limitFn });
-    const orderBy1 = vi.fn().mockReturnValue({ orderBy: orderBy2 });
-    const selectFn = vi.fn().mockReturnValue({ orderBy: orderBy1 });
-    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
-    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+    const { db } = createMockDb(mockEvents);
 
     const res = await handleListAuditEvents(
-      makeCtx({ adminId: "admin-1", db: mockDb, body: {} }),
+      makeCtx({ adminId: "admin-1", db, body: {} }),
     );
 
     expect(res.statusCode).toBe(200);
@@ -150,22 +171,19 @@ describe("handleListAuditEvents", () => {
       reason: null,
     }));
 
-    const executeFn = vi.fn().mockResolvedValue(events);
-    const limitFn = vi.fn().mockReturnValue({ execute: executeFn });
-    const orderBy2 = vi.fn().mockReturnValue({ limit: limitFn });
-    const orderBy1 = vi.fn().mockReturnValue({ orderBy: orderBy2 });
-    const selectFn = vi.fn().mockReturnValue({ orderBy: orderBy1 });
-    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
-    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+    const { db } = createMockDb(events);
 
     const res = await handleListAuditEvents(
-      makeCtx({ adminId: "admin-1", db: mockDb, body: {} }),
+      makeCtx({ adminId: "admin-1", db, body: {} }),
     );
 
     expect(res.statusCode).toBe(200);
     const body = res.body as { events: unknown[]; nextCursor: string | null; hasMore: boolean };
     expect(body.events).toHaveLength(50);
     expect(body.hasMore).toBe(true);
-    expect(body.nextCursor).toBe("evt-1");
+    expect(body.nextCursor).toBeTruthy();
+    const decoded = JSON.parse(Buffer.from(body.nextCursor!, "base64").toString("utf8"));
+    expect(decoded.id).toBe("evt-1");
+    expect(decoded.timestamp).toBeTruthy();
   });
 });

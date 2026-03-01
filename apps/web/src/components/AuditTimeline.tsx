@@ -26,9 +26,11 @@ interface AuditTimelineProps {
   onActorTypeFilterChange?: (actorType: string) => void;
 }
 
-function formatTimestamp(iso: string): string {
+const LOCALE_MAP: Record<string, string> = { da: "da-DK", en: "en-GB" };
+
+function formatTimestamp(iso: string, lang: string): string {
   const d = new Date(iso);
-  return d.toLocaleString("da-DK", {
+  return d.toLocaleString(LOCALE_MAP[lang] ?? "da-DK", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -36,6 +38,10 @@ function formatTimestamp(iso: string): string {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+function truncateId(id: string, len = 8): string {
+  return id.length > len ? `${id.slice(0, len)}...` : id;
 }
 
 function formatSnapshot(data: Record<string, unknown> | null): string {
@@ -54,7 +60,7 @@ export function AuditTimeline({
   onActionFilterChange,
   onActorTypeFilterChange,
 }: AuditTimelineProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <section style={{ maxWidth: 1000, margin: "0 auto", padding: "2rem 1rem" }}>
@@ -116,7 +122,7 @@ export function AuditTimeline({
               {events.map((evt) => (
                 <tr key={evt.id} style={{ borderBottom: "1px solid #eee" }}>
                   <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>
-                    {formatTimestamp(evt.timestamp)}
+                    {formatTimestamp(evt.timestamp, language)}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     <code style={{ fontSize: "0.8rem", background: "#f4f4f4", padding: "0.1rem 0.3rem", borderRadius: 3 }}>
@@ -125,10 +131,10 @@ export function AuditTimeline({
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {evt.actorType}
-                    {evt.actorId ? ` (${evt.actorId.slice(0, 8)}...)` : ""}
+                    {evt.actorId ? ` (${truncateId(evt.actorId)})` : ""}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
-                    {evt.entityType} / {evt.entityId.slice(0, 8)}...
+                    {evt.entityType} / {truncateId(evt.entityId)}
                   </td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem", color: "#555" }}>
                     {evt.before && (
