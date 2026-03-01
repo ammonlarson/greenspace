@@ -402,6 +402,7 @@ describe("handlePublicGreenhouses", () => {
       expect(gh.totalBoxes).toBe(0);
       expect(gh.availableBoxes).toBe(0);
       expect(gh.occupiedBoxes).toBe(0);
+      expect(gh.reservedBoxes).toBe(0);
     }
   });
 });
