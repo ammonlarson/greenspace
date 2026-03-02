@@ -481,6 +481,519 @@ describe("handleNotificationPreview", () => {
   });
 });
 
+describe("handleMoveRegistration (happy path)", () => {
+  it("moves registration to a new box", async () => {
+    const mockDb = makeMockMoveDb({
+      reg: { id: "reg-1", box_id: 1, name: "Alice", email: "a@b.com", language: "da", status: "active" },
+      oldBox: { id: 1, state: "occupied" },
+      newBox: { id: 5, state: "available" },
+    });
+
+    const result = await handleMoveRegistration(
+      makeCtx({
+        db: mockDb,
+        body: { registrationId: "reg-1", newBoxId: 5 },
+      }),
+    );
+    expect(result.statusCode).toBe(200);
+    const body = result.body as Record<string, unknown>;
+    expect(body.registrationId).toBe("reg-1");
+    expect(body.newBoxId).toBe(5);
+  });
+
+  it("throws 404 when registration not found", async () => {
+    const mockDb = makeMockMoveDb({ reg: undefined });
+
+    try {
+      await handleMoveRegistration(
+        makeCtx({ db: mockDb, body: { registrationId: "nonexistent", newBoxId: 5 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(404);
+    }
+  });
+
+  it("throws 400 when registration is not active", async () => {
+    const mockDb = makeMockMoveDb({
+      reg: { id: "reg-1", box_id: 1, name: "A", email: "a@b.com", language: "da", status: "removed" },
+    });
+
+    try {
+      await handleMoveRegistration(
+        makeCtx({ db: mockDb, body: { registrationId: "reg-1", newBoxId: 5 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("Only active registrations can be moved");
+    }
+  });
+
+  it("throws 400 when new box is same as current", async () => {
+    const mockDb = makeMockMoveDb({
+      reg: { id: "reg-1", box_id: 5, name: "A", email: "a@b.com", language: "da", status: "active" },
+    });
+
+    try {
+      await handleMoveRegistration(
+        makeCtx({ db: mockDb, body: { registrationId: "reg-1", newBoxId: 5 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("New box must be different from current box");
+    }
+  });
+
+  it("throws 409 when target box is occupied", async () => {
+    const mockDb = makeMockMoveDb({
+      reg: { id: "reg-1", box_id: 1, name: "A", email: "a@b.com", language: "da", status: "active" },
+      oldBox: { id: 1, state: "occupied" },
+      newBox: { id: 5, state: "occupied" },
+    });
+
+    try {
+      await handleMoveRegistration(
+        makeCtx({ db: mockDb, body: { registrationId: "reg-1", newBoxId: 5 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(409);
+      expect((err as AppError).code).toBe("BOX_OCCUPIED");
+    }
+  });
+});
+
+describe("handleRemoveRegistration (happy path)", () => {
+  it("removes registration and releases box as public (default)", async () => {
+    const mockDb = makeMockRemoveDb({
+      reg: {
+        id: "reg-1", box_id: 3, status: "active",
+        name: "Alice", email: "a@b.com", language: "da", apartment_key: "else alfelts vej 130",
+      },
+    });
+
+    const result = await handleRemoveRegistration(
+      makeCtx({ db: mockDb, body: { registrationId: "reg-1" } }),
+    );
+    expect(result.statusCode).toBe(200);
+    const body = result.body as Record<string, unknown>;
+    expect(body.registrationId).toBe("reg-1");
+    expect(body.boxReleased).toBe(true);
+  });
+
+  it("removes registration and holds box as reserved when makeBoxPublic is false", async () => {
+    const mockDb = makeMockRemoveDb({
+      reg: {
+        id: "reg-1", box_id: 3, status: "active",
+        name: "Alice", email: "a@b.com", language: "da", apartment_key: "else alfelts vej 130",
+      },
+    });
+
+    const result = await handleRemoveRegistration(
+      makeCtx({ db: mockDb, body: { registrationId: "reg-1", makeBoxPublic: false } }),
+    );
+    expect(result.statusCode).toBe(200);
+    const body = result.body as Record<string, unknown>;
+    expect(body.boxReleased).toBe(false);
+  });
+
+  it("throws 404 when registration not found", async () => {
+    const mockDb = makeMockRemoveDb({ reg: undefined });
+
+    try {
+      await handleRemoveRegistration(
+        makeCtx({ db: mockDb, body: { registrationId: "nonexistent" } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(404);
+    }
+  });
+
+  it("throws 400 when registration is not active", async () => {
+    const mockDb = makeMockRemoveDb({
+      reg: {
+        id: "reg-1", box_id: 3, status: "removed",
+        name: "A", email: "a@b.com", language: "da", apartment_key: "key",
+      },
+    });
+
+    try {
+      await handleRemoveRegistration(
+        makeCtx({ db: mockDb, body: { registrationId: "reg-1" } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("Only active registrations can be removed");
+    }
+  });
+});
+
+describe("handleAssignWaitlist (happy path)", () => {
+  it("assigns waitlist entry to a box and creates registration", async () => {
+    const mockDb = makeMockAssignDb({
+      entry: {
+        id: "wl-1", name: "Bob", email: "bob@b.com",
+        street: "Else Alfelts Vej", house_number: 140,
+        floor: null, door: null, apartment_key: "else alfelts vej 140",
+        language: "en", status: "waiting",
+      },
+      box: { id: 10, state: "available" },
+      existingReg: undefined,
+    });
+
+    const result = await handleAssignWaitlist(
+      makeCtx({ db: mockDb, body: { waitlistEntryId: "wl-1", boxId: 10 } }),
+    );
+    expect(result.statusCode).toBe(201);
+    const body = result.body as Record<string, unknown>;
+    expect(body.waitlistEntryId).toBe("wl-1");
+    expect(body.boxId).toBe(10);
+    expect(body.registrationId).toBeTruthy();
+  });
+
+  it("throws 404 when waitlist entry not found", async () => {
+    const mockDb = makeMockAssignDb({ entry: undefined });
+
+    try {
+      await handleAssignWaitlist(
+        makeCtx({ db: mockDb, body: { waitlistEntryId: "nonexistent", boxId: 10 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(404);
+    }
+  });
+
+  it("throws 400 when waitlist entry is not waiting", async () => {
+    const mockDb = makeMockAssignDb({
+      entry: {
+        id: "wl-1", name: "Bob", email: "bob@b.com",
+        street: "Else Alfelts Vej", house_number: 140,
+        floor: null, door: null, apartment_key: "else alfelts vej 140",
+        language: "en", status: "assigned",
+      },
+    });
+
+    try {
+      await handleAssignWaitlist(
+        makeCtx({ db: mockDb, body: { waitlistEntryId: "wl-1", boxId: 10 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("Waitlist entry is not in waiting status");
+    }
+  });
+
+  it("throws 409 when target box is occupied", async () => {
+    const mockDb = makeMockAssignDb({
+      entry: {
+        id: "wl-1", name: "Bob", email: "bob@b.com",
+        street: "Else Alfelts Vej", house_number: 140,
+        floor: null, door: null, apartment_key: "else alfelts vej 140",
+        language: "en", status: "waiting",
+      },
+      box: { id: 10, state: "occupied" },
+    });
+
+    try {
+      await handleAssignWaitlist(
+        makeCtx({ db: mockDb, body: { waitlistEntryId: "wl-1", boxId: 10 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(409);
+      expect((err as AppError).code).toBe("BOX_OCCUPIED");
+    }
+  });
+
+  it("throws 409 when apartment already has active registration", async () => {
+    const mockDb = makeMockAssignDb({
+      entry: {
+        id: "wl-1", name: "Bob", email: "bob@b.com",
+        street: "Else Alfelts Vej", house_number: 140,
+        floor: null, door: null, apartment_key: "else alfelts vej 140",
+        language: "en", status: "waiting",
+      },
+      box: { id: 10, state: "available" },
+      existingReg: { id: "existing-reg" },
+    });
+
+    try {
+      await handleAssignWaitlist(
+        makeCtx({ db: mockDb, body: { waitlistEntryId: "wl-1", boxId: 10 } }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(409);
+      expect((err as AppError).code).toBe("APARTMENT_HAS_REGISTRATION");
+    }
+  });
+});
+
+describe("one-apartment constraint in admin create", () => {
+  it("throws 409 when apartment already has active registration", async () => {
+    const mockDb = makeMockTrxDb({
+      boxResult: { id: 1, state: "available" },
+      existingReg: { id: "existing-reg" },
+    });
+
+    try {
+      await handleCreateRegistration(
+        makeCtx({
+          db: mockDb,
+          body: {
+            boxId: 1,
+            name: "Alice",
+            email: "a@b.com",
+            street: "Else Alfelts Vej",
+            houseNumber: 130,
+            language: "da",
+          },
+        }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(409);
+      expect((err as AppError).code).toBe("APARTMENT_HAS_REGISTRATION");
+    }
+  });
+});
+
+function makeMockMoveDb(opts: {
+  reg?: { id: string; box_id: number; name: string; email: string; language: string; status: string };
+  oldBox?: { id: number; state: string };
+  newBox?: { id: number; state: string };
+}): Kysely<Database> {
+  let boxCallCount = 0;
+  const mockTrx = {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "registrations") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.reg),
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "planter_boxes") {
+        boxCallCount++;
+        const boxData = boxCallCount === 1 ? opts.oldBox : opts.newBox;
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(boxData),
+              }),
+            }),
+          }),
+        };
+      }
+      return {};
+    }),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+    insertInto: vi.fn().mockImplementation(() => ({
+      values: vi.fn().mockReturnValue({
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    })),
+  };
+
+  return {
+    transaction: vi.fn().mockReturnValue({
+      execute: vi.fn().mockImplementation(
+        async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
+      ),
+    }),
+    insertInto: vi.fn().mockImplementation(() => ({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue([{ id: "email-mock-id" }]),
+        }),
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    })),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+  } as unknown as Kysely<Database>;
+}
+
+function makeMockRemoveDb(opts: {
+  reg?: {
+    id: string; box_id: number; status: string;
+    name: string; email: string; language: string; apartment_key: string;
+  };
+}): Kysely<Database> {
+  const mockTrx = {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "registrations") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.reg),
+              }),
+            }),
+          }),
+        };
+      }
+      return {};
+    }),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+    insertInto: vi.fn().mockImplementation(() => ({
+      values: vi.fn().mockReturnValue({
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    })),
+  };
+
+  return {
+    transaction: vi.fn().mockReturnValue({
+      execute: vi.fn().mockImplementation(
+        async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
+      ),
+    }),
+    insertInto: vi.fn().mockImplementation(() => ({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue([{ id: "email-mock-id" }]),
+        }),
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    })),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+  } as unknown as Kysely<Database>;
+}
+
+function makeMockAssignDb(opts: {
+  entry?: {
+    id: string; name: string; email: string;
+    street: string; house_number: number;
+    floor: string | null; door: string | null;
+    apartment_key: string; language: string; status: string;
+  };
+  box?: { id: number; state: string };
+  existingReg?: { id: string };
+}): Kysely<Database> {
+  const mockTrx = {
+    selectFrom: vi.fn().mockImplementation((table: string) => {
+      if (table === "waitlist_entries") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.entry),
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "planter_boxes") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              forUpdate: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.box),
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "registrations") {
+        return {
+          select: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+              }),
+            }),
+          }),
+        };
+      }
+      return {};
+    }),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+    insertInto: vi.fn().mockImplementation(() => ({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue([{ id: "new-reg-from-wl" }]),
+        }),
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    })),
+  };
+
+  return {
+    transaction: vi.fn().mockReturnValue({
+      execute: vi.fn().mockImplementation(
+        async (fn: (trx: unknown) => Promise<unknown>) => fn(mockTrx),
+      ),
+    }),
+    insertInto: vi.fn().mockImplementation(() => ({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue([{ id: "email-mock-id" }]),
+        }),
+        execute: vi.fn().mockResolvedValue(undefined),
+      }),
+    })),
+    updateTable: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          execute: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    }),
+  } as unknown as Kysely<Database>;
+}
+
 function makeMockTrxDb(opts: {
   boxResult?: { id: number; state: string };
   existingReg?: { id: string };
