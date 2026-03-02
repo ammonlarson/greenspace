@@ -64,6 +64,17 @@ describe("DawaAddressInput", () => {
       setup();
       expect(screen.getByRole("combobox").getAttribute("aria-expanded")).toBe("false");
     });
+
+    it("sets aria-expanded to true when dropdown is open", async () => {
+      vi.stubGlobal("fetch", mockFetchOk(suggestions));
+      setup();
+      const input = screen.getByRole("combobox");
+
+      fireEvent.change(input, { target: { value: "Else" } });
+      await act(async () => { vi.advanceTimersByTime(300); });
+
+      expect(input.getAttribute("aria-expanded")).toBe("true");
+    });
   });
 
   describe("debounced fetch", () => {
@@ -459,6 +470,46 @@ describe("DawaAddressInput", () => {
 
       fireEvent.focus(input);
       expect(screen.getByRole("listbox")).toBeDefined();
+    });
+  });
+
+  describe("loading indicator", () => {
+    it("shows loading text while fetch is in progress", async () => {
+      const fetchMock = vi.fn().mockImplementation(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => resolve({ ok: true, json: async () => suggestions }), 500);
+        });
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      setup();
+      const input = screen.getByRole("combobox");
+
+      fireEvent.change(input, { target: { value: "Else" } });
+      await act(async () => { vi.advanceTimersByTime(300); });
+
+      expect(screen.getByText("common.loading")).toBeDefined();
+
+      await act(async () => { vi.advanceTimersByTime(500); });
+
+      expect(screen.queryByText("common.loading")).toBeNull();
+    });
+  });
+
+  describe("mouse interaction", () => {
+    it("highlights suggestion on mouseEnter", async () => {
+      vi.stubGlobal("fetch", mockFetchOk(suggestions));
+      setup();
+      const input = screen.getByRole("combobox");
+
+      fireEvent.change(input, { target: { value: "Else" } });
+      await act(async () => { vi.advanceTimersByTime(300); });
+
+      const options = screen.getAllByRole("option");
+      fireEvent.mouseEnter(options[2]);
+
+      expect(options[2].getAttribute("aria-selected")).toBe("true");
+      expect(options[0].getAttribute("aria-selected")).toBe("false");
     });
   });
 
