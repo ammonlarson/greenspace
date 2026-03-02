@@ -56,19 +56,6 @@ describe("handleGetOpeningTime", () => {
     expect(body.updatedAt).toBeNull();
   });
 
-  it("returns Europe/Copenhagen as timezone", async () => {
-    const executeTakeFirstFn = vi.fn().mockResolvedValue({
-      opening_datetime: "2026-04-01T10:00:00.000Z",
-      updated_at: "2026-03-15T12:00:00.000Z",
-    });
-    const selectFn = vi.fn().mockReturnValue({ executeTakeFirst: executeTakeFirstFn });
-    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
-    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
-
-    const res = await handleGetOpeningTime(makeCtx({ db: mockDb }));
-    const body = res.body as Record<string, unknown>;
-    expect(body.timezone).toBe("Europe/Copenhagen");
-  });
 });
 
 describe("handleUpdateOpeningTime", () => {

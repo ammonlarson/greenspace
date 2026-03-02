@@ -139,6 +139,7 @@ describe("handleLogin", () => {
     expect(res.headers?.["Set-Cookie"]).toContain("HttpOnly");
     expect(res.headers?.["Set-Cookie"]).toContain("Secure");
     expect(res.headers?.["Set-Cookie"]).toContain("Path=/admin");
+    expect(sessionInsert).toHaveBeenCalledWith("sessions");
   });
 });
 

@@ -780,6 +780,8 @@ function makeMockMoveDb(opts: {
   oldBox?: { id: number; state: string };
   newBox?: { id: number; state: string };
 }): Kysely<Database> {
+  // The production code queries old box first (line 297), then new box (line 308).
+  // This counter relies on that ordering.
   let boxCallCount = 0;
   const mockTrx = {
     selectFrom: vi.fn().mockImplementation((table: string) => {
