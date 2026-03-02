@@ -4,14 +4,12 @@ import { useState } from "react";
 import {
   BOX_CATALOG,
   ELIGIBLE_STREET,
-  HOUSE_NUMBER_MIN,
-  HOUSE_NUMBER_MAX,
   ORGANIZER_CONTACTS,
-  isFloorDoorRequired,
   validateRegistrationInput,
   type Language,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { DawaAddressInput, type DawaAddressResult } from "./DawaAddressInput";
 
 interface RegistrationFormProps {
   boxId: number;
@@ -24,16 +22,11 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [houseNumber, setHouseNumber] = useState("");
-  const [floor, setFloor] = useState("");
-  const [door, setDoor] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState<DawaAddressResult | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-
-  const parsedHouseNumber = parseInt(houseNumber, 10);
-  const needsFloorDoor = !isNaN(parsedHouseNumber) && isFloorDoorRequired(parsedHouseNumber);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,13 +37,18 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
       return;
     }
 
+    if (!selectedAddress) {
+      setErrors([t("address.ineligible")]);
+      return;
+    }
+
     const input = {
       name: name.trim(),
       email: email.trim(),
       street: ELIGIBLE_STREET,
-      houseNumber: parsedHouseNumber,
-      floor: floor.trim() || null,
-      door: door.trim() || null,
+      houseNumber: selectedAddress.houseNumber,
+      floor: selectedAddress.floor,
+      door: selectedAddress.door,
       language: language as Language,
       boxId,
     };
@@ -192,66 +190,12 @@ export function RegistrationForm({ boxId, onCancel }: RegistrationFormProps) {
           />
         </div>
 
-        {/* Street (fixed) */}
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-street" style={labelStyle}>
-            {t("registration.streetLabel")}
-          </label>
-          <input
-            id="reg-street"
-            type="text"
-            value={ELIGIBLE_STREET}
-            disabled
-            style={{ ...inputStyle, background: "#f0f0f0", color: "#888" }}
-          />
-        </div>
-
-        {/* House number */}
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-house" style={labelStyle}>
-            {t("registration.houseNumberLabel")} *
-          </label>
-          <input
-            id="reg-house"
-            type="number"
-            required
-            min={HOUSE_NUMBER_MIN}
-            max={HOUSE_NUMBER_MAX}
-            value={houseNumber}
-            onChange={(e) => setHouseNumber(e.target.value)}
-            style={inputStyle}
-          />
-        </div>
-
-        {/* Floor */}
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-floor" style={labelStyle}>
-            {t("registration.floorLabel")} {needsFloorDoor ? "*" : ""}
-          </label>
-          <input
-            id="reg-floor"
-            type="text"
-            required={needsFloorDoor}
-            value={floor}
-            onChange={(e) => setFloor(e.target.value)}
-            style={inputStyle}
-          />
-        </div>
-
-        {/* Door */}
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="reg-door" style={labelStyle}>
-            {t("registration.doorLabel")} {needsFloorDoor ? "*" : ""}
-          </label>
-          <input
-            id="reg-door"
-            type="text"
-            required={needsFloorDoor}
-            value={door}
-            onChange={(e) => setDoor(e.target.value)}
-            style={inputStyle}
-          />
-        </div>
+        {/* DAWA Address Autocomplete */}
+        <DawaAddressInput
+          selectedAddress={selectedAddress}
+          onSelect={setSelectedAddress}
+          onClear={() => setSelectedAddress(null)}
+        />
 
         {/* Consent section */}
         <fieldset
