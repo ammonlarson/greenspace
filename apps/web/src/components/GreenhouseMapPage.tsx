@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  BOX_CATALOG,
   type Greenhouse,
   type PlanterBoxPublic,
 } from "@greenspace/shared";
@@ -16,20 +15,30 @@ interface GreenhouseMapPageProps {
   onBack: () => void;
 }
 
-// TODO: replace with /public/boxes API fetch when API integration is wired up
-function mockBoxes(greenhouse: Greenhouse): PlanterBoxPublic[] {
-  return BOX_CATALOG.filter((b) => b.greenhouse === greenhouse).map((b) => ({
-    id: b.id,
-    name: b.name,
-    greenhouse: b.greenhouse,
-    state: "available" as const,
-  }));
-}
-
 export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps) {
   const { t } = useLanguage();
-  const boxes = mockBoxes(greenhouse);
+  const [boxes, setBoxes] = useState<PlanterBoxPublic[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/public/boxes");
+        if (res.ok && !cancelled) {
+          const all: PlanterBoxPublic[] = await res.json();
+          setBoxes(all.filter((b) => b.greenhouse === greenhouse));
+        }
+      } catch {
+        /* API unreachable — map will show empty */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [greenhouse]);
 
   const total = boxes.length;
   const available = boxes.filter((b) => b.state === "available").length;
@@ -90,7 +99,11 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
       <BoxStateLegend />
 
       <div style={{ marginTop: "1.25rem" }}>
-        <GreenhouseMap boxes={boxes} onSelectBox={setSelectedBoxId} />
+        {loading ? (
+          <p style={{ color: "#888" }}>{t("common.loading")}</p>
+        ) : (
+          <GreenhouseMap boxes={boxes} onSelectBox={setSelectedBoxId} />
+        )}
       </div>
     </section>
   );
