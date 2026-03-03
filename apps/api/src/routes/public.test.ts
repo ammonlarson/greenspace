@@ -538,6 +538,266 @@ describe("stale-state regression", () => {
   });
 });
 
+describe("role visibility — public endpoints do not expose reserved_label", () => {
+  it("handlePublicBoxes only returns id, name, greenhouse, and state", async () => {
+    const mockRows = [
+      {
+        id: 1,
+        name: "Linaria",
+        greenhouse_name: "Kronen",
+        state: "reserved",
+      },
+    ];
+    const executeFn = vi.fn().mockResolvedValue(mockRows);
+    const orderByFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFn = vi.fn().mockReturnValue({ orderBy: orderByFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicBoxes(makeCtx({ db: mockDb }));
+    const body = res.body as Array<Record<string, unknown>>;
+    const keys = Object.keys(body[0]);
+    expect(keys).toEqual(["id", "name", "greenhouse", "state"]);
+    expect(body[0]).not.toHaveProperty("reserved_label");
+    expect(body[0]).not.toHaveProperty("adminId");
+    expect(body[0]).not.toHaveProperty("email");
+  });
+
+  it("handlePublicGreenhouses only returns summary counts, not individual registrations", async () => {
+    const mockBoxes = [
+      { greenhouse_name: "Kronen", state: "reserved" },
+    ];
+    const executeFn = vi.fn().mockResolvedValue(mockBoxes);
+    const selectFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    const res = await handlePublicGreenhouses(makeCtx({ db: mockDb }));
+    const body = res.body as Array<Record<string, unknown>>;
+    const kronen = body.find((g) => g.name === "Kronen")!;
+    const keys = Object.keys(kronen);
+    expect(keys).toEqual([
+      "name", "totalBoxes", "availableBoxes", "occupiedBoxes", "reservedBoxes",
+    ]);
+    expect(kronen).not.toHaveProperty("registrations");
+    expect(kronen).not.toHaveProperty("reserved_label");
+  });
+});
+
+describe("handleJoinWaitlist — FIFO ordering", () => {
+  it("returns existing waitlist position when apartment already on waitlist (preserves original timestamp)", async () => {
+    const existingEntry = {
+      id: "wl-1",
+      created_at: "2026-03-01T10:00:00Z",
+    };
+
+    const allEntries = [
+      { apartment_key: "else alfelts vej 122" },
+      { apartment_key: "else alfelts vej 130" },
+      { apartment_key: "else alfelts vej 140" },
+    ];
+
+    let selectCallCount = 0;
+    const mockDb = {
+      selectFrom: vi.fn().mockImplementation((table: string) => {
+        if (table === "planter_boxes") {
+          return {
+            select: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ count: 0 }),
+              }),
+            }),
+          };
+        }
+        if (table === "waitlist_entries") {
+          selectCallCount++;
+          if (selectCallCount === 1) {
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue(existingEntry),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {
+            select: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(allEntries),
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+      fn: {
+        countAll: vi.fn().mockReturnValue({ as: vi.fn().mockReturnValue("count") }),
+      },
+    } as unknown as Kysely<Database>;
+
+    const res = await handleJoinWaitlist(
+      makeCtx({
+        db: mockDb,
+        body: {
+          name: "Alice",
+          email: "alice@example.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+          language: "da",
+        },
+      }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.alreadyOnWaitlist).toBe(true);
+    expect(body.position).toBe(2);
+    expect(body.joinedAt).toBe(new Date("2026-03-01T10:00:00Z").toISOString());
+  });
+
+  it("returns position based on FIFO ordering after new join", async () => {
+    const allEntries = [
+      { apartment_key: "else alfelts vej 122" },
+      { apartment_key: "else alfelts vej 130" },
+    ];
+
+    let selectCallCount = 0;
+    const mockDb = {
+      selectFrom: vi.fn().mockImplementation((table: string) => {
+        if (table === "planter_boxes") {
+          return {
+            select: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ count: 0 }),
+              }),
+            }),
+          };
+        }
+        if (table === "waitlist_entries") {
+          selectCallCount++;
+          if (selectCallCount === 1) {
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue(undefined),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {
+            select: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(allEntries),
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+      fn: {
+        countAll: vi.fn().mockReturnValue({ as: vi.fn().mockReturnValue("count") }),
+      },
+      transaction: vi.fn().mockReturnValue({
+        execute: vi.fn().mockImplementation(async (fn: (trx: unknown) => Promise<unknown>) => {
+          const trx = {
+            insertInto: vi.fn().mockImplementation(() => ({
+              values: vi.fn().mockReturnValue({
+                returning: vi.fn().mockReturnValue({
+                  executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: "wl-new" }),
+                }),
+                execute: vi.fn().mockResolvedValue(undefined),
+              }),
+            })),
+          };
+          return fn(trx);
+        }),
+      }),
+    } as unknown as Kysely<Database>;
+
+    const res = await handleJoinWaitlist(
+      makeCtx({
+        db: mockDb,
+        body: {
+          name: "Bob",
+          email: "bob@example.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+          language: "en",
+        },
+      }),
+    );
+
+    expect(res.statusCode).toBe(201);
+    const body = res.body as Record<string, unknown>;
+    expect(body.alreadyOnWaitlist).toBe(false);
+    expect(body.waitlistEntryId).toBe("wl-new");
+    expect(body.position).toBe(2);
+  });
+});
+
+describe("handleWaitlistPosition — returns FIFO position", () => {
+  it("returns correct position based on created_at ordering", async () => {
+    const mockEntry = {
+      id: "wl-2",
+      created_at: "2026-03-02T10:00:00Z",
+    };
+    const allEntries = [
+      { apartment_key: "else alfelts vej 122" },
+      { apartment_key: "else alfelts vej 130" },
+      { apartment_key: "else alfelts vej 140" },
+    ];
+
+    let selectCallCount = 0;
+    const mockDb = {
+      selectFrom: vi.fn().mockImplementation((table: string) => {
+        if (table === "waitlist_entries") {
+          selectCallCount++;
+          if (selectCallCount === 1) {
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue(mockEntry),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {
+            select: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(allEntries),
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+    } as unknown as Kysely<Database>;
+
+    const res = await handleWaitlistPosition(
+      makeCtx({
+        db: mockDb,
+        params: { apartmentKey: "else alfelts vej 130" },
+      }),
+    );
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.onWaitlist).toBe(true);
+    expect(body.position).toBe(2);
+  });
+});
+
 interface MockRegisterOpts {
   openingDatetime: Date;
   box?: { id: number; state: string };
