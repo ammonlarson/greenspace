@@ -142,6 +142,11 @@ describe("translations", () => {
       "registration.boxLabel",
       "registration.switchWarning",
       "registration.switchConfirm",
+      "registration.switchTitle",
+      "registration.switchCurrentBox",
+      "registration.switchNewBox",
+      "registration.switchExplainer",
+      "registration.switchKeep",
       "registration.success",
       "registration.unregisterInfo",
     ];
