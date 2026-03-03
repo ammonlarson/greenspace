@@ -36,7 +36,7 @@ resource "aws_amplify_app" "web" {
 
   environment_variables = {
     AMPLIFY_MONOREPO_APP_ROOT = "apps/web"
-    API_URL                   = var.amplify_api_url
+    API_URL                   = aws_lambda_function_url.api.function_url
   }
 
   tags = {

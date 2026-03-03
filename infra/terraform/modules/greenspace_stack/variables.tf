@@ -146,12 +146,6 @@ variable "amplify_domain_prefix" {
   }
 }
 
-variable "amplify_api_url" {
-  description = "Backend API URL passed to the Next.js frontend as API_URL environment variable."
-  type        = string
-  default     = ""
-}
-
 # ---------- Lambda ----------
 
 variable "lambda_memory_size" {

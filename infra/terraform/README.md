@@ -159,8 +159,8 @@ Amplify uses the build spec embedded in the Terraform configuration:
 - **Build**: `npm run build`
 - **Artifacts**: `.next/**/*`
 
-The `API_URL` environment variable is passed through to Next.js at build time
-to configure API rewrites.
+The `API_URL` environment variable is automatically set to the Lambda function
+URL from the same stack, so Next.js API rewrites point to the correct backend.
 
 ### Deployment Modes
 
