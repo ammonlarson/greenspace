@@ -14,13 +14,11 @@ terraform {
     region         = "eu-north-1"
     dynamodb_table = "greenspace-2026-tflock"
     encrypt        = true
-    profile        = "home"
   }
 }
 
 provider "aws" {
-  region  = "eu-north-1"
-  profile = "home"
+  region = "eu-north-1"
 
   default_tags {
     tags = {
