@@ -47,7 +47,7 @@ FROM system_settings;
 ### 1.3 API Endpoints
 
 - [ ] `GET /health` — returns 200
-- [ ] `GET /public/status` — returns correct `registrationOpen` flag (should be `false` before opening date)
+- [ ] `GET /public/status` — returns correct `isOpen` flag (should be `false` before opening date)
 - [ ] `GET /public/greenhouses` — returns both greenhouses with correct box counts
 - [ ] `GET /public/boxes` — returns all 29 boxes with correct states
 - [ ] `POST /public/validate-address` — accepts eligible address, rejects ineligible
@@ -56,8 +56,8 @@ FROM system_settings;
 - [ ] `POST /public/waitlist` — rejects when boxes are available (correct behavior pre-launch)
 - [ ] `POST /admin/auth/login` — admin login works with seeded credentials
 - [ ] `GET /admin/registrations` — returns registrations (empty or test data)
-- [ ] `PUT /admin/settings/opening-time` — can update opening datetime
-- [ ] `GET /admin/audit` — returns audit trail
+- [ ] `PATCH /admin/settings/opening-time` — can update opening datetime
+- [ ] `POST /admin/audit-events` — returns audit trail
 
 ### 1.4 Email
 
@@ -140,7 +140,7 @@ Application code is deployed via the Deploy API workflow on merge to `main`.
 ### 2.5 Post-Deploy Configuration
 
 - [ ] Set opening datetime to `2026-04-01T10:00:00 Europe/Copenhagen` via admin API
-- [ ] Verify `/public/status` returns `registrationOpen: false` (before opening)
+- [ ] Verify `/public/status` returns `isOpen: false` (before opening)
 - [ ] Confirm alarm notification email is subscribed and confirmed
 
 ---
@@ -155,12 +155,12 @@ Run these tests against the production API endpoint immediately after deployment
 # Health check
 curl -s "${PROD_API_URL}/health" | jq .
 
-# Registration status (should show registrationOpen: false before opening)
+# Registration status (should show isOpen: false before opening)
 curl -s "${PROD_API_URL}/public/status" | jq .
 ```
 
 - [ ] `/health` returns `{ "status": "ok" }`
-- [ ] `/public/status` returns correct opening datetime and `registrationOpen` flag
+- [ ] `/public/status` returns correct opening datetime and `isOpen` flag
 
 ### 3.2 Public Endpoints
 
