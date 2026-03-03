@@ -118,6 +118,57 @@ are stored in GitHub repository variables:
 | `TF_ROLE_ARN_STAGING` | OIDC role ARN for staging plan/apply |
 | `TF_ROLE_ARN_PROD`    | OIDC role ARN for prod plan/apply    |
 
+#### Required variables
+
+Terraform variables that must be supplied at plan/apply time:
+
+| Variable                              | Purpose                                              |
+| ------------------------------------- | ---------------------------------------------------- |
+| `TF_VAR_amplify_github_access_token`  | GitHub PAT for Amplify repository integration        |
+
+Store the token in a GitHub Actions secret (e.g. `AMPLIFY_GITHUB_TOKEN`) and
+export it as an environment variable in CI steps that run `terraform plan` or
+`terraform apply`.
+
+## Amplify Hosting
+
+Each environment provisions an AWS Amplify app for the Next.js frontend
+(`apps/web`). Amplify builds from source using the `WEB_COMPUTE` platform
+(SSR support).
+
+### Custom Domains
+
+| Environment | Domain                              |
+| ----------- | ----------------------------------- |
+| staging     | `greenspace.staging.un17hub.com`    |
+| production  | `greenspace.un17hub.com`            |
+
+### TLS
+
+Amplify provisions and auto-renews ACM certificates via the domain
+association. When the Route 53 hosted zone is in the same AWS account,
+Amplify automatically creates DNS validation records—no manual certificate
+management is required.
+
+### Build Configuration
+
+Amplify uses the build spec embedded in the Terraform configuration:
+
+- **App root**: `apps/web`
+- **Install**: `npm ci`
+- **Build**: `npm run build`
+- **Artifacts**: `.next/**/*`
+
+The `API_URL` environment variable is passed through to Next.js at build time
+to configure API rewrites.
+
+### Deployment Modes
+
+| Environment | Auto-build | Trigger                                    |
+| ----------- | ---------- | ------------------------------------------ |
+| staging     | enabled    | Push to `main` triggers automatic build    |
+| production  | disabled   | Manual deployment via Amplify console / CI |
+
 #### How to verify
 
 - **PR plans**: check the `Plan (staging)` and `Plan (prod)` job logs, or

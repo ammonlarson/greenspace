@@ -158,6 +158,26 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
     ]
     resources = var.cloudfront_distribution_arns
   }
+
+  statement {
+    sid    = "AmplifyDeploy"
+    effect = "Allow"
+    actions = [
+      "amplify:StartDeployment",
+      "amplify:GetApp",
+      "amplify:GetBranch",
+      "amplify:ListApps",
+      "amplify:ListBranches",
+      "amplify:StartJob",
+      "amplify:StopJob",
+      "amplify:GetJob",
+      "amplify:ListJobs",
+    ]
+    resources = [
+      aws_amplify_app.web.arn,
+      "${aws_amplify_app.web.arn}/*",
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "ci_deploy" {
@@ -633,6 +653,34 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     ]
     resources = [
       "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:pg:${local.naming_prefix}-*",
+    ]
+  }
+
+  statement {
+    sid    = "AmplifyManage"
+    effect = "Allow"
+    actions = [
+      "amplify:CreateApp",
+      "amplify:DeleteApp",
+      "amplify:GetApp",
+      "amplify:UpdateApp",
+      "amplify:ListApps",
+      "amplify:TagResource",
+      "amplify:UntagResource",
+      "amplify:ListTagsForResource",
+      "amplify:CreateBranch",
+      "amplify:DeleteBranch",
+      "amplify:GetBranch",
+      "amplify:UpdateBranch",
+      "amplify:ListBranches",
+      "amplify:CreateDomainAssociation",
+      "amplify:DeleteDomainAssociation",
+      "amplify:GetDomainAssociation",
+      "amplify:UpdateDomainAssociation",
+      "amplify:ListDomainAssociations",
+    ]
+    resources = [
+      "arn:aws:amplify:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:apps/*",
     ]
   }
 }
