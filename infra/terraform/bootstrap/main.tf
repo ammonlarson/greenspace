@@ -76,6 +76,18 @@ resource "aws_dynamodb_table" "tflock" {
   }
 }
 
+# ---------- GitHub Actions OIDC Provider ----------
+
+resource "aws_iam_openid_connect_provider" "github" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+
+  tags = {
+    purpose = "github-actions-oidc"
+  }
+}
+
 # ---------- Outputs ----------
 
 output "state_bucket_name" {
@@ -91,4 +103,9 @@ output "state_bucket_arn" {
 output "lock_table_name" {
   description = "DynamoDB table used for state locking."
   value       = aws_dynamodb_table.tflock.name
+}
+
+output "github_oidc_provider_arn" {
+  description = "ARN of the GitHub Actions OIDC identity provider."
+  value       = aws_iam_openid_connect_provider.github.arn
 }

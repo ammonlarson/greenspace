@@ -1,7 +1,8 @@
 # Terraform Layout
 
 This directory contains environment stacks, reusable modules, and the
-one-time bootstrap configuration for remote state.
+one-time bootstrap configuration for remote state and account-level
+prerequisites.
 
 ## Directory Structure
 
@@ -46,8 +47,18 @@ Versioning is enabled on the S3 bucket so prior state can be recovered.
 
 ## Bootstrap Workflow (one-time)
 
-The `bootstrap/` directory creates the S3 bucket and DynamoDB table that
-all other stacks reference. Run this once before initializing environments.
+The `bootstrap/` directory creates account-level prerequisites that all
+other stacks depend on. Run this once before initializing environments.
+
+### Resources created
+
+| Resource                       | Purpose                                       |
+| ------------------------------ | --------------------------------------------- |
+| S3 bucket                      | Terraform remote state                        |
+| DynamoDB table                 | State locking                                 |
+| IAM OIDC identity provider     | GitHub Actions OIDC trust (keyless CI auth)   |
+
+### Steps
 
 ```bash
 cd infra/terraform/bootstrap
@@ -57,7 +68,7 @@ terraform apply tfplan
 ```
 
 After the bootstrap resources exist, environment stacks can be initialized
-with their remote backend.
+with their remote backend. No manual AWS Console steps are required.
 
 ## Environment Init / Apply Workflow
 
