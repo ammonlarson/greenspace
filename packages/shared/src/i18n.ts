@@ -110,6 +110,11 @@ export const I18N_KEYS = {
     newOpeningTime: "admin.newOpeningTime",
     save: "admin.save",
     settingsSaved: "admin.settingsSaved",
+    tabRegistrations: "admin.tab.registrations",
+    tabWaitlist: "admin.tab.waitlist",
+    tabBoxes: "admin.tab.boxes",
+    tabSettings: "admin.tab.settings",
+    tabAudit: "admin.tab.audit",
   },
 } as const;
 

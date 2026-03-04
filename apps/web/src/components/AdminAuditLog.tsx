@@ -1,0 +1,93 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { AuditTimeline } from "./AuditTimeline";
+
+interface AuditEvent {
+  id: string;
+  timestamp: string;
+  actorType: "public" | "admin" | "system";
+  actorId: string | null;
+  action: string;
+  entityType: string;
+  entityId: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+  reason: string | null;
+}
+
+interface AuditResponse {
+  events: AuditEvent[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+export function AdminAuditLog() {
+  const { t } = useLanguage();
+  const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [actionFilter, setActionFilter] = useState("");
+  const [actorTypeFilter, setActorTypeFilter] = useState("");
+
+  const fetchEvents = useCallback(
+    async (append: boolean, nextCursor?: string | null) => {
+      try {
+        const body: Record<string, unknown> = { limit: "50" };
+        if (actionFilter) body.action = actionFilter;
+        if (actorTypeFilter) body.actorType = actorTypeFilter;
+        if (append && nextCursor) body.cursor = nextCursor;
+
+        const res = await fetch("/admin/audit-events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(body),
+        });
+
+        if (res.ok) {
+          const data: AuditResponse = await res.json();
+          if (append) {
+            setEvents((prev) => [...prev, ...data.events]);
+          } else {
+            setEvents(data.events);
+          }
+          setCursor(data.nextCursor);
+          setHasMore(data.hasMore);
+        }
+      } catch {
+        /* network error */
+      } finally {
+        setLoading(false);
+      }
+    },
+    [actionFilter, actorTypeFilter],
+  );
+
+  useEffect(() => {
+    setLoading(true);
+    fetchEvents(false);
+  }, [fetchEvents]);
+
+  function handleLoadMore() {
+    fetchEvents(true, cursor);
+  }
+
+  if (loading && events.length === 0) {
+    return <p>{t("common.loading")}</p>;
+  }
+
+  return (
+    <AuditTimeline
+      events={events}
+      hasMore={hasMore}
+      onLoadMore={handleLoadMore}
+      actionFilter={actionFilter}
+      actorTypeFilter={actorTypeFilter}
+      onActionFilterChange={setActionFilter}
+      onActorTypeFilterChange={setActorTypeFilter}
+    />
+  );
+}
