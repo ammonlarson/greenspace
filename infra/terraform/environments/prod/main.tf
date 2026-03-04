@@ -56,6 +56,17 @@ module "greenspace_stack" {
 
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::222222222222:distribution/PROD_DIST_ID"]
+
+  amplify_github_access_token = var.amplify_github_access_token
+  amplify_branch_name         = "main"
+  amplify_enable_auto_build   = false
+  amplify_domain_prefix       = "greenspace"
+}
+
+variable "amplify_github_access_token" {
+  description = "GitHub personal access token for Amplify. Pass via TF_VAR_amplify_github_access_token or -var."
+  type        = string
+  sensitive   = true
 }
 
 output "alarm_sns_topic_arn" {
@@ -148,4 +159,16 @@ output "route53_zone_id" {
 
 output "route53_nameservers" {
   value = module.greenspace_stack.route53_nameservers
+}
+
+output "amplify_app_id" {
+  value = module.greenspace_stack.amplify_app_id
+}
+
+output "amplify_default_domain" {
+  value = module.greenspace_stack.amplify_default_domain
+}
+
+output "amplify_custom_domain" {
+  value = module.greenspace_stack.amplify_custom_domain
 }

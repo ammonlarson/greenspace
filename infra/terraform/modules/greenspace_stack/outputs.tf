@@ -108,6 +108,28 @@ output "route53_nameservers" {
   value       = aws_route53_zone.main.name_servers
 }
 
+# ---------- Amplify ----------
+
+output "amplify_app_id" {
+  description = "ID of the Amplify app."
+  value       = aws_amplify_app.web.id
+}
+
+output "amplify_app_arn" {
+  description = "ARN of the Amplify app."
+  value       = aws_amplify_app.web.arn
+}
+
+output "amplify_default_domain" {
+  description = "Default domain for the Amplify app (*.amplifyapp.com)."
+  value       = aws_amplify_app.web.default_domain
+}
+
+output "amplify_custom_domain" {
+  description = "Custom domain URL for the Amplify-hosted frontend."
+  value       = "${var.amplify_domain_prefix}.${var.ses_sender_domain}"
+}
+
 # ---------- API Runtime ----------
 
 output "api_function_name" {
