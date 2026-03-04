@@ -79,12 +79,20 @@ resource "aws_dynamodb_table" "tflock" {
 # ---------- GitHub Actions OIDC Provider ----------
 
 resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
+
+  # AWS does not validate the thumbprint for GitHub's OIDC provider
+  # (see https://github.blog/changelog/2023-06-27-github-actions-update-on-oidc-integration-with-aws/).
+  # Terraform still requires the field, so a placeholder is used.
+  thumbprint_list = ["ffffffffffffffffffffffffffffffffffffffff"]
 
   tags = {
     purpose = "github-actions-oidc"
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
 

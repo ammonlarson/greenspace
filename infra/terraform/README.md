@@ -70,6 +70,17 @@ terraform apply tfplan
 After the bootstrap resources exist, environment stacks can be initialized
 with their remote backend. No manual AWS Console steps are required.
 
+### Importing an existing OIDC provider
+
+If the GitHub OIDC provider was previously created manually in the AWS
+Console, import it into bootstrap state before applying:
+
+```bash
+cd infra/terraform/bootstrap
+terraform import aws_iam_openid_connect_provider.github \
+  arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com
+```
+
 ## Environment Init / Apply Workflow
 
 For each environment (`staging` or `prod`):
