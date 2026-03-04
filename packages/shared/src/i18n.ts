@@ -113,7 +113,9 @@ export const I18N_KEYS = {
   },
 } as const;
 
-export type I18nKey = string;
+export type I18nKey = {
+  [Domain in keyof typeof I18N_KEYS]: (typeof I18N_KEYS)[Domain][keyof (typeof I18N_KEYS)[Domain]];
+}[keyof typeof I18N_KEYS];
 
 /**
  * Default display labels for languages.
