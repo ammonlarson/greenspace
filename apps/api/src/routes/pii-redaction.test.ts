@@ -525,7 +525,7 @@ describe("admin data visibility — authenticated admin can access PII for opera
 });
 
 describe("DTO contract — public response shapes are strict and PII-free", () => {
-  it("public status DTO has exactly 3 fields", async () => {
+  it("public status DTO has exactly 4 fields", async () => {
     const mockDb = {
       selectFrom: vi.fn().mockImplementation((table: string) => {
         if (table === "system_settings") {
