@@ -311,6 +311,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: deploy-tfplan-staging
+          path: infra/terraform/environments/staging
 
       - name: Terraform apply
         working-directory: infra/terraform/environments/staging
@@ -353,6 +354,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: deploy-tfplan-prod
+          path: infra/terraform/environments/prod
 
       - name: Terraform apply
         working-directory: infra/terraform/environments/prod
