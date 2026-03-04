@@ -167,6 +167,8 @@ These checks should be required in the `main` branch protection rule:
 | CI        | `infra-checks`    | `terraform fmt` + `validate` (backend-disabled) |
 | Terraform | `Format Check`    | `terraform fmt -check -recursive` on infra changes |
 
+The Terraform `Format Check` only triggers on `infra/terraform/**` changes. Configure it in branch protection with "Do not require this check to have run" so non-infra PRs are not blocked.
+
 ### Operational safeguards
 
 - Fork PRs never receive privileged credentials.

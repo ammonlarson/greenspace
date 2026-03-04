@@ -185,7 +185,9 @@ protection rule:
 
 The Terraform `Format Check` job runs on all PRs that touch
 `infra/terraform/**`. It requires no AWS credentials and blocks merge when
-formatting is invalid.
+formatting is invalid. Because the Terraform workflow only triggers on
+`infra/terraform/**` path changes, configure this check in branch protection
+with "Do not require this check to have run" so non-infra PRs are not blocked.
 
 #### How to verify
 
