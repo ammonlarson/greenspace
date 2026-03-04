@@ -16,15 +16,18 @@ export function AdminBoxes() {
   const { t } = useLanguage();
   const [boxes, setBoxes] = useState<Box[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchBoxes = useCallback(async () => {
     try {
       const res = await fetch("/public/boxes", { credentials: "include" });
       if (res.ok) {
         setBoxes(await res.json());
+      } else {
+        setError(true);
       }
     } catch {
-      /* network error */
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -36,6 +39,10 @@ export function AdminBoxes() {
 
   if (loading) {
     return <p>{t("common.loading")}</p>;
+  }
+
+  if (error) {
+    return <p style={{ color: "#c62828" }}>{t("common.error")}</p>;
   }
 
   const greenhouses = [...new Set(boxes.map((b) => b.greenhouse))];
@@ -58,46 +65,50 @@ export function AdminBoxes() {
                 {available} {t("greenhouse.available")} / {occupied} {t("greenhouse.occupied")} / {reserved} {t("greenhouse.reserved")}
               </span>
             </h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
-                gap: "0.5rem",
-              }}
-            >
-              {ghBoxes.map((box) => {
-                const colors = BOX_STATE_COLORS[box.state];
-                return (
-                  <div
-                    key={box.id}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "0.2rem",
-                      padding: "0.6rem 0.4rem",
-                      border: `2px solid ${colors.border}`,
-                      borderRadius: 8,
-                      background: colors.background,
-                      textAlign: "center",
-                    }}
-                  >
-                    <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>#{box.id}</span>
-                    <span style={{ fontSize: "0.8rem", color: "#555" }}>{box.name}</span>
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        fontWeight: 700,
-                        color: colors.text,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      {t(`map.state.${box.state}`)}
-                    </span>
-                  </div>
-                );
-              })}
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: "0.85rem",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
+                    <th style={{ padding: "0.5rem" }}>{t("admin.boxes.id")}</th>
+                    <th style={{ padding: "0.5rem" }}>{t("admin.boxes.name")}</th>
+                    <th style={{ padding: "0.5rem" }}>{t("admin.boxes.state")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ghBoxes.map((box) => {
+                    const colors = BOX_STATE_COLORS[box.state];
+                    return (
+                      <tr key={box.id} style={{ borderBottom: "1px solid #eee" }}>
+                        <td style={{ padding: "0.5rem", fontWeight: 700 }}>#{box.id}</td>
+                        <td style={{ padding: "0.5rem" }}>{box.name}</td>
+                        <td style={{ padding: "0.5rem" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "0.15rem 0.5rem",
+                              borderRadius: 12,
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                              background: colors.background,
+                              color: colors.text,
+                              border: `1px solid ${colors.border}`,
+                            }}
+                          >
+                            {t(`map.state.${box.state}`)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         );

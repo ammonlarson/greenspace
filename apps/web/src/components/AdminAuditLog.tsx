@@ -29,13 +29,14 @@ export function AdminAuditLog() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [actionFilter, setActionFilter] = useState("");
   const [actorTypeFilter, setActorTypeFilter] = useState("");
 
   const fetchEvents = useCallback(
     async (append: boolean, nextCursor?: string | null) => {
       try {
-        const body: Record<string, unknown> = { limit: "50" };
+        const body: Record<string, unknown> = { limit: 50 };
         if (actionFilter) body.action = actionFilter;
         if (actorTypeFilter) body.actorType = actorTypeFilter;
         if (append && nextCursor) body.cursor = nextCursor;
@@ -56,9 +57,11 @@ export function AdminAuditLog() {
           }
           setCursor(data.nextCursor);
           setHasMore(data.hasMore);
+        } else {
+          setError(true);
         }
       } catch {
-        /* network error */
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -77,6 +80,10 @@ export function AdminAuditLog() {
 
   if (loading && events.length === 0) {
     return <p>{t("common.loading")}</p>;
+  }
+
+  if (error && events.length === 0) {
+    return <p style={{ color: "#c62828" }}>{t("common.error")}</p>;
   }
 
   return (

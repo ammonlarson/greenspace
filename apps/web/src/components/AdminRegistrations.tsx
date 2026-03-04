@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { formatDate } from "@/utils/formatDate";
 
 interface Registration {
   id: string;
@@ -17,16 +18,6 @@ interface Registration {
   created_at: string;
 }
 
-const LOCALE_MAP: Record<string, string> = { da: "da-DK", en: "en-GB" };
-
-function formatDate(iso: string, lang: string): string {
-  return new Date(iso).toLocaleDateString(LOCALE_MAP[lang] ?? "da-DK", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export function AdminRegistrations() {
   const { t, language } = useLanguage();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -39,13 +30,15 @@ export function AdminRegistrations() {
       const res = await fetch("/admin/registrations", { credentials: "include" });
       if (res.ok) {
         setRegistrations(await res.json());
+      } else {
+        setMessage({ type: "error", text: t("common.error") });
       }
     } catch {
-      /* network error */
+      setMessage({ type: "error", text: t("common.error") });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchRegistrations();

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { formatDate } from "@/utils/formatDate";
 
 interface WaitlistEntry {
   id: string;
@@ -10,16 +11,6 @@ interface WaitlistEntry {
   apartment_key: string;
   status: string;
   created_at: string;
-}
-
-const LOCALE_MAP: Record<string, string> = { da: "da-DK", en: "en-GB" };
-
-function formatDate(iso: string, lang: string): string {
-  return new Date(iso).toLocaleDateString(LOCALE_MAP[lang] ?? "da-DK", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 export function AdminWaitlist() {
@@ -34,13 +25,15 @@ export function AdminWaitlist() {
       const res = await fetch("/admin/waitlist", { credentials: "include" });
       if (res.ok) {
         setEntries(await res.json());
+      } else {
+        setMessage({ type: "error", text: t("common.error") });
       }
     } catch {
-      /* network error */
+      setMessage({ type: "error", text: t("common.error") });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchWaitlist();
