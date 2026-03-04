@@ -100,7 +100,7 @@ describe("PII redaction — public endpoints never return personal data", () => 
       expect(res.statusCode).toBe(200);
       const body = res.body as Record<string, unknown>;
       const keys = Object.keys(body).sort();
-      expect(keys).toEqual(["hasAvailableBoxes", "isOpen", "openingDatetime"]);
+      expect(keys).toEqual(["hasAvailableBoxes", "isOpen", "openingDatetime", "serverTime"]);
       assertNoPiiInResponse(body, "handlePublicStatus");
     });
   });
@@ -551,10 +551,11 @@ describe("DTO contract — public response shapes are strict and PII-free", () =
 
     const res = await handlePublicStatus(makeCtx({ db: mockDb }));
     const body = res.body as Record<string, unknown>;
-    expect(Object.keys(body)).toHaveLength(3);
+    expect(Object.keys(body)).toHaveLength(4);
     expect(body).toHaveProperty("isOpen");
     expect(body).toHaveProperty("openingDatetime");
     expect(body).toHaveProperty("hasAvailableBoxes");
+    expect(body).toHaveProperty("serverTime");
   });
 
   it("public greenhouse DTO has exactly 5 fields per entry", async () => {

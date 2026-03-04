@@ -9,6 +9,7 @@ import {
   handlePublicBoxes,
   handlePublicGreenhouses,
   handlePublicRegister,
+  handlePublicStatus,
   handleValidateAddress,
   handleValidateRegistration,
   handleWaitlistPosition,
@@ -25,6 +26,211 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
     ...overrides,
   };
 }
+
+describe("handlePublicStatus — server-authoritative time gate", () => {
+  function makeMockDbForStatus(openingDatetime: Date | null, availableCount: number) {
+    const settingsResult = openingDatetime
+      ? { opening_datetime: openingDatetime }
+      : undefined;
+
+    const executeTakeFirstFn = vi.fn().mockResolvedValue(settingsResult);
+    const selectFn = vi.fn().mockReturnValue({ executeTakeFirst: executeTakeFirstFn });
+
+    const countExecuteFn = vi.fn().mockResolvedValue({ count: availableCount });
+    const asFn = vi.fn().mockReturnValue("count");
+    const countAllFn = vi.fn().mockReturnValue({ as: asFn });
+    const whereFn = vi.fn().mockReturnValue({ executeTakeFirstOrThrow: countExecuteFn });
+    const countSelectFn = vi.fn().mockReturnValue({ where: whereFn });
+
+    return {
+      selectFrom: vi.fn().mockImplementation((table: string) => {
+        if (table === "system_settings") {
+          return { select: selectFn };
+        }
+        if (table === "planter_boxes") {
+          return { select: countSelectFn };
+        }
+        return {};
+      }),
+      fn: { countAll: countAllFn },
+    } as unknown as Kysely<Database>;
+  }
+
+  it("returns isOpen false when opening is in the future", async () => {
+    const futureDate = new Date(Date.now() + 86_400_000);
+    const mockDb = makeMockDbForStatus(futureDate, 5);
+
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.isOpen).toBe(false);
+    expect(body.openingDatetime).toBe(futureDate.toISOString());
+    expect(body.hasAvailableBoxes).toBe(true);
+  });
+
+  it("returns isOpen true when opening is in the past", async () => {
+    const pastDate = new Date(Date.now() - 86_400_000);
+    const mockDb = makeMockDbForStatus(pastDate, 3);
+
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.isOpen).toBe(true);
+    expect(body.openingDatetime).toBe(pastDate.toISOString());
+  });
+
+  it("returns isOpen false when no settings exist", async () => {
+    const mockDb = makeMockDbForStatus(null, 0);
+
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.isOpen).toBe(false);
+    expect(body.openingDatetime).toBeNull();
+    expect(body.hasAvailableBoxes).toBe(false);
+  });
+
+  it("includes serverTime in response", async () => {
+    const pastDate = new Date(Date.now() - 86_400_000);
+    const mockDb = makeMockDbForStatus(pastDate, 1);
+
+    const before = Date.now();
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    const after = Date.now();
+
+    const body = res.body as Record<string, unknown>;
+    expect(body.serverTime).toBeDefined();
+    const serverTime = new Date(body.serverTime as string).getTime();
+    expect(serverTime).toBeGreaterThanOrEqual(before);
+    expect(serverTime).toBeLessThanOrEqual(after);
+  });
+
+  it("returns isOpen true at exact opening boundary (opening <= now)", async () => {
+    vi.useFakeTimers();
+    const openingMs = Date.UTC(2026, 3, 1, 8, 0, 0);
+    vi.setSystemTime(openingMs);
+
+    const openingDate = new Date(openingMs);
+    const mockDb = makeMockDbForStatus(openingDate, 5);
+
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    const body = res.body as Record<string, unknown>;
+    expect(body.isOpen).toBe(true);
+
+    vi.useRealTimers();
+  });
+
+  it("returns isOpen false 1ms before opening boundary", async () => {
+    vi.useFakeTimers();
+    const openingMs = Date.UTC(2026, 3, 1, 8, 0, 0);
+    vi.setSystemTime(openingMs - 1);
+
+    const openingDate = new Date(openingMs);
+    const mockDb = makeMockDbForStatus(openingDate, 5);
+
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    const body = res.body as Record<string, unknown>;
+    expect(body.isOpen).toBe(false);
+
+    vi.useRealTimers();
+  });
+
+  it("uses server Date.now() not client-provided time", async () => {
+    vi.useFakeTimers();
+    const openingMs = Date.UTC(2026, 3, 1, 8, 0, 0);
+    vi.setSystemTime(openingMs - 60_000);
+
+    const openingDate = new Date(openingMs);
+    const mockDb = makeMockDbForStatus(openingDate, 5);
+
+    const res = await handlePublicStatus(makeCtx({ db: mockDb }));
+    const body = res.body as Record<string, unknown>;
+    expect(body.isOpen).toBe(false);
+
+    vi.setSystemTime(openingMs + 60_000);
+    const res2 = await handlePublicStatus(makeCtx({ db: mockDb }));
+    const body2 = res2.body as Record<string, unknown>;
+    expect(body2.isOpen).toBe(true);
+
+    vi.useRealTimers();
+  });
+
+  it("hasAvailableBoxes reflects real count", async () => {
+    const pastDate = new Date(Date.now() - 86_400_000);
+
+    const noBoxesDb = makeMockDbForStatus(pastDate, 0);
+    const res1 = await handlePublicStatus(makeCtx({ db: noBoxesDb }));
+    expect((res1.body as Record<string, unknown>).hasAvailableBoxes).toBe(false);
+
+    const someBoxesDb = makeMockDbForStatus(pastDate, 3);
+    const res2 = await handlePublicStatus(makeCtx({ db: someBoxesDb }));
+    expect((res2.body as Record<string, unknown>).hasAvailableBoxes).toBe(true);
+  });
+});
+
+describe("handlePublicRegister — server time gate boundary", () => {
+  const validRegBody = {
+    name: "Alice",
+    email: "alice@example.com",
+    street: "Else Alfelts Vej",
+    houseNumber: 130,
+    floor: null,
+    door: null,
+    boxId: 1,
+    language: "da",
+  };
+
+  beforeEach(() => {
+    const mockSes = { send: vi.fn().mockResolvedValue({}) };
+    setSesClient(mockSes as never);
+  });
+
+  it("rejects registration 1ms before opening", async () => {
+    vi.useFakeTimers();
+    const openingMs = Date.UTC(2026, 3, 1, 8, 0, 0);
+    vi.setSystemTime(openingMs - 1);
+
+    const openingDate = new Date(openingMs);
+    const executeTakeFirstFn = vi.fn().mockResolvedValue({
+      opening_datetime: openingDate,
+    });
+    const selectFn = vi.fn().mockReturnValue({ executeTakeFirst: executeTakeFirstFn });
+    const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+    const mockDb = { selectFrom: selectFromFn } as unknown as Kysely<Database>;
+
+    try {
+      await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+      expect((err as AppError).message).toBe("Registration is not yet open");
+    }
+
+    vi.useRealTimers();
+  });
+
+  it("accepts registration at exact opening time", async () => {
+    vi.useFakeTimers();
+    const openingMs = Date.UTC(2026, 3, 1, 8, 0, 0);
+    vi.setSystemTime(openingMs);
+
+    const pastDate = new Date(openingMs);
+    const mockDb = makeMockDbForRegister({
+      openingDatetime: pastDate,
+      box: { id: 1, state: "available" },
+      existingReg: undefined,
+      newRegId: "reg-boundary",
+    });
+
+    const res = await handlePublicRegister(makeCtx({ db: mockDb, body: validRegBody }));
+    expect(res.statusCode).toBe(200);
+    const body = res.body as Record<string, unknown>;
+    expect(body.registrationId).toBe("reg-boundary");
+
+    vi.useRealTimers();
+  });
+});
 
 describe("handleValidateAddress", () => {
   it("returns eligible for a valid address", async () => {
