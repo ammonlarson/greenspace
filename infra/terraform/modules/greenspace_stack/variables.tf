@@ -115,6 +115,37 @@ variable "cloudfront_distribution_arns" {
   }
 }
 
+# ---------- Amplify ----------
+
+variable "amplify_github_access_token" {
+  description = "GitHub personal access token for Amplify repository integration."
+  type        = string
+  sensitive   = true
+}
+
+variable "amplify_branch_name" {
+  description = "Git branch name for Amplify to build and deploy."
+  type        = string
+  default     = "main"
+}
+
+variable "amplify_enable_auto_build" {
+  description = "Enable automatic builds on push to the configured branch."
+  type        = bool
+  default     = true
+}
+
+variable "amplify_domain_prefix" {
+  description = "Subdomain prefix for the Amplify custom domain (e.g. 'greenspace' → greenspace.<domain>)."
+  type        = string
+  default     = "greenspace"
+
+  validation {
+    condition     = can(regex("^[a-z0-9]([a-z0-9-]*[a-z0-9])?$", var.amplify_domain_prefix))
+    error_message = "amplify_domain_prefix must be a valid subdomain label."
+  }
+}
+
 # ---------- Lambda ----------
 
 variable "lambda_memory_size" {

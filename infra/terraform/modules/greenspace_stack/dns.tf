@@ -29,3 +29,10 @@ resource "aws_route53_record" "ses_dkim" {
   ttl     = 600
   records = ["${aws_ses_domain_dkim.main.dkim_tokens[count.index]}.dkim.amazonses.com"]
 }
+
+# ---------- Amplify Custom Domain ----------
+# Amplify auto-creates DNS verification and routing records in Route 53
+# when the hosted zone lives in the same AWS account. The domain
+# association resource in amplify.tf manages the lifecycle; Amplify
+# provisions the ACM certificate and adds the required CNAME records
+# to the zone above.
