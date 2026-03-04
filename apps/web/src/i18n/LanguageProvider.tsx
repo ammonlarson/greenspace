@@ -14,12 +14,12 @@ import {
   LANGUAGES,
   type Language,
 } from "@greenspace/shared";
-import { translations } from "./translations";
+import { translations, type TranslationKey } from "./translations";
 
 interface LanguageContextValue {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -45,7 +45,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [language]);
 
   const t = useCallback(
-    (key: string): string => {
+    (key: TranslationKey): string => {
       return translations[language][key] ?? key;
     },
     [language],

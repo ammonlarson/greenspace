@@ -1,8 +1,6 @@
 import type { Language } from "@greenspace/shared";
 
-type TranslationStrings = Record<string, string>;
-
-const da: TranslationStrings = {
+const da = {
   "common.appName": "Greenspace 2026",
   "common.language": "Sprog",
   "common.submit": "Indsend",
@@ -135,7 +133,9 @@ const da: TranslationStrings = {
   "admin.settingsSaved": "Indstilling gemt",
 };
 
-const en: TranslationStrings = {
+export type TranslationKey = keyof typeof da;
+
+const en: Record<TranslationKey, string> = {
   "common.appName": "Greenspace 2026",
   "common.language": "Language",
   "common.submit": "Submit",
@@ -268,4 +268,7 @@ const en: TranslationStrings = {
   "admin.settingsSaved": "Setting saved",
 };
 
-export const translations: Record<Language, TranslationStrings> = { da, en };
+export const translations: Record<Language, Record<TranslationKey, string>> = {
+  da,
+  en,
+};

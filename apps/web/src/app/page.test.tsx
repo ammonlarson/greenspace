@@ -9,7 +9,7 @@ import {
   BOX_CATALOG,
   BOX_STATES,
 } from "@greenspace/shared";
-import { translations } from "@/i18n/translations";
+import { translations, type TranslationKey } from "@/i18n/translations";
 import { isBeforeOpening } from "@/utils/opening";
 
 describe("shared package integration", () => {
@@ -65,7 +65,7 @@ describe("translations", () => {
   it("includes map state translations for all box states", () => {
     for (const lang of LANGUAGES) {
       for (const state of BOX_STATES) {
-        const key = `map.state.${state}`;
+        const key = `map.state.${state}` as TranslationKey;
         expect(translations[lang][key], `${lang}.${key} missing`).toBeDefined();
       }
     }
@@ -80,7 +80,7 @@ describe("translations", () => {
   });
 
   it("includes waitlist translations", () => {
-    const waitlistKeys = [
+    const waitlistKeys: TranslationKey[] = [
       "waitlist.title",
       "waitlist.description",
       "waitlist.joinButton",
@@ -96,7 +96,7 @@ describe("translations", () => {
   });
 
   it("includes email translations", () => {
-    const emailKeys = [
+    const emailKeys: TranslationKey[] = [
       "email.confirmationSubject",
       "email.switchNote",
       "email.careGuidelines",
@@ -109,7 +109,7 @@ describe("translations", () => {
   });
 
   it("includes audit timeline translations", () => {
-    const auditKeys = [
+    const auditKeys: TranslationKey[] = [
       "audit.title",
       "audit.timestamp",
       "audit.action",
@@ -131,7 +131,7 @@ describe("translations", () => {
   });
 
   it("includes registration form translations", () => {
-    const registrationKeys = [
+    const registrationKeys: TranslationKey[] = [
       "registration.formTitle",
       "registration.nameLabel",
       "registration.emailLabel",
@@ -158,7 +158,7 @@ describe("translations", () => {
   });
 
   it("includes validation translations", () => {
-    const validationKeys = [
+    const validationKeys: TranslationKey[] = [
       "validation.emailRequired",
       "validation.emailInvalid",
       "validation.nameRequired",
@@ -175,7 +175,7 @@ describe("translations", () => {
   });
 
   it("includes consent translations", () => {
-    const consentKeys = [
+    const consentKeys: TranslationKey[] = [
       "consent.title",
       "consent.dataCollected",
       "consent.purpose",
@@ -192,7 +192,7 @@ describe("translations", () => {
   });
 
   it("includes policy translations", () => {
-    const policyKeys = [
+    const policyKeys: TranslationKey[] = [
       "policy.oneApartmentRule",
       "policy.noSelfUnregister",
     ];
@@ -204,7 +204,7 @@ describe("translations", () => {
   });
 
   it("includes address/DAWA translations", () => {
-    const addressKeys = [
+    const addressKeys: TranslationKey[] = [
       "address.searchPlaceholder",
       "address.searchHint",
       "address.noResults",
@@ -221,7 +221,7 @@ describe("translations", () => {
   });
 
   it("includes admin translations", () => {
-    const adminKeys = [
+    const adminKeys: TranslationKey[] = [
       "admin.link",
       "admin.login",
       "admin.email",
