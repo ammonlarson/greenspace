@@ -350,6 +350,7 @@ infra/terraform/
 ```mermaid
 graph LR
     PR[Pull Request] -->|trigger| CI_CHECK[CI Check<br/>lint + test + build]
+    PR -->|infra changes| TF_FMT[Terraform Format Check]
     PR -->|infra changes| TF_PLAN[Terraform Plan<br/>staging + prod]
 
     MERGE[Merge to main] -->|trigger| CI_MAIN[CI Check]
@@ -358,7 +359,7 @@ graph LR
 ```
 
 - **CI** runs on every PR: lint, test, build for all workspaces; `terraform fmt` + `terraform validate`.
-- **Terraform** runs when `infra/terraform/**` changes: plan on PRs, apply on merge to main.
+- **Terraform** runs when `infra/terraform/**` changes: format check + plan on PRs, apply on merge to main. The `Format Check` job enforces `terraform fmt -check -recursive` and blocks merge when formatting is invalid.
 - **Drift detection** runs daily via `drift-detection.yml`; creates a GitHub issue if drift is found.
 - **Production apply** runs automatically after staging succeeds.
 - **AWS auth** uses GitHub OIDC role assumption (no long-lived keys).

@@ -134,11 +134,11 @@ Three workflows handle CI, infrastructure, and deployment:
 
 ### Pull requests (internal)
 
-Each environment gets its own plan job. Plan output is uploaded as a CI artifact.
+A format check and per-environment plan jobs run in parallel. The `Format Check` job runs `terraform fmt -check -recursive` and blocks merge when formatting is invalid. Each environment gets its own plan job with output uploaded as a CI artifact.
 
 ### Pull requests (forks)
 
-Fork PRs receive no AWS credentials. The workflow falls back to backend-disabled `validate` only.
+Fork PRs receive no AWS credentials. The workflow falls back to backend-disabled `terraform fmt` + `validate` only.
 
 ### Merge to main
 
@@ -156,6 +156,18 @@ Each environment defines a `ci-terraform` IAM role assumed via GitHub OIDC (`aws
 | `TF_ROLE_ARN_PROD`    | OIDC role ARN for production plan/apply |
 
 The roles grant least-privilege access to the S3 state backend, DynamoDB lock table, and the specific AWS resources managed by Terraform (VPC, IAM, KMS, CloudWatch Logs, Lambda, RDS, Secrets Manager).
+
+### Required PR status checks
+
+These checks should be required in the `main` branch protection rule:
+
+| Workflow  | Job name          | Purpose                                         |
+| --------- | ----------------- | ----------------------------------------------- |
+| CI        | `app-checks`      | Lint, test, build for application code          |
+| CI        | `infra-checks`    | `terraform fmt` + `validate` (backend-disabled) |
+| Terraform | `Format Check`    | `terraform fmt -check -recursive` on infra changes |
+
+The Terraform `Format Check` only triggers on `infra/terraform/**` changes. Configure it in branch protection with "Do not require this check to have run" so non-infra PRs are not blocked.
 
 ### Operational safeguards
 

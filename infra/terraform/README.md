@@ -100,13 +100,16 @@ files under `infra/terraform/` change. AWS authentication uses GitHub OIDC
 
 #### Pull requests (internal)
 
-For PRs from the same repository, each environment runs its own plan job
-(`plan-staging`, `plan-prod`) in parallel:
+For PRs from the same repository, the workflow runs a format check and
+per-environment plan jobs in parallel:
 
-1. Authenticate to AWS via OIDC using the environment-specific role.
-2. `terraform init` with the real S3 backend.
-3. `terraform validate`.
-4. `terraform plan` — output is saved as a CI artifact (retained 7 days).
+- **Format Check** (`fmt-check`) — runs `terraform fmt -check -recursive`
+  across all Terraform files. No AWS credentials required.
+- **Plan (staging)** / **Plan (prod)** — each environment runs its own plan:
+  1. Authenticate to AWS via OIDC using the environment-specific role.
+  2. `terraform init` with the real S3 backend.
+  3. `terraform validate`.
+  4. `terraform plan` — output is saved as a CI artifact (retained 7 days).
 
 #### Pull requests (forks)
 
@@ -190,6 +193,23 @@ URL from the same stack, so Next.js API rewrites point to the correct backend.
 | ----------- | ---------- | ------------------------------------------ |
 | staging     | enabled    | Push to `main` triggers automatic build    |
 | production  | disabled   | Manual deployment via Amplify console / CI |
+
+#### Required PR status checks
+
+The following status checks should be required in the `main` branch
+protection rule:
+
+| Workflow  | Job name          | Purpose                                  |
+| --------- | ----------------- | ---------------------------------------- |
+| CI        | `infra-checks`    | `terraform fmt` + `validate` (backend-disabled) |
+| CI        | `app-checks`      | Lint, test, build for application code   |
+| Terraform | `Format Check`    | `terraform fmt -check -recursive` on infra changes |
+
+The Terraform `Format Check` job runs on all PRs that touch
+`infra/terraform/**`. It requires no AWS credentials and blocks merge when
+formatting is invalid. Because the Terraform workflow only triggers on
+`infra/terraform/**` path changes, configure this check in branch protection
+with "Do not require this check to have run" so non-infra PRs are not blocked.
 
 #### How to verify
 
