@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_OPENING_DATETIME, type Greenhouse } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -8,14 +8,17 @@ import { PreOpenPage } from "@/components/PreOpenPage";
 import { LandingPage } from "@/components/LandingPage";
 import { GreenhouseMapPage } from "@/components/GreenhouseMapPage";
 import { AdminPage } from "@/components/AdminPage";
-import { isBeforeOpening } from "@/utils/opening";
 
 type View = "public" | "admin";
+
+/** Polling interval when in pre-open state (30 seconds). */
+const PRE_OPEN_POLL_MS = 30_000;
 
 interface PublicStatus {
   isOpen: boolean;
   openingDatetime: string | null;
   hasAvailableBoxes: boolean;
+  serverTime?: string;
 }
 
 export default function Home() {
@@ -23,6 +26,7 @@ export default function Home() {
   const [view, setView] = useState<View>("public");
   const [selectedGreenhouse, setSelectedGreenhouse] = useState<Greenhouse | null>(null);
   const [status, setStatus] = useState<PublicStatus | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -31,7 +35,7 @@ export default function Home() {
         setStatus(await res.json());
       }
     } catch {
-      /* API unreachable — fall back to hardcoded constant */
+      /* API unreachable — safe default is pre-open (deny early access) */
     }
   }, []);
 
@@ -39,8 +43,24 @@ export default function Home() {
     fetchStatus();
   }, [fetchStatus]);
 
+  // Server-authoritative gate: trust the server's isOpen flag.
+  // When API is unreachable (status === null), default to pre-open (safe/deny).
+  const preOpen = status ? !status.isOpen : true;
   const openingDatetime = status?.openingDatetime ?? DEFAULT_OPENING_DATETIME;
-  const preOpen = status ? !status.isOpen : isBeforeOpening(DEFAULT_OPENING_DATETIME);
+
+  // Poll /public/status while in pre-open so the page auto-transitions
+  // at the correct server-determined time without requiring a manual refresh.
+  useEffect(() => {
+    if (preOpen) {
+      pollRef.current = setInterval(fetchStatus, PRE_OPEN_POLL_MS);
+    }
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [preOpen, fetchStatus]);
 
   function renderContent() {
     if (view === "admin") {

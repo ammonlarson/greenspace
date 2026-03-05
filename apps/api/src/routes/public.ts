@@ -38,6 +38,7 @@ export async function handlePublicStatus(ctx: RequestContext): Promise<RouteResp
       isOpen,
       openingDatetime,
       hasAvailableBoxes: Number(availableCount.count) > 0,
+      serverTime: new Date().toISOString(),
     },
   };
 }
