@@ -235,6 +235,39 @@ describe("translations", () => {
       "admin.newOpeningTime",
       "admin.save",
       "admin.settingsSaved",
+      "admin.tab.registrations",
+      "admin.tab.waitlist",
+      "admin.tab.boxes",
+      "admin.tab.settings",
+      "admin.tab.audit",
+      "admin.registrations.title",
+      "admin.registrations.name",
+      "admin.registrations.email",
+      "admin.registrations.box",
+      "admin.registrations.apartment",
+      "admin.registrations.status",
+      "admin.registrations.date",
+      "admin.registrations.actions",
+      "admin.registrations.remove",
+      "admin.registrations.noRegistrations",
+      "admin.registrations.confirmRemove",
+      "admin.registrations.removed",
+      "admin.waitlist.title",
+      "admin.waitlist.name",
+      "admin.waitlist.email",
+      "admin.waitlist.apartment",
+      "admin.waitlist.status",
+      "admin.waitlist.date",
+      "admin.waitlist.actions",
+      "admin.waitlist.assign",
+      "admin.waitlist.noEntries",
+      "admin.waitlist.assigned",
+      "admin.waitlist.assignBoxPrompt",
+      "admin.boxes.title",
+      "admin.boxes.greenhouse",
+      "admin.boxes.id",
+      "admin.boxes.name",
+      "admin.boxes.state",
     ];
     for (const lang of LANGUAGES) {
       for (const key of adminKeys) {
@@ -291,6 +324,30 @@ describe("isBeforeOpening", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     expect(isBeforeOpening(DEFAULT_OPENING_DATETIME)).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("returns true 1 second before Copenhagen opening time (CEST boundary)", () => {
+    vi.useFakeTimers();
+    // Opening at 10:00 Copenhagen (CEST = UTC+2) = 08:00 UTC
+    // 1 second before: 07:59:59 UTC
+    vi.setSystemTime(new Date("2026-04-01T07:59:59Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("returns false at Copenhagen opening time (CEST boundary)", () => {
+    vi.useFakeTimers();
+    // Opening at 10:00 Copenhagen (CEST = UTC+2) = 08:00 UTC
+    vi.setSystemTime(new Date("2026-04-01T08:00:00Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("returns false 1 second after Copenhagen opening time", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-01T08:00:01Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(false);
     vi.useRealTimers();
   });
 });

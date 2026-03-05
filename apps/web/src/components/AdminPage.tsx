@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { AdminLogin } from "./AdminLogin";
-import { AdminSettings } from "./AdminSettings";
+import { AdminDashboard } from "./AdminDashboard";
 
 interface AdminPageProps {
   onBack: () => void;
@@ -34,7 +34,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
       </div>
 
       {authenticated ? (
-        <AdminSettings />
+        <AdminDashboard />
       ) : (
         <AdminLogin onLogin={() => setAuthenticated(true)} />
       )}
