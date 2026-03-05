@@ -79,10 +79,6 @@ resource "aws_iam_role_policy" "api_ses" {
 
 # ---------- CI OIDC (GitHub Actions) ----------
 
-data "aws_iam_openid_connect_provider" "github" {
-  url = "https://token.actions.githubusercontent.com"
-}
-
 data "aws_iam_policy_document" "ci_assume" {
   statement {
     effect  = "Allow"
@@ -90,7 +86,7 @@ data "aws_iam_policy_document" "ci_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
+      identifiers = [var.github_oidc_provider_arn]
     }
 
     condition {
@@ -195,7 +191,7 @@ data "aws_iam_policy_document" "ci_terraform_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
+      identifiers = [var.github_oidc_provider_arn]
     }
 
     condition {

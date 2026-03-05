@@ -30,10 +30,16 @@ provider "aws" {
   }
 }
 
+data "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+}
+
 module "greenspace_stack" {
   source             = "../../modules/greenspace_stack"
   environment        = "prod"
   github_environment = "production"
+
+  github_oidc_provider_arn = data.aws_iam_openid_connect_provider.github.arn
 
   vpc_cidr             = "10.1.0.0/16"
   availability_zones   = ["eu-north-1a", "eu-north-1b"]

@@ -49,6 +49,16 @@ variable "private_subnet_cidrs" {
 
 # ---------- IAM / CI ----------
 
+variable "github_oidc_provider_arn" {
+  description = "ARN of the GitHub Actions OIDC identity provider created by the bootstrap stack."
+  type        = string
+
+  validation {
+    condition     = can(regex("^arn:aws:iam::[0-9]{12}:oidc-provider/", var.github_oidc_provider_arn))
+    error_message = "github_oidc_provider_arn must be a valid IAM OIDC provider ARN (arn:aws:iam::<account>:oidc-provider/...)."
+  }
+}
+
 variable "github_repo" {
   description = "GitHub repository in owner/name format for OIDC trust."
   type        = string
