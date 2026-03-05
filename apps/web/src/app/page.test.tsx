@@ -326,4 +326,28 @@ describe("isBeforeOpening", () => {
     expect(isBeforeOpening(DEFAULT_OPENING_DATETIME)).toBe(true);
     vi.useRealTimers();
   });
+
+  it("returns true 1 second before Copenhagen opening time (CEST boundary)", () => {
+    vi.useFakeTimers();
+    // Opening at 10:00 Copenhagen (CEST = UTC+2) = 08:00 UTC
+    // 1 second before: 07:59:59 UTC
+    vi.setSystemTime(new Date("2026-04-01T07:59:59Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("returns false at Copenhagen opening time (CEST boundary)", () => {
+    vi.useFakeTimers();
+    // Opening at 10:00 Copenhagen (CEST = UTC+2) = 08:00 UTC
+    vi.setSystemTime(new Date("2026-04-01T08:00:00Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("returns false 1 second after Copenhagen opening time", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-01T08:00:01Z"));
+    expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(false);
+    vi.useRealTimers();
+  });
 });
