@@ -131,6 +131,44 @@ const da = {
   "admin.newOpeningTime": "Nyt åbningstidspunkt",
   "admin.save": "Gem",
   "admin.settingsSaved": "Indstilling gemt",
+
+  "admin.tab.registrations": "Tilmeldinger",
+  "admin.tab.waitlist": "Venteliste",
+  "admin.tab.boxes": "Plantekasser",
+  "admin.tab.settings": "Indstillinger",
+  "admin.tab.audit": "Hændelseslog",
+
+  "admin.registrations.title": "Tilmeldinger",
+  "admin.registrations.name": "Navn",
+  "admin.registrations.email": "E-mail",
+  "admin.registrations.box": "Kasse",
+  "admin.registrations.apartment": "Lejlighed",
+  "admin.registrations.status": "Status",
+  "admin.registrations.date": "Dato",
+  "admin.registrations.actions": "Handlinger",
+  "admin.registrations.remove": "Fjern",
+  "admin.registrations.noRegistrations": "Ingen tilmeldinger fundet",
+  "admin.registrations.confirmRemove":
+    "Er du sikker på, at du vil fjerne denne tilmelding? Plantekassen vil blive frigivet.",
+  "admin.registrations.removed": "Tilmelding fjernet",
+
+  "admin.waitlist.title": "Venteliste",
+  "admin.waitlist.name": "Navn",
+  "admin.waitlist.email": "E-mail",
+  "admin.waitlist.apartment": "Lejlighed",
+  "admin.waitlist.status": "Status",
+  "admin.waitlist.date": "Dato",
+  "admin.waitlist.actions": "Handlinger",
+  "admin.waitlist.assign": "Tildel kasse",
+  "admin.waitlist.noEntries": "Ingen ventelisteindgange fundet",
+  "admin.waitlist.assigned": "Tildelt",
+  "admin.waitlist.assignBoxPrompt": "Indtast kasse-ID at tildele:",
+
+  "admin.boxes.title": "Plantekasseoversigt",
+  "admin.boxes.greenhouse": "Drivhus",
+  "admin.boxes.id": "ID",
+  "admin.boxes.name": "Navn",
+  "admin.boxes.state": "Status",
 };
 
 export type TranslationKey = keyof typeof da;
@@ -266,6 +304,44 @@ const en: Record<TranslationKey, string> = {
   "admin.newOpeningTime": "New opening time",
   "admin.save": "Save",
   "admin.settingsSaved": "Setting saved",
+
+  "admin.tab.registrations": "Registrations",
+  "admin.tab.waitlist": "Waitlist",
+  "admin.tab.boxes": "Boxes",
+  "admin.tab.settings": "Settings",
+  "admin.tab.audit": "Audit Log",
+
+  "admin.registrations.title": "Registrations",
+  "admin.registrations.name": "Name",
+  "admin.registrations.email": "Email",
+  "admin.registrations.box": "Box",
+  "admin.registrations.apartment": "Apartment",
+  "admin.registrations.status": "Status",
+  "admin.registrations.date": "Date",
+  "admin.registrations.actions": "Actions",
+  "admin.registrations.remove": "Remove",
+  "admin.registrations.noRegistrations": "No registrations found",
+  "admin.registrations.confirmRemove":
+    "Are you sure you want to remove this registration? The planter box will be released.",
+  "admin.registrations.removed": "Registration removed",
+
+  "admin.waitlist.title": "Waitlist",
+  "admin.waitlist.name": "Name",
+  "admin.waitlist.email": "Email",
+  "admin.waitlist.apartment": "Apartment",
+  "admin.waitlist.status": "Status",
+  "admin.waitlist.date": "Date",
+  "admin.waitlist.actions": "Actions",
+  "admin.waitlist.assign": "Assign box",
+  "admin.waitlist.noEntries": "No waitlist entries found",
+  "admin.waitlist.assigned": "Assigned",
+  "admin.waitlist.assignBoxPrompt": "Enter box ID to assign:",
+
+  "admin.boxes.title": "Box Overview",
+  "admin.boxes.greenhouse": "Greenhouse",
+  "admin.boxes.id": "ID",
+  "admin.boxes.name": "Name",
+  "admin.boxes.state": "State",
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
