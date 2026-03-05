@@ -186,6 +186,16 @@ A CloudWatch dashboard aggregates Lambda, RDS, and SES metrics.
 
 See [docs/runbooks/](docs/runbooks/) for incident triage and backup restore procedures.
 
+## Time Source & Registration Gate
+
+Registration opening is **server-authoritative**. The server (`Date.now()`) is the sole source of truth for whether registration is open.
+
+- **`GET /public/status`** returns `isOpen` (boolean) and `serverTime` (ISO 8601 UTC). The `isOpen` flag is computed by comparing the configured `opening_datetime` (stored as `timestamptz` in PostgreSQL) against the server's current time.
+- **`POST /public/register`** independently re-checks the same server-side gate before accepting any submission. A client cannot bypass this by manipulating request data.
+- **Frontend behavior**: The UI relies on the server's `isOpen` flag from `/public/status`. When the API is unreachable, the frontend defaults to the pre-open state (denying early access). While in pre-open, the frontend polls `/public/status` every 30 seconds to auto-transition when the server reports the opening.
+- **Timezone**: The opening datetime is stored as an absolute UTC timestamp. Display formatting uses `Europe/Copenhagen` (via `OPENING_TIMEZONE` constant and `Intl.DateTimeFormat`). The admin UI labels the input as Copenhagen time.
+- **Client clock**: The client's system clock is never used for gate decisions. Changing the browser/device clock cannot reveal the registration UI early or submit registrations before the server-determined opening time.
+
 ## Guardrails
 
 - No manual AWS infrastructure drift: persistent resources are Terraform-managed.

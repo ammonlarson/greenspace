@@ -18,6 +18,7 @@ import {
   handleGetOpeningTime,
   handleUpdateOpeningTime,
 } from "./routes/admin/settings.js";
+import { handleListWaitlist } from "./routes/admin/waitlist.js";
 import { handleHealth } from "./routes/health.js";
 import {
   handleJoinWaitlist,
@@ -60,6 +61,7 @@ export function createRouter(): Router {
   router.post("/admin/registrations", requireAdmin(handleCreateRegistration));
   router.post("/admin/registrations/move", requireAdmin(handleMoveRegistration));
   router.post("/admin/registrations/remove", requireAdmin(handleRemoveRegistration));
+  router.get("/admin/waitlist", requireAdmin(handleListWaitlist));
   router.post("/admin/waitlist/assign", requireAdmin(handleAssignWaitlist));
   router.post("/admin/notifications/preview", requireAdmin(handleNotificationPreview));
   router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
