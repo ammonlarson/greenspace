@@ -361,11 +361,9 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
     actions = [
       "iam:UpdateRole",
       "iam:UpdateAssumeRolePolicy",
-      "iam:PutRolePolicy",
       "iam:AttachRolePolicy",
       "iam:DetachRolePolicy",
       "iam:DeleteRole",
-      "iam:DeleteRolePolicy",
     ]
     resources = [
       "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.naming_prefix}-ci-terraform",
