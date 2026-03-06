@@ -30,9 +30,10 @@ src/
 │   ├── page.tsx                    Main page (pre-open / landing / map routing)
 │   └── page.test.tsx               Integration tests
 ├── components/
+│   ├── AdminAccount.tsx            Admin account management (CRUD, password change)
 │   ├── AdminAuditLog.tsx           Admin audit log viewer
 │   ├── AdminBoxes.tsx              Admin box management panel
-│   ├── AdminDashboard.tsx          Admin dashboard layout with tab navigation
+│   ├── AdminDashboard.tsx          Admin dashboard layout with tab navigation and logout
 │   ├── AdminLogin.tsx              Admin login form
 │   ├── AdminPage.tsx               Admin page container and auth gate
 │   ├── AdminRegistrations.tsx      Admin registration management
