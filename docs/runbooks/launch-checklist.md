@@ -92,7 +92,7 @@ FROM system_settings;
 - [x] SNS alarm topic has email subscription confirmed
   - Topic: `greenspace-staging-2026-alarms`
 - [x] Test alarm triggers notification email delivery
-- [x] Lambda error alarm is configured (>0 errors for 2x5 min)
+- [x] Lambda error alarm is configured (>0 errors for 2×5 min)
 - [x] RDS alarms configured (CPU, memory, connections)
 - [x] SES alarms configured (bounces, complaints)
 
@@ -113,7 +113,7 @@ FROM system_settings;
 - [x] No open P1/P2 issues in the repository
 - [x] All CI checks pass on `main` branch
 - [x] Terraform plan for production shows no unexpected changes
-  - [Terraform run #22752467724](https://github.com/ammonlarson/greenspace/actions/runs/22752467724) — prod plan clean (2026-03-06)
+  - [Terraform run #22752467724](https://github.com/ammonlarson/greenspace/actions/runs/22752467724) — prod plan clean (2026-03-06). This is the same multi-environment workflow run that also verified staging (section 1.1).
 
 ### 2.2 Infrastructure Deploy
 
