@@ -1,0 +1,291 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { formatDate } from "@/utils/formatDate";
+
+interface Admin {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+export function AdminAccount() {
+  const { t, language } = useLanguage();
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [createEmail, setCreateEmail] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const fetchAdmins = useCallback(async () => {
+    try {
+      const res = await fetch("/admin/admins", { credentials: "include" });
+      if (res.ok) {
+        const data: Admin[] = await res.json();
+        setAdmins(data);
+      }
+    } catch {
+      /* silently ignore fetch errors */
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAdmins();
+  }, [fetchAdmins]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage(null);
+    setCreating(true);
+
+    try {
+      const res = await fetch("/admin/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: createEmail, password: createPassword }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        setMessage({ type: "error", text: body.error ?? t("common.error") });
+        return;
+      }
+
+      setMessage({ type: "success", text: t("admin.account.created2") });
+      setCreateEmail("");
+      setCreatePassword("");
+      await fetchAdmins();
+    } catch {
+      setMessage({ type: "error", text: t("common.error") });
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleDelete(admin: Admin) {
+    if (!window.confirm(t("admin.account.confirmDelete"))) return;
+
+    setMessage(null);
+
+    try {
+      const res = await fetch(`/admin/admins/${admin.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        const text = body.code === "SELF_DELETE"
+          ? t("admin.account.selfDeleteError")
+          : (body.error ?? t("common.error"));
+        setMessage({ type: "error", text });
+        return;
+      }
+
+      setMessage({ type: "success", text: t("admin.account.deleted") });
+      await fetchAdmins();
+    } catch {
+      setMessage({ type: "error", text: t("common.error") });
+    }
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage(null);
+
+    if (newPassword.length < 8) {
+      setMessage({ type: "error", text: t("admin.account.passwordMinLength") });
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const res = await fetch("/admin/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        setMessage({ type: "error", text: body.error ?? t("common.error") });
+        return;
+      }
+
+      setMessage({ type: "success", text: t("admin.account.passwordChanged") });
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch {
+      setMessage({ type: "error", text: t("common.error") });
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
+  const inputStyle = {
+    padding: "0.5rem",
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    fontSize: "1rem",
+  };
+
+  const buttonStyle = {
+    padding: "0.5rem 1rem",
+    background: "#1565c0",
+    color: "#fff",
+    border: "none",
+    borderRadius: 4,
+    cursor: "pointer",
+    fontSize: "1rem",
+    fontFamily: "inherit",
+    alignSelf: "flex-start" as const,
+  };
+
+  return (
+    <section style={{ maxWidth: 700, margin: "0 auto", padding: "0 1rem" }}>
+      <h2>{t("admin.account.title")}</h2>
+
+      {message && (
+        <p
+          role="alert"
+          style={{
+            color: message.type === "error" ? "#c62828" : "#2d7a3a",
+            margin: "0 0 1rem",
+            fontSize: "0.85rem",
+          }}
+        >
+          {message.text}
+        </p>
+      )}
+
+      <h3>{t("admin.account.admins")}</h3>
+      {admins.length === 0 ? (
+        <p style={{ color: "#555", fontSize: "0.9rem" }}>{t("admin.account.noAdmins")}</p>
+      ) : (
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: "0.9rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <thead>
+            <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
+              <th style={{ padding: "0.5rem" }}>{t("admin.account.email")}</th>
+              <th style={{ padding: "0.5rem" }}>{t("admin.account.created")}</th>
+              <th style={{ padding: "0.5rem" }}>{t("admin.account.actions")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {admins.map((admin) => (
+              <tr key={admin.id} style={{ borderBottom: "1px solid #e0e0e0" }}>
+                <td style={{ padding: "0.5rem" }}>{admin.email}</td>
+                <td style={{ padding: "0.5rem" }}>{formatDate(admin.created_at, language)}</td>
+                <td style={{ padding: "0.5rem" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(admin)}
+                    style={{
+                      background: "none",
+                      border: "1px solid #c62828",
+                      color: "#c62828",
+                      borderRadius: 4,
+                      padding: "0.25rem 0.5rem",
+                      cursor: "pointer",
+                      fontSize: "0.85rem",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {t("admin.account.delete")}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <h3>{t("admin.account.createTitle")}</h3>
+      <form
+        onSubmit={handleCreate}
+        style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "2rem" }}
+      >
+        <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            {t("admin.account.createEmail")}
+          </span>
+          <input
+            type="email"
+            required
+            value={createEmail}
+            onChange={(e) => setCreateEmail(e.target.value)}
+            style={inputStyle}
+          />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            {t("admin.account.createPassword")}
+          </span>
+          <input
+            type="password"
+            required
+            minLength={8}
+            value={createPassword}
+            onChange={(e) => setCreatePassword(e.target.value)}
+            style={inputStyle}
+          />
+        </label>
+        <button type="submit" disabled={creating} style={buttonStyle}>
+          {creating ? t("common.loading") : t("admin.account.createButton")}
+        </button>
+      </form>
+
+      <h3>{t("admin.account.changePasswordTitle")}</h3>
+      <form
+        onSubmit={handleChangePassword}
+        style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+      >
+        <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            {t("admin.account.currentPassword")}
+          </span>
+          <input
+            type="password"
+            required
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            style={inputStyle}
+          />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            {t("admin.account.newPassword")}
+          </span>
+          <input
+            type="password"
+            required
+            minLength={8}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            style={inputStyle}
+          />
+        </label>
+        <button type="submit" disabled={changingPassword} style={buttonStyle}>
+          {changingPassword ? t("common.loading") : t("admin.account.changePasswordButton")}
+        </button>
+      </form>
+    </section>
+  );
+}
