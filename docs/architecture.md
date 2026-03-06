@@ -361,6 +361,7 @@ graph LR
 - **CI** runs on every PR: lint, test, build for all workspaces; `terraform fmt` + `terraform validate`.
 - **Terraform** runs when `infra/terraform/**` changes: format check + plan on PRs, apply on merge to main. The `Format Check` job enforces `terraform fmt -check -recursive` and blocks merge when formatting is invalid.
 - **Drift detection** runs daily via `drift-detection.yml`; creates a GitHub issue if drift is found.
+- **Session cleanup** runs hourly via an EventBridge scheduled rule that invokes the API Lambda. The handler detects the scheduled event and deletes expired sessions (8-hour TTL) from the database.
 - **Production apply** runs automatically after staging succeeds.
 - **AWS auth** uses GitHub OIDC role assumption (no long-lived keys).
 
