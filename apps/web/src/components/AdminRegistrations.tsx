@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
+import { NotificationComposer } from "./NotificationComposer";
 
 interface Registration {
   id: string;
@@ -14,16 +15,69 @@ interface Registration {
   floor: string | null;
   door: string | null;
   apartment_key: string;
+  language: string;
   status: string;
   created_at: string;
 }
+
+type ActiveDialog =
+  | { type: "add" }
+  | { type: "move"; registration: Registration }
+  | { type: "remove"; registration: Registration }
+  | null;
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "0.4rem",
+  border: "1px solid #ccc",
+  borderRadius: 4,
+  fontSize: "0.85rem",
+  fontFamily: "inherit",
+  boxSizing: "border-box",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: "0.8rem",
+  fontWeight: 600,
+  marginBottom: "0.25rem",
+};
+
+const dialogStyle: React.CSSProperties = {
+  border: "1px solid #e0e0e0",
+  borderRadius: 8,
+  padding: "1.25rem",
+  marginBottom: "1.5rem",
+  background: "#fff",
+  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+};
 
 export function AdminRegistrations() {
   const { t, language } = useLanguage();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [removing, setRemoving] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
+
+  // Add form state
+  const [addName, setAddName] = useState("");
+  const [addEmail, setAddEmail] = useState("");
+  const [addStreet, setAddStreet] = useState("");
+  const [addHouseNumber, setAddHouseNumber] = useState("");
+  const [addFloor, setAddFloor] = useState("");
+  const [addDoor, setAddDoor] = useState("");
+  const [addBoxId, setAddBoxId] = useState("");
+  const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
+  const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+
+  // Move form state
+  const [moveNewBoxId, setMoveNewBoxId] = useState("");
+  const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+
+  // Remove form state
+  const [removeMakePublic, setRemoveMakePublic] = useState(true);
+  const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -44,23 +98,74 @@ export function AdminRegistrations() {
     fetchRegistrations();
   }, [fetchRegistrations]);
 
-  async function handleRemove(reg: Registration) {
-    const confirmed = window.confirm(t("admin.registrations.confirmRemove"));
-    if (!confirmed) return;
+  function openAddDialog() {
+    setAddName("");
+    setAddEmail("");
+    setAddStreet("");
+    setAddHouseNumber("");
+    setAddFloor("");
+    setAddDoor("");
+    setAddBoxId("");
+    setAddLanguage("da");
+    setAddNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setMessage(null);
+    setActiveDialog({ type: "add" });
+  }
 
-    setRemoving(reg.id);
+  function openMoveDialog(reg: Registration) {
+    setMoveNewBoxId("");
+    setMoveNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setMessage(null);
+    setActiveDialog({ type: "move", registration: reg });
+  }
+
+  function openRemoveDialog(reg: Registration) {
+    setRemoveMakePublic(true);
+    setRemoveNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setMessage(null);
+    setActiveDialog({ type: "remove", registration: reg });
+  }
+
+  function closeDialog() {
+    setActiveDialog(null);
+  }
+
+  async function handleAdd() {
+    const boxId = Number(addBoxId);
+    const houseNum = Number(addHouseNumber);
+    if (!addName || !addEmail || !addStreet || !addHouseNumber || isNaN(houseNum) || houseNum < 1 || isNaN(boxId) || boxId < 1) {
+      setMessage({ type: "error", text: t("common.error") });
+      return;
+    }
+
+    setSubmitting(true);
     setMessage(null);
 
     try {
-      const res = await fetch("/admin/registrations/remove", {
+      const res = await fetch("/admin/registrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ registrationId: reg.id }),
+        body: JSON.stringify({
+          boxId,
+          name: addName,
+          email: addEmail,
+          street: addStreet,
+          houseNumber: Number(addHouseNumber),
+          floor: addFloor || null,
+          door: addDoor || null,
+          language: addLanguage,
+          notification: {
+            sendEmail: addNotification.sendEmail,
+            subject: addNotification.subject || undefined,
+            bodyHtml: addNotification.bodyHtml || undefined,
+          },
+        }),
       });
 
       if (res.ok) {
-        setMessage({ type: "success", text: t("admin.registrations.removed") });
+        setMessage({ type: "success", text: t("admin.registrations.added") });
+        setActiveDialog(null);
         await fetchRegistrations();
       } else {
         const body = await res.json();
@@ -69,7 +174,86 @@ export function AdminRegistrations() {
     } catch {
       setMessage({ type: "error", text: t("common.error") });
     } finally {
-      setRemoving(null);
+      setSubmitting(false);
+    }
+  }
+
+  async function handleMove() {
+    if (!activeDialog || activeDialog.type !== "move") return;
+    const newBoxId = Number(moveNewBoxId);
+    if (isNaN(newBoxId) || newBoxId < 1) {
+      setMessage({ type: "error", text: t("common.error") });
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch("/admin/registrations/move", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          registrationId: activeDialog.registration.id,
+          newBoxId,
+          notification: {
+            sendEmail: moveNotification.sendEmail,
+            subject: moveNotification.subject || undefined,
+            bodyHtml: moveNotification.bodyHtml || undefined,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        setMessage({ type: "success", text: t("admin.registrations.moved") });
+        setActiveDialog(null);
+        await fetchRegistrations();
+      } else {
+        const body = await res.json();
+        setMessage({ type: "error", text: body.error ?? t("common.error") });
+      }
+    } catch {
+      setMessage({ type: "error", text: t("common.error") });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleRemove() {
+    if (!activeDialog || activeDialog.type !== "remove") return;
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch("/admin/registrations/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          registrationId: activeDialog.registration.id,
+          makeBoxPublic: removeMakePublic,
+          notification: {
+            sendEmail: removeNotification.sendEmail,
+            subject: removeNotification.subject || undefined,
+            bodyHtml: removeNotification.bodyHtml || undefined,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        setMessage({ type: "success", text: t("admin.registrations.removed") });
+        setActiveDialog(null);
+        await fetchRegistrations();
+      } else {
+        const body = await res.json();
+        setMessage({ type: "error", text: body.error ?? t("common.error") });
+      }
+    } catch {
+      setMessage({ type: "error", text: t("common.error") });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -79,11 +263,30 @@ export function AdminRegistrations() {
 
   return (
     <section>
-      <h2 style={{ marginBottom: "1rem" }}>{t("admin.registrations.title")}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <h2 style={{ margin: 0 }}>{t("admin.registrations.title")}</h2>
+        <button
+          type="button"
+          onClick={openAddDialog}
+          disabled={activeDialog !== null}
+          style={{
+            padding: "0.4rem 1rem",
+            border: "1px solid #2d7a3a",
+            borderRadius: 4,
+            background: "#2d7a3a",
+            color: "#fff",
+            cursor: activeDialog !== null ? "not-allowed" : "pointer",
+            fontSize: "0.85rem",
+            fontFamily: "inherit",
+          }}
+        >
+          {t("admin.registrations.add")}
+        </button>
+      </div>
 
       {message && (
         <p
-          role="alert"
+          role={message.type === "error" ? "alert" : "status"}
           style={{
             color: message.type === "error" ? "#c62828" : "#2d7a3a",
             fontSize: "0.85rem",
@@ -92,6 +295,245 @@ export function AdminRegistrations() {
         >
           {message.text}
         </p>
+      )}
+
+      {/* Add Dialog */}
+      {activeDialog?.type === "add" && (
+        <div role="dialog" aria-labelledby="add-dialog-title" style={dialogStyle}>
+          <h3 id="add-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem" }}>{t("admin.registrations.add")}</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            <div>
+              <label htmlFor="add-name" style={labelStyle}>{t("admin.registrations.addName")}</label>
+              <input id="add-name" type="text" value={addName} onChange={(e) => setAddName(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-email" style={labelStyle}>{t("admin.registrations.addEmail")}</label>
+              <input id="add-email" type="email" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-street" style={labelStyle}>{t("admin.registrations.addStreet")}</label>
+              <input id="add-street" type="text" value={addStreet} onChange={(e) => setAddStreet(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-house-number" style={labelStyle}>{t("admin.registrations.addHouseNumber")}</label>
+              <input id="add-house-number" type="number" value={addHouseNumber} onChange={(e) => setAddHouseNumber(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-floor" style={labelStyle}>{t("admin.registrations.addFloor")}</label>
+              <input id="add-floor" type="text" value={addFloor} onChange={(e) => setAddFloor(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-door" style={labelStyle}>{t("admin.registrations.addDoor")}</label>
+              <input id="add-door" type="text" value={addDoor} onChange={(e) => setAddDoor(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-box-id" style={labelStyle}>{t("admin.registrations.addBoxId")}</label>
+              <input id="add-box-id" type="number" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label htmlFor="add-language" style={labelStyle}>{t("admin.registrations.addLanguage")}</label>
+              <select id="add-language" value={addLanguage} onChange={(e) => setAddLanguage(e.target.value as "da" | "en")} style={inputStyle}>
+                <option value="da">Dansk</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+
+          {addName && addEmail && addBoxId && Number(addBoxId) > 0 && (
+            <NotificationComposer
+              action="add"
+              recipientName={addName}
+              recipientEmail={addEmail}
+              recipientLanguage={addLanguage}
+              boxId={Number(addBoxId)}
+              value={addNotification}
+              onChange={setAddNotification}
+            />
+          )}
+
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={submitting}
+              style={{
+                padding: "0.4rem 1rem",
+                border: "none",
+                borderRadius: 4,
+                background: "#2d7a3a",
+                color: "#fff",
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+              }}
+            >
+              {t("common.confirm")}
+            </button>
+            <button
+              type="button"
+              onClick={closeDialog}
+              disabled={submitting}
+              style={{
+                padding: "0.4rem 1rem",
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                background: "#fff",
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+              }}
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Move Dialog */}
+      {activeDialog?.type === "move" && (
+        <div role="dialog" aria-labelledby="move-dialog-title" style={dialogStyle}>
+          <h3 id="move-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+            {t("admin.registrations.move")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
+          </h3>
+          <div style={{ marginBottom: "0.75rem" }}>
+            <label htmlFor="move-new-box-id" style={labelStyle}>{t("admin.registrations.newBoxId")}</label>
+            <input
+              id="move-new-box-id"
+              type="number"
+              value={moveNewBoxId}
+              onChange={(e) => setMoveNewBoxId(e.target.value)}
+              style={{ ...inputStyle, maxWidth: 200 }}
+            />
+          </div>
+
+          {moveNewBoxId && Number(moveNewBoxId) > 0 && (
+            <NotificationComposer
+              action="move"
+              recipientName={activeDialog.registration.name}
+              recipientEmail={activeDialog.registration.email}
+              recipientLanguage={activeDialog.registration.language}
+              boxId={Number(moveNewBoxId)}
+              oldBoxId={activeDialog.registration.box_id}
+              value={moveNotification}
+              onChange={setMoveNotification}
+            />
+          )}
+
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button
+              type="button"
+              onClick={handleMove}
+              disabled={submitting}
+              style={{
+                padding: "0.4rem 1rem",
+                border: "none",
+                borderRadius: 4,
+                background: "#1565c0",
+                color: "#fff",
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+              }}
+            >
+              {t("common.confirm")}
+            </button>
+            <button
+              type="button"
+              onClick={closeDialog}
+              disabled={submitting}
+              style={{
+                padding: "0.4rem 1rem",
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                background: "#fff",
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+              }}
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Dialog */}
+      {activeDialog?.type === "remove" && (
+        <div role="dialog" aria-labelledby="remove-dialog-title" style={dialogStyle}>
+          <h3 id="remove-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+            {t("admin.registrations.confirmRemove")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
+          </h3>
+
+          <fieldset style={{ border: "none", padding: 0, margin: "0 0 0.75rem 0" }}>
+            <legend style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+              {t("admin.registrations.releaseType")}
+            </legend>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", cursor: "pointer" }}>
+              <input
+                type="radio"
+                name="release-type"
+                checked={removeMakePublic}
+                onChange={() => setRemoveMakePublic(true)}
+              />
+              <span style={{ fontSize: "0.85rem" }}>{t("admin.registrations.releasePublic")}</span>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+              <input
+                type="radio"
+                name="release-type"
+                checked={!removeMakePublic}
+                onChange={() => setRemoveMakePublic(false)}
+              />
+              <span style={{ fontSize: "0.85rem" }}>{t("admin.registrations.releaseReserved")}</span>
+            </label>
+          </fieldset>
+
+          <NotificationComposer
+            action="remove"
+            recipientName={activeDialog.registration.name}
+            recipientEmail={activeDialog.registration.email}
+            recipientLanguage={activeDialog.registration.language}
+            boxId={activeDialog.registration.box_id}
+            value={removeNotification}
+            onChange={setRemoveNotification}
+          />
+
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button
+              type="button"
+              onClick={handleRemove}
+              disabled={submitting}
+              style={{
+                padding: "0.4rem 1rem",
+                border: "none",
+                borderRadius: 4,
+                background: "#c62828",
+                color: "#fff",
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+              }}
+            >
+              {t("common.confirm")}
+            </button>
+            <button
+              type="button"
+              onClick={closeDialog}
+              disabled={submitting}
+              style={{
+                padding: "0.4rem 1rem",
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                background: "#fff",
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+              }}
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
       )}
 
       {registrations.length === 0 ? (
@@ -145,23 +587,42 @@ export function AdminRegistrations() {
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {reg.status === "active" && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(reg)}
-                        disabled={removing === reg.id}
-                        style={{
-                          padding: "0.25rem 0.75rem",
-                          border: "1px solid #c62828",
-                          borderRadius: 4,
-                          background: "#fff",
-                          color: "#c62828",
-                          cursor: removing === reg.id ? "not-allowed" : "pointer",
-                          fontSize: "0.8rem",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        {t("admin.registrations.remove")}
-                      </button>
+                      <div style={{ display: "flex", gap: "0.25rem" }}>
+                        <button
+                          type="button"
+                          onClick={() => openMoveDialog(reg)}
+                          disabled={activeDialog !== null}
+                          style={{
+                            padding: "0.25rem 0.75rem",
+                            border: "1px solid #1565c0",
+                            borderRadius: 4,
+                            background: "#fff",
+                            color: "#1565c0",
+                            cursor: activeDialog !== null ? "not-allowed" : "pointer",
+                            fontSize: "0.8rem",
+                            fontFamily: "inherit",
+                          }}
+                        >
+                          {t("admin.registrations.move")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openRemoveDialog(reg)}
+                          disabled={activeDialog !== null}
+                          style={{
+                            padding: "0.25rem 0.75rem",
+                            border: "1px solid #c62828",
+                            borderRadius: 4,
+                            background: "#fff",
+                            color: "#c62828",
+                            cursor: activeDialog !== null ? "not-allowed" : "pointer",
+                            fontSize: "0.8rem",
+                            fontFamily: "inherit",
+                          }}
+                        >
+                          {t("admin.registrations.remove")}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
