@@ -19,6 +19,9 @@ jobs:
   detect-drift:
     name: "Detect drift (${{ matrix.environment }})"
     runs-on: ubuntu-latest
+    concurrency:
+      group: terraform-${{ matrix.environment }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:
