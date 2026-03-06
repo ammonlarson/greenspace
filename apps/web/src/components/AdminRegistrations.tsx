@@ -132,7 +132,8 @@ export function AdminRegistrations() {
 
   async function handleAdd() {
     const boxId = Number(addBoxId);
-    if (!addName || !addEmail || !addStreet || !addHouseNumber || isNaN(boxId) || boxId < 1) {
+    const houseNum = Number(addHouseNumber);
+    if (!addName || !addEmail || !addStreet || !addHouseNumber || isNaN(houseNum) || houseNum < 1 || isNaN(boxId) || boxId < 1) {
       setMessage({ type: "error", text: t("common.error") });
       return;
     }
@@ -285,7 +286,7 @@ export function AdminRegistrations() {
 
       {message && (
         <p
-          role="alert"
+          role={message.type === "error" ? "alert" : "status"}
           style={{
             color: message.type === "error" ? "#c62828" : "#2d7a3a",
             fontSize: "0.85rem",
@@ -298,8 +299,8 @@ export function AdminRegistrations() {
 
       {/* Add Dialog */}
       {activeDialog?.type === "add" && (
-        <div style={dialogStyle}>
-          <h3 style={{ margin: "0 0 1rem 0", fontSize: "1rem" }}>{t("admin.registrations.add")}</h3>
+        <div role="dialog" aria-labelledby="add-dialog-title" style={dialogStyle}>
+          <h3 id="add-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem" }}>{t("admin.registrations.add")}</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
             <div>
               <label htmlFor="add-name" style={labelStyle}>{t("admin.registrations.addName")}</label>
@@ -390,8 +391,8 @@ export function AdminRegistrations() {
 
       {/* Move Dialog */}
       {activeDialog?.type === "move" && (
-        <div style={dialogStyle}>
-          <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+        <div role="dialog" aria-labelledby="move-dialog-title" style={dialogStyle}>
+          <h3 id="move-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
             {t("admin.registrations.move")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
           </h3>
           <div style={{ marginBottom: "0.75rem" }}>
@@ -458,15 +459,15 @@ export function AdminRegistrations() {
 
       {/* Remove Dialog */}
       {activeDialog?.type === "remove" && (
-        <div style={dialogStyle}>
-          <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+        <div role="dialog" aria-labelledby="remove-dialog-title" style={dialogStyle}>
+          <h3 id="remove-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
             {t("admin.registrations.confirmRemove")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
           </h3>
 
-          <div style={{ marginBottom: "0.75rem" }}>
-            <p style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+          <fieldset style={{ border: "none", padding: 0, margin: "0 0 0.75rem 0" }}>
+            <legend style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>
               {t("admin.registrations.releaseType")}
-            </p>
+            </legend>
             <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem", cursor: "pointer" }}>
               <input
                 type="radio"
@@ -485,7 +486,7 @@ export function AdminRegistrations() {
               />
               <span style={{ fontSize: "0.85rem" }}>{t("admin.registrations.releaseReserved")}</span>
             </label>
-          </div>
+          </fieldset>
 
           <NotificationComposer
             action="remove"

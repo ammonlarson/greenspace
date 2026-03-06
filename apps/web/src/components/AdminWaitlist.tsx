@@ -112,7 +112,7 @@ export function AdminWaitlist() {
 
       {message && (
         <p
-          role="alert"
+          role={message.type === "error" ? "alert" : "status"}
           style={{
             color: message.type === "error" ? "#c62828" : "#2d7a3a",
             fontSize: "0.85rem",
@@ -126,6 +126,8 @@ export function AdminWaitlist() {
       {/* Assign Dialog */}
       {assigningEntry && (
         <div
+          role="dialog"
+          aria-labelledby="assign-dialog-title"
           style={{
             border: "1px solid #e0e0e0",
             borderRadius: 8,
@@ -135,7 +137,7 @@ export function AdminWaitlist() {
             boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
           }}
         >
-          <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+          <h3 id="assign-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
             {t("admin.waitlist.confirmAssign")} – {assigningEntry.name}
           </h3>
           <p style={{ fontSize: "0.85rem", color: "#555", margin: "0 0 0.75rem 0" }}>

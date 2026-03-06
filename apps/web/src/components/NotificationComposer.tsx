@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 interface NotificationComposerProps {
@@ -29,6 +29,10 @@ export function NotificationComposer({
   const [previewError, setPreviewError] = useState(false);
   const [defaultSubject, setDefaultSubject] = useState("");
   const [defaultBodyHtml, setDefaultBodyHtml] = useState("");
+  const sendEmailRef = useRef(value.sendEmail);
+  sendEmailRef.current = value.sendEmail;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   const fetchPreview = useCallback(async () => {
     if (!recipientName || !recipientEmail || !boxId) return;
@@ -55,7 +59,7 @@ export function NotificationComposer({
         const preview = await res.json();
         setDefaultSubject(preview.subject);
         setDefaultBodyHtml(preview.bodyHtml);
-        onChange({ sendEmail: value.sendEmail, subject: preview.subject, bodyHtml: preview.bodyHtml });
+        onChangeRef.current({ sendEmail: sendEmailRef.current, subject: preview.subject, bodyHtml: preview.bodyHtml });
       } else {
         setPreviewError(true);
       }
