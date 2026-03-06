@@ -40,7 +40,7 @@ resource "aws_amplify_app" "web" {
   }
 
   enable_auto_branch_creation = var.amplify_enable_preview_branches
-  enable_auto_branch_deletion = var.amplify_enable_preview_branches
+  enable_branch_auto_deletion = var.amplify_enable_preview_branches
 
   auto_branch_creation_patterns = var.amplify_enable_preview_branches ? var.amplify_preview_branch_patterns : []
 
