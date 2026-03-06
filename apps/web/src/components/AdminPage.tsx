@@ -34,7 +34,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
       </div>
 
       {authenticated ? (
-        <AdminDashboard />
+        <AdminDashboard onLogout={() => setAuthenticated(false)} />
       ) : (
         <AdminLogin onLogin={() => setAuthenticated(true)} />
       )}
