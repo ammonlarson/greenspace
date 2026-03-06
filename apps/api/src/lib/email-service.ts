@@ -3,6 +3,7 @@ import type { Kysely, Transaction } from "kysely";
 import { EMAIL_FROM, EMAIL_REPLY_TO } from "@greenspace/shared";
 import type { Database } from "../db/types.js";
 import { logAuditEvent } from "./audit.js";
+import { logger } from "./logger.js";
 
 let sesClient: SESClient | null = null;
 
@@ -52,7 +53,7 @@ export async function queueAndSendEmail(
 
     emailId = row.id;
   } catch (err) {
-    console.error("Failed to queue email:", err);
+    logger.error("Failed to queue email", err);
     return null;
   }
 
@@ -78,7 +79,7 @@ export async function queueAndSendEmail(
       },
     });
   } catch (err) {
-    console.error("Failed to send email via SES:", err);
+    logger.error("Failed to send email via SES", err);
 
     try {
       await db
@@ -87,7 +88,7 @@ export async function queueAndSendEmail(
         .where("id", "=", emailId)
         .execute();
     } catch (updateErr) {
-      console.error("Failed to update email status:", updateErr);
+      logger.error("Failed to update email status", updateErr);
     }
   }
 

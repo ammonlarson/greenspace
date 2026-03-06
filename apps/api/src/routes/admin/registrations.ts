@@ -9,6 +9,7 @@ import {
 } from "../../lib/admin-email-templates.js";
 import { queueAndSendEmail } from "../../lib/email-service.js";
 import { badRequest, conflict, notFound, unauthorized } from "../../lib/errors.js";
+import { logger } from "../../lib/logger.js";
 import type { Database } from "../../db/types.js";
 import type { RequestContext, RouteResponse } from "../../router.js";
 
@@ -89,7 +90,7 @@ async function sendNotificationIfRequested(
       },
     });
   } catch (err) {
-    console.error("Failed to process notification:", err);
+    logger.error("Failed to process notification", err);
   }
 }
 
