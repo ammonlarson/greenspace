@@ -29,23 +29,33 @@ src/
 │   ├── index.ts             DB module entry point
 │   ├── migrate.ts           Migration runner
 │   ├── migrations/          Kysely migration files
-│   ├── schema.test.ts       Schema validation tests
 │   ├── seed.ts              Seed data (greenhouses, boxes, admins)
-│   ├── seed.test.ts         Seed validation tests
 │   ├── setup.ts             Combined migrate + seed entry point
 │   └── types.ts             Database table type definitions
 ├── lib/
+│   ├── admin-email-templates.ts  Admin notification email templates
+│   ├── audit.ts             Audit event recording helpers
+│   ├── email-service.ts     SES email delivery service
+│   ├── email-templates.ts   Public-facing email templates
 │   ├── errors.ts            Typed API error classes
+│   ├── logger.ts            Structured JSON logger (Lambda) / text logger (dev)
 │   ├── password.ts          Argon2id hashing and verification
 │   └── session.ts           Session token generation
 ├── middleware/
 │   └── auth.ts              Admin session authentication middleware
 ├── routes/
-│   ├── admin/auth.ts        Admin login and password change
+│   ├── admin/
+│   │   ├── admins.ts        Admin account CRUD
+│   │   ├── audit.ts         Audit timeline retrieval
+│   │   ├── auth.ts          Admin login and password change
+│   │   ├── registrations.ts Registration management (create, move, remove)
+│   │   ├── settings.ts      System settings (opening time)
+│   │   └── waitlist.ts      Waitlist assignment
 │   ├── health.ts            Health check endpoint
-│   └── public.ts            Public status and box endpoints
+│   └── public.ts            Public status, boxes, register, and waitlist
 ├── router.ts                Route registration
 ├── dev-server.ts            Local development HTTP server
+├── lambda.ts                AWS Lambda handler entry point
 └── index.ts                 Application entry point
 ```
 

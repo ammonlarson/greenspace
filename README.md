@@ -126,11 +126,12 @@ Each GitHub environment (`staging`, `production`) needs these variables:
 
 ## CI / Terraform Pipeline
 
-Three workflows handle CI, infrastructure, and deployment:
+Four workflows handle CI, infrastructure, deployment, and drift detection:
 
 - **CI (`ci.yml`)** - Runs on every PR and push to main. Validates guardrail files, runs app checks (test/lint/build), and performs lightweight `terraform fmt -check` + `terraform validate` with the backend disabled.
 - **Terraform (`terraform.yml`)** - Runs when `infra/terraform/**` files change. Authenticates to AWS via GitHub OIDC and operates per environment.
 - **Deploy (`deploy.yml`)** - Runs when `apps/api/**` or `packages/shared/**` change on main. Builds the Lambda bundle, deploys to staging, runs a health smoke test, then deploys to production.
+- **Drift Detection (`drift-detection.yml`)** - Runs daily on a cron schedule. Runs `terraform plan` for each environment and creates a GitHub issue if drift is detected.
 
 ### Pull requests (internal)
 
@@ -142,7 +143,7 @@ Fork PRs receive no AWS credentials. The workflow falls back to backend-disabled
 
 ### Merge to main
 
-Staging is applied first. Production applies automatically after staging succeeds.
+Staging is applied first. Production applies after staging succeeds, gated by the `production` environment protection rule.
 
 Concurrency guards prevent simultaneous applies to the same environment.
 
