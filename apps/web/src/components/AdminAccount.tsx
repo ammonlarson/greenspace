@@ -13,6 +13,7 @@ interface Admin {
 export function AdminAccount() {
   const { t, language } = useLanguage();
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [createEmail, setCreateEmail] = useState("");
@@ -29,11 +30,15 @@ export function AdminAccount() {
       if (res.ok) {
         const data: Admin[] = await res.json();
         setAdmins(data);
+      } else {
+        setMessage({ type: "error", text: t("common.error") });
       }
     } catch {
-      /* silently ignore fetch errors */
+      setMessage({ type: "error", text: t("common.error") });
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchAdmins();
@@ -42,6 +47,12 @@ export function AdminAccount() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setMessage(null);
+
+    if (createPassword.length < 8) {
+      setMessage({ type: "error", text: t("admin.account.passwordMinLength") });
+      return;
+    }
+
     setCreating(true);
 
     try {
@@ -58,7 +69,7 @@ export function AdminAccount() {
         return;
       }
 
-      setMessage({ type: "success", text: t("admin.account.created2") });
+      setMessage({ type: "success", text: t("admin.account.createSuccess") });
       setCreateEmail("");
       setCreatePassword("");
       await fetchAdmins();
@@ -168,7 +179,9 @@ export function AdminAccount() {
       )}
 
       <h3>{t("admin.account.admins")}</h3>
-      {admins.length === 0 ? (
+      {loading ? (
+        <p style={{ color: "#555", fontSize: "0.9rem" }}>{t("common.loading")}</p>
+      ) : admins.length === 0 ? (
         <p style={{ color: "#555", fontSize: "0.9rem" }}>{t("admin.account.noAdmins")}</p>
       ) : (
         <table
@@ -229,6 +242,7 @@ export function AdminAccount() {
             required
             value={createEmail}
             onChange={(e) => setCreateEmail(e.target.value)}
+            autoComplete="off"
             style={inputStyle}
           />
         </label>
@@ -242,6 +256,7 @@ export function AdminAccount() {
             minLength={8}
             value={createPassword}
             onChange={(e) => setCreatePassword(e.target.value)}
+            autoComplete="new-password"
             style={inputStyle}
           />
         </label>

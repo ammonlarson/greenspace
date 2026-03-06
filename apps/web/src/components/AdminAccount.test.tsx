@@ -2,8 +2,10 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
 import { AdminAccount } from "./AdminAccount";
 
+const stableT = (key: string) => key;
+const stableSetLanguage = vi.fn();
 vi.mock("@/i18n/LanguageProvider", () => ({
-  useLanguage: () => ({ language: "en", setLanguage: vi.fn(), t: (key: string) => key }),
+  useLanguage: () => ({ language: "en", setLanguage: stableSetLanguage, t: stableT }),
 }));
 
 vi.mock("@/utils/formatDate", () => ({
@@ -87,7 +89,7 @@ describe("AdminAccount", () => {
       });
 
       expect(fetchMock).toHaveBeenCalledTimes(3);
-      expect(screen.getByText("admin.account.created2")).toBeDefined();
+      expect(screen.getByText("admin.account.createSuccess")).toBeDefined();
     });
 
     it("shows error on create failure", async () => {
