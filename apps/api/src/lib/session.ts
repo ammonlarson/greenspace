@@ -45,6 +45,16 @@ export async function deleteSession(
   await db.deleteFrom("sessions").where("id", "=", sessionId).execute();
 }
 
+export async function deleteExpiredSessions(
+  db: Kysely<Database>,
+): Promise<number> {
+  const result = await db
+    .deleteFrom("sessions")
+    .where("expires_at", "<=", new Date())
+    .executeTakeFirst();
+  return Number(result.numDeletedRows);
+}
+
 export function parseSessionCookie(cookieHeader: string | undefined): string | null {
   if (!cookieHeader) return null;
   const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
