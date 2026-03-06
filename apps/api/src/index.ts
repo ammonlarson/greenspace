@@ -83,6 +83,7 @@ export interface LambdaHttpEvent {
 export interface ScheduledEvent {
   source: string;
   "detail-type": string;
+  detail: Record<string, unknown>;
 }
 
 export type LambdaEvent = LambdaHttpEvent | ScheduledEvent;
@@ -136,13 +137,22 @@ async function ensureDb(): Promise<ReturnType<typeof createDatabase>> {
 
 export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
   if (isScheduledEvent(event)) {
-    const database = await ensureDb();
-    const deleted = await deleteExpiredSessions(database);
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ task: "session-cleanup", deletedSessions: deleted }),
-    };
+    try {
+      const database = await ensureDb();
+      const deleted = await deleteExpiredSessions(database);
+      return {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "session-cleanup", deletedSessions: deleted }),
+      };
+    } catch (err) {
+      console.error("Session cleanup failed:", err);
+      return {
+        statusCode: 500,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "session-cleanup", error: "Cleanup failed" }),
+      };
+    }
   }
 
   if (!router) {

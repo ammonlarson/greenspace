@@ -69,6 +69,11 @@ resource "aws_cloudwatch_event_rule" "session_cleanup" {
 resource "aws_cloudwatch_event_target" "session_cleanup" {
   rule = aws_cloudwatch_event_rule.session_cleanup.name
   arn  = aws_lambda_function.api.arn
+
+  retry_policy {
+    maximum_retry_attempts       = 2
+    maximum_event_age_in_seconds = 3600
+  }
 }
 
 resource "aws_lambda_permission" "session_cleanup" {

@@ -1,9 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { getGreenhouses, createRouter, handler } from "./index.js";
 
-vi.mock("./lib/session.js", () => ({
-  deleteExpiredSessions: vi.fn().mockResolvedValue(5),
-}));
+vi.mock("./lib/session.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./lib/session.js")>();
+  return {
+    ...actual,
+    deleteExpiredSessions: vi.fn().mockResolvedValue(5),
+  };
+});
 
 vi.mock("./db/connection.js", () => ({
   createDatabase: vi.fn().mockReturnValue({}),
