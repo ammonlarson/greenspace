@@ -651,6 +651,25 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
   }
 
   statement {
+    sid    = "EventBridgeManage"
+    effect = "Allow"
+    actions = [
+      "events:PutRule",
+      "events:DeleteRule",
+      "events:DescribeRule",
+      "events:ListTagsForResource",
+      "events:TagResource",
+      "events:UntagResource",
+      "events:PutTargets",
+      "events:RemoveTargets",
+      "events:ListTargetsByRule",
+    ]
+    resources = [
+      "arn:aws:events:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:rule/${local.naming_prefix}-*",
+    ]
+  }
+
+  statement {
     sid    = "AmplifyManage"
     effect = "Allow"
     actions = [
