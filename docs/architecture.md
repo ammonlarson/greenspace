@@ -366,7 +366,8 @@ infra/terraform/
         ├── networking.tf      VPC, subnets, gateways
         ├── outputs.tf         Module outputs
         ├── ses.tf             SES identity, DKIM, config set
-        └── variables.tf       Input variables
+        ├── variables.tf       Input variables
+        └── iam.tftest.hcl     Least-privilege IAM validation tests
 ```
 
 ### CI/CD Pipeline
