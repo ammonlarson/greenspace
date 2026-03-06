@@ -145,6 +145,18 @@ variable "amplify_enable_auto_build" {
   default     = true
 }
 
+variable "amplify_enable_preview_branches" {
+  description = "Enable automatic branch creation for preview environments on feature branch PRs."
+  type        = bool
+  default     = false
+}
+
+variable "amplify_preview_branch_patterns" {
+  description = "Glob patterns for branches that trigger automatic preview environments."
+  type        = list(string)
+  default     = ["feature/**", "fix/**"]
+}
+
 variable "amplify_domain_prefix" {
   description = "Subdomain prefix for the Amplify custom domain (e.g. 'greenspace' → greenspace.<domain>)."
   type        = string

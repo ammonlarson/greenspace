@@ -39,6 +39,23 @@ resource "aws_amplify_app" "web" {
     API_URL                   = aws_lambda_function_url.api.function_url
   }
 
+  enable_auto_branch_creation = var.amplify_enable_preview_branches
+  enable_branch_auto_deletion = var.amplify_enable_preview_branches
+
+  auto_branch_creation_patterns = var.amplify_enable_preview_branches ? var.amplify_preview_branch_patterns : []
+
+  dynamic "auto_branch_creation_config" {
+    for_each = var.amplify_enable_preview_branches ? [1] : []
+    content {
+      enable_auto_build = true
+      stage             = "DEVELOPMENT"
+      framework         = "Next.js - SSR"
+      environment_variables = {
+        NEXT_PUBLIC_ENV = "preview"
+      }
+    }
+  }
+
   tags = {
     Name = "${local.naming_prefix}-web"
   }
