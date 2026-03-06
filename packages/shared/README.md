@@ -8,6 +8,7 @@ Shared TypeScript code used by `apps/web` and `apps/api`.
 - **Constants** (`constants.ts`) — Greenhouse names, 29-box catalog with global numbering, opening datetime, email sender/reply-to, organizer contacts, address eligibility rules.
 - **Types** (`types.ts`) — Interfaces for all domain entities: `PlanterBoxPublic`, `GreenhouseSummary`, `Registration`, `WaitlistEntry`, `AuditEvent`, form inputs, etc.
 - **Validators** (`validators.ts`) — Address validation (street, house number, floor/door rules), email, name, and box ID validation with typed results.
+- **DAWA** (`dawa.ts`) — Danish Address Web API (DAWA) types and helpers for address autocomplete.
 - **i18n** (`i18n.ts`) — Translation key contracts and language display labels (`Dansk`, `English`).
 
 ## Source Structure
@@ -16,6 +17,8 @@ Shared TypeScript code used by `apps/web` and `apps/api`.
 src/
 ├── constants.ts        Domain constants and box catalog
 ├── constants.test.ts   Constant validation tests
+├── dawa.ts             DAWA (Danish Address Web API) types and helpers
+├── dawa.test.ts        DAWA module tests
 ├── enums.ts            Status and type enums
 ├── i18n.ts             i18n key contracts and language labels
 ├── index.ts            Package entry point (re-exports all)

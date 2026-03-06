@@ -103,6 +103,7 @@ graph TB
     subgraph "Routes"
         PUB[public.ts<br/>Status / Boxes / Register / Waitlist]
         AUTH[admin/auth.ts<br/>Login / Change Password]
+        ADMIN[admin/*.ts<br/>Registrations / Waitlist / Settings / Admins / Audit]
         HEALTH[health.ts<br/>Health Check]
     end
 
@@ -114,6 +115,9 @@ graph TB
         PWD[password.ts<br/>Argon2id]
         SESS[session.ts<br/>Token Generation]
         ERR[errors.ts<br/>Typed Errors]
+        LOG[logger.ts<br/>Structured Logging]
+        AUD[audit.ts<br/>Audit Recording]
+        EMAIL[email-service.ts<br/>SES Delivery]
     end
 
     subgraph "Database Layer"
@@ -124,12 +128,17 @@ graph TB
 
     ROUTER --> PUB
     ROUTER --> AUTH
+    ROUTER --> ADMIN
     ROUTER --> HEALTH
     AUTH --> AUTHMW
+    ADMIN --> AUTHMW
     AUTH --> PWD
     AUTH --> SESS
+    ADMIN --> AUD
+    ADMIN --> EMAIL
     PUB --> CONN
     AUTH --> CONN
+    ADMIN --> CONN
     CONN --> MIG
     CONN --> SEED
 ```
@@ -265,7 +274,14 @@ graph TB
         end
 
         subgraph "Compute"
+            LAMBDA[Lambda<br/>API Function]
+            LAMBDA_URL[Function URL]
+            EB[EventBridge<br/>Session Cleanup]
             RDS[(RDS PostgreSQL)]
+        end
+
+        subgraph "Frontend Hosting"
+            AMPLIFY[Amplify<br/>Next.js App]
         end
 
         subgraph "Email"
@@ -303,9 +319,16 @@ graph TB
     REPO --> TF_WF
     TF_WF -->|OIDC| IAM_TF
     IAM_TF --> VPC
+    IAM_TF --> LAMBDA
     IAM_TF --> RDS
     IAM_TF --> SES_ID
     IAM_TF --> R53
+    IAM_TF --> AMPLIFY
+    LAMBDA_URL --> LAMBDA
+    EB -->|hourly| LAMBDA
+    LAMBDA --> RDS
+    LAMBDA --> SES_ID
+    LAMBDA --> SECRETS
     VPC --> PUB_SUB
     VPC --> PRIV_SUB
     PUB_SUB --> IGW
@@ -334,15 +357,17 @@ infra/terraform/
 └── modules/
     └── greenspace_stack/      Shared module for all AWS resources
         ├── main.tf            Naming prefix, provider config
-        ├── networking.tf      VPC, subnets, gateways
-        ├── iam.tf             IAM roles and policies
+        ├── amplify.tf         Amplify app, branch, and domain association
+        ├── api_runtime.tf     Lambda function, Function URL, EventBridge schedule
         ├── database.tf        RDS, Secrets Manager
-        ├── ses.tf             SES identity, DKIM, config set
         ├── dns.tf             Route 53 zone and records
+        ├── iam.tf             IAM roles and policies
         ├── monitoring.tf      CloudWatch, KMS, Alarms, Dashboard, SNS
-        ├── variables.tf       Input variables
+        ├── networking.tf      VPC, subnets, gateways
         ├── outputs.tf         Module outputs
-        └── iam.tftest.hcl     Least-privilege validation tests
+        ├── ses.tf             SES identity, DKIM, config set
+        ├── variables.tf       Input variables
+        └── iam.tftest.hcl     Least-privilege IAM validation tests
 ```
 
 ### CI/CD Pipeline
@@ -372,5 +397,6 @@ The `@greenspace/shared` package contains code used by both frontend and backend
 - **Domain constants** — Greenhouse names, 29-box catalog, opening datetime, email config.
 - **Types** — Interfaces for all entities (`PlanterBoxPublic`, `Registration`, etc.).
 - **Validators** — Address, email, name validation with typed results.
+- **DAWA** — Danish Address Web API types and helpers for address autocomplete.
 - **i18n contracts** — Translation key definitions and language labels.
 - **Enums** — Box states, registration statuses, audit actions.

@@ -26,24 +26,39 @@ Must not contain:
 ```
 src/
 ├── app/
-│   ├── layout.tsx           Root layout with LanguageProvider
-│   ├── page.tsx             Main page (pre-open / landing / map routing)
-│   └── page.test.tsx        Integration tests
+│   ├── layout.tsx                  Root layout with LanguageProvider
+│   ├── page.tsx                    Main page (pre-open / landing / map routing)
+│   └── page.test.tsx               Integration tests
 ├── components/
-│   ├── BoxCard.tsx           Individual planter box card with state badge
-│   ├── BoxStateLegend.tsx    Color legend for box states
-│   ├── boxStateColors.ts    Shared color constants for box states
-│   ├── GreenhouseCard.tsx    Greenhouse summary card (clickable)
-│   ├── GreenhouseMap.tsx     Responsive CSS grid of box cards
-│   ├── GreenhouseMapPage.tsx Full greenhouse map view
-│   ├── LandingPage.tsx       Greenhouse overview with cards
-│   ├── LanguageSelector.tsx  da/en language toggle
-│   └── PreOpenPage.tsx       Pre-registration info page
+│   ├── AdminAuditLog.tsx           Admin audit log viewer
+│   ├── AdminBoxes.tsx              Admin box management panel
+│   ├── AdminDashboard.tsx          Admin dashboard layout with tab navigation
+│   ├── AdminLogin.tsx              Admin login form
+│   ├── AdminPage.tsx               Admin page container and auth gate
+│   ├── AdminRegistrations.tsx      Admin registration management
+│   ├── AdminSettings.tsx           Admin system settings (opening time)
+│   ├── AdminWaitlist.tsx           Admin waitlist management
+│   ├── AuditTimeline.tsx           Audit event timeline display
+│   ├── BoxCard.tsx                 Individual planter box card with state badge
+│   ├── BoxStateLegend.tsx          Color legend for box states
+│   ├── boxStateColors.ts          Shared color constants for box states
+│   ├── DawaAddressInput.tsx        DAWA address autocomplete input
+│   ├── GreenhouseCard.tsx          Greenhouse summary card (clickable)
+│   ├── GreenhouseMap.tsx           Responsive CSS grid of box cards
+│   ├── GreenhouseMapPage.tsx       Full greenhouse map view
+│   ├── LandingPage.tsx             Greenhouse overview with cards
+│   ├── LanguageSelector.tsx        da/en language toggle
+│   ├── PreOpenPage.tsx             Pre-registration info page
+│   ├── RegistrationForm.tsx        Public registration form
+│   ├── SwitchConfirmationDialog.tsx Apartment-switch confirmation dialog
+│   ├── WaitlistBanner.tsx          Waitlist status banner
+│   └── WaitlistForm.tsx            Public waitlist signup form
 ├── i18n/
-│   ├── LanguageProvider.tsx  React context for language state
-│   └── translations.ts      Danish and English translation strings
+│   ├── LanguageProvider.tsx        React context for language state
+│   └── translations.ts            Danish and English translation strings
 └── utils/
-    └── opening.ts            Opening datetime comparison helper
+    ├── formatDate.ts               Date formatting with Europe/Copenhagen timezone
+    └── opening.ts                  Opening datetime comparison helper
 ```
 
 ## Scripts
