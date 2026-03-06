@@ -196,6 +196,8 @@ A CloudWatch dashboard aggregates Lambda, RDS, and SES metrics.
 
 **Drift detection** runs daily via `.github/workflows/drift-detection.yml`. If Terraform detects infrastructure drift, a GitHub issue is created automatically.
 
+**Session cleanup** runs hourly via an EventBridge scheduled rule that invokes the API Lambda. Expired sessions (8-hour TTL) are bulk-deleted to prevent unbounded table growth.
+
 See [docs/runbooks/](docs/runbooks/) for incident triage and backup restore procedures.
 
 ## Time Source & Registration Gate
