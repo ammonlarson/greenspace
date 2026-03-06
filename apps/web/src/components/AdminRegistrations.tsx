@@ -60,7 +60,6 @@ export function AdminRegistrations() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
 
-  // Add form state
   const [addName, setAddName] = useState("");
   const [addEmail, setAddEmail] = useState("");
   const [addStreet, setAddStreet] = useState("");
@@ -70,12 +69,8 @@ export function AdminRegistrations() {
   const [addBoxId, setAddBoxId] = useState("");
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
   const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
-
-  // Move form state
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
   const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
-
-  // Remove form state
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
   const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
 
