@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { handler } from "./index.js";
+import { logger } from "./lib/logger.js";
 
 const PORT = Number(process.env["API_PORT"] ?? "3001");
 
@@ -25,5 +26,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`API dev server running on http://localhost:${PORT}`);
+  logger.info(`API dev server running on http://localhost:${PORT}`);
 });

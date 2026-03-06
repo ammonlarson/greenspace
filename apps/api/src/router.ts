@@ -1,6 +1,7 @@
 import type { Kysely } from "kysely";
 import type { Database } from "./db/types.js";
 import { AppError, methodNotAllowed, notFound, toErrorBody } from "./lib/errors.js";
+import { logger } from "./lib/logger.js";
 
 export interface RequestContext {
   db: Kysely<Database>;
@@ -94,7 +95,7 @@ export class Router {
         };
       }
 
-      console.error("Unhandled error:", err);
+      logger.error("Unhandled error", err);
       return {
         statusCode: 500,
         body: { error: "Internal server error" },

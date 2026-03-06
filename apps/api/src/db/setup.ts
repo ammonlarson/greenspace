@@ -2,6 +2,7 @@ import { createDatabase } from "./connection.js";
 import { migrateToLatest } from "./migrate.js";
 import { seed } from "./seed.js";
 import { hashPassword } from "../lib/password.js";
+import { logger } from "../lib/logger.js";
 
 const INITIAL_PASSWORD = process.env["SEED_ADMIN_PASSWORD"] ?? "changeme123";
 
@@ -15,22 +16,22 @@ async function main() {
     ssl: process.env["DB_SSL"] === "true",
   });
 
-  console.log("Running migrations...");
+  logger.info("Running migrations...");
   const { executedMigrations } = await migrateToLatest(db);
   if (executedMigrations.length > 0) {
-    console.log(`Applied: ${executedMigrations.join(", ")}`);
+    logger.info(`Applied: ${executedMigrations.join(", ")}`);
   } else {
-    console.log("Already up to date.");
+    logger.info("Already up to date.");
   }
 
-  console.log("Seeding database...");
+  logger.info("Seeding database...");
   await seed(db, hashPassword, INITIAL_PASSWORD);
-  console.log("Seed complete.");
+  logger.info("Seed complete.");
 
   await db.destroy();
 }
 
 main().catch((err) => {
-  console.error("Setup failed:", err);
+  logger.error("Setup failed:", err);
   process.exit(1);
 });
