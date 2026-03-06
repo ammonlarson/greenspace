@@ -7,6 +7,8 @@ interface LogEntry {
   [key: string]: unknown;
 }
 
+const RESERVED_KEYS = new Set(["level", "message", "timestamp"]);
+
 const isLambda = !!process.env["AWS_LAMBDA_FUNCTION_NAME"];
 
 function formatError(err: unknown): Record<string, unknown> {
@@ -42,11 +44,15 @@ function serializeExtra(args: unknown[]): Record<string, unknown> {
 }
 
 function writeJson(level: LogLevel, message: string, args: unknown[]): void {
+  const extra = serializeExtra(args);
+  for (const key of RESERVED_KEYS) {
+    delete extra[key];
+  }
   const entry: LogEntry = {
     level,
     message,
     timestamp: new Date().toISOString(),
-    ...serializeExtra(args),
+    ...extra,
   };
   const output = JSON.stringify(entry);
   if (level === "error") {

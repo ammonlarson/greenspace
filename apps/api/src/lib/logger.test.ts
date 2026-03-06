@@ -85,6 +85,38 @@ describe("logger", () => {
       writeSpy.mockRestore();
     });
 
+    it("does not allow extra data to overwrite reserved fields", async () => {
+      process.env["AWS_LAMBDA_FUNCTION_NAME"] = "test-fn";
+      const { logger } = await import("./logger.js");
+
+      const writeSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+
+      logger.info("Tricky", { level: "debug", message: "override", timestamp: "fake" });
+
+      const output = writeSpy.mock.calls[0][0] as string;
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.level).toBe("info");
+      expect(parsed.message).toBe("Tricky");
+      expect(parsed.timestamp).not.toBe("fake");
+
+      writeSpy.mockRestore();
+    });
+
+    it("serializes non-Error thrown values", async () => {
+      process.env["AWS_LAMBDA_FUNCTION_NAME"] = "test-fn";
+      const { logger } = await import("./logger.js");
+
+      const writeSpy = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+
+      logger.error("Failed", "string-error");
+
+      const output = writeSpy.mock.calls[0][0] as string;
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.detail).toBe("string-error");
+
+      writeSpy.mockRestore();
+    });
+
     it("writes JSON to stdout for warn", async () => {
       process.env["AWS_LAMBDA_FUNCTION_NAME"] = "test-fn";
       const { logger } = await import("./logger.js");
