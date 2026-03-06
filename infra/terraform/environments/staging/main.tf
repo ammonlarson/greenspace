@@ -62,10 +62,12 @@ module "greenspace_stack" {
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::111111111111:distribution/STAGING_DIST_ID"]
 
-  amplify_github_access_token = var.amplify_github_access_token
-  amplify_branch_name         = "main"
-  amplify_enable_auto_build   = true
-  amplify_domain_prefix       = "greenspace"
+  amplify_github_access_token     = var.amplify_github_access_token
+  amplify_branch_name             = "main"
+  amplify_enable_auto_build       = true
+  amplify_domain_prefix           = "greenspace"
+  amplify_enable_preview_branches = true
+  amplify_preview_branch_patterns = ["feature/**", "fix/**"]
 }
 
 variable "amplify_github_access_token" {
