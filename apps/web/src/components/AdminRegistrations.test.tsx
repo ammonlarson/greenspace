@@ -1,0 +1,364 @@
+import { describe, expect, it, vi, afterEach } from "vitest";
+import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
+import { AdminRegistrations } from "./AdminRegistrations";
+
+const stableT = (key: string) => key;
+vi.mock("@/i18n/LanguageProvider", () => ({
+  useLanguage: () => ({ language: "en", setLanguage: vi.fn(), t: stableT }),
+}));
+
+vi.mock("@/utils/formatDate", () => ({
+  formatDate: (iso: string) => iso,
+}));
+
+vi.mock("./NotificationComposer", () => ({
+  NotificationComposer: ({ value, onChange }: { value: { sendEmail: boolean; subject: string; bodyHtml: string }; onChange: (v: { sendEmail: boolean; subject: string; bodyHtml: string }) => void }) => (
+    <div data-testid="notification-composer">
+      <label>
+        <input
+          type="checkbox"
+          checked={value.sendEmail}
+          onChange={(e) => onChange({ ...value, sendEmail: e.target.checked })}
+          data-testid="send-email-checkbox"
+        />
+        Send
+      </label>
+    </div>
+  ),
+}));
+
+const registrations = [
+  {
+    id: "r1",
+    box_id: 1,
+    name: "Alice",
+    email: "alice@test.com",
+    street: "Else Alfelts Vej",
+    house_number: 150,
+    floor: "2",
+    door: "tv",
+    apartment_key: "Else Alfelts Vej 150, 2. tv",
+    language: "da",
+    status: "active",
+    created_at: "2026-01-15T10:00:00Z",
+  },
+  {
+    id: "r2",
+    box_id: 5,
+    name: "Bob",
+    email: "bob@test.com",
+    street: "Else Alfelts Vej",
+    house_number: 160,
+    floor: null,
+    door: null,
+    apartment_key: "Else Alfelts Vej 160",
+    language: "en",
+    status: "removed",
+    created_at: "2026-01-10T10:00:00Z",
+  },
+];
+
+function mockFetch(responses: Array<{ ok: boolean; status?: number; body: unknown }>) {
+  let callIndex = 0;
+  return vi.fn().mockImplementation(() => {
+    const resp = responses[callIndex] ?? responses[responses.length - 1];
+    callIndex++;
+    return Promise.resolve({
+      ok: resp.ok,
+      status: resp.status ?? (resp.ok ? 200 : 400),
+      json: async () => resp.body,
+    });
+  });
+}
+
+describe("AdminRegistrations", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    cleanup();
+  });
+
+  describe("list view", () => {
+    it("renders registration table after fetch", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      expect(screen.getByText("Alice")).toBeDefined();
+      expect(screen.getByText("Bob")).toBeDefined();
+      expect(screen.getByText("#1")).toBeDefined();
+      expect(screen.getByText("#5")).toBeDefined();
+    });
+
+    it("shows empty state when no registrations", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: [] }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      expect(screen.getByText("admin.registrations.noRegistrations")).toBeDefined();
+    });
+
+    it("shows move and remove buttons for active registrations only", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      const moveButtons = screen.getAllByText("admin.registrations.move");
+      const removeButtons = screen.getAllByText("admin.registrations.remove");
+      expect(moveButtons).toHaveLength(1);
+      expect(removeButtons).toHaveLength(1);
+    });
+
+    it("shows add button", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      expect(screen.getByText("admin.registrations.add")).toBeDefined();
+    });
+
+    it("shows error on fetch failure", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: false, body: {} }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      expect(screen.getByText("common.error")).toBeDefined();
+    });
+  });
+
+  describe("add flow", () => {
+    it("opens add dialog and submits successfully", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, status: 201, body: { id: "r3", boxId: 10, apartmentKey: "Test" } },
+        { ok: true, body: registrations },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      expect(screen.getByLabelText("admin.registrations.addName")).toBeDefined();
+      expect(screen.getByLabelText("admin.registrations.addEmail")).toBeDefined();
+      expect(screen.getByLabelText("admin.registrations.addBoxId")).toBeDefined();
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail"), { target: { value: "carol@test.com" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addStreet"), { target: { value: "Else Alfelts Vej" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber"), { target: { value: "170" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId"), { target: { value: "10" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      const createCall = fetchMock.mock.calls[1];
+      expect(createCall[0]).toBe("/admin/registrations");
+      expect(createCall[1].method).toBe("POST");
+      expect(screen.getByText("admin.registrations.added")).toBeDefined();
+    });
+
+    it("shows error on add failure", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: false, body: { error: "Box is already occupied" } },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail"), { target: { value: "carol@test.com" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addStreet"), { target: { value: "Else Alfelts Vej" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber"), { target: { value: "170" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId"), { target: { value: "10" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe("Box is already occupied");
+    });
+
+    it("closes add dialog on cancel", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      expect(screen.getByLabelText("admin.registrations.addName")).toBeDefined();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.cancel"));
+      });
+
+      expect(screen.queryByLabelText("admin.registrations.addName")).toBeNull();
+    });
+  });
+
+  describe("move flow", () => {
+    it("opens move dialog and submits successfully", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, body: { registrationId: "r1", newBoxId: 3 } },
+        { ok: true, body: registrations },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.move"));
+      });
+
+      expect(screen.getByLabelText("admin.registrations.newBoxId")).toBeDefined();
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.newBoxId"), { target: { value: "3" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      const moveCall = fetchMock.mock.calls[1];
+      expect(moveCall[0]).toBe("/admin/registrations/move");
+      const moveBody = JSON.parse(moveCall[1].body);
+      expect(moveBody.registrationId).toBe("r1");
+      expect(moveBody.newBoxId).toBe(3);
+      expect(screen.getByText("admin.registrations.moved")).toBeDefined();
+    });
+
+    it("shows error on move failure", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: false, body: { error: "Target box is already occupied" } },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.move"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.newBoxId"), { target: { value: "3" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe("Target box is already occupied");
+    });
+  });
+
+  describe("remove flow", () => {
+    it("opens remove dialog with release options and submits", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, body: { registrationId: "r1", boxReleased: true } },
+        { ok: true, body: registrations },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.remove"));
+      });
+
+      expect(screen.getByText("admin.registrations.releasePublic")).toBeDefined();
+      expect(screen.getByText("admin.registrations.releaseReserved")).toBeDefined();
+      expect(screen.getByTestId("notification-composer")).toBeDefined();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      const removeCall = fetchMock.mock.calls[1];
+      expect(removeCall[0]).toBe("/admin/registrations/remove");
+      const removeBody = JSON.parse(removeCall[1].body);
+      expect(removeBody.registrationId).toBe("r1");
+      expect(removeBody.makeBoxPublic).toBe(true);
+      expect(screen.getByText("admin.registrations.removed")).toBeDefined();
+    });
+
+    it("submits with reserved hold when selected", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, body: { registrationId: "r1", boxReleased: false } },
+        { ok: true, body: registrations },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.remove"));
+      });
+
+      fireEvent.click(screen.getByText("admin.registrations.releaseReserved"));
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      const removeBody = JSON.parse(fetchMock.mock.calls[1][1].body);
+      expect(removeBody.makeBoxPublic).toBe(false);
+    });
+
+    it("closes remove dialog on cancel", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.remove"));
+      });
+
+      expect(screen.getByText("admin.registrations.releasePublic")).toBeDefined();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.cancel"));
+      });
+
+      expect(screen.queryByText("admin.registrations.releasePublic")).toBeNull();
+    });
+  });
+});
