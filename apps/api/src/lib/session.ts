@@ -50,7 +50,7 @@ export async function deleteExpiredSessions(
 ): Promise<number> {
   const result = await db
     .deleteFrom("sessions")
-    .where("expires_at", "<=", new Date().toISOString())
+    .where("expires_at", "<=", new Date())
     .executeTakeFirst();
   return Number(result.numDeletedRows);
 }
