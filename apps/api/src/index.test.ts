@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
-import { getGreenhouses, createRouter } from "./index.js";
+import { describe, expect, it, vi } from "vitest";
+import { getGreenhouses, createRouter, handler } from "./index.js";
+
+vi.mock("./lib/session.js", () => ({
+  deleteExpiredSessions: vi.fn().mockResolvedValue(5),
+}));
+
+vi.mock("./db/connection.js", () => ({
+  createDatabase: vi.fn().mockReturnValue({}),
+}));
 
 describe("api", () => {
   it("returns greenhouse list", () => {
@@ -9,5 +17,33 @@ describe("api", () => {
   it("createRouter returns a router with routes registered", () => {
     const router = createRouter();
     expect(router).toBeDefined();
+  });
+});
+
+describe("handler", () => {
+  it("runs session cleanup for EventBridge scheduled events", async () => {
+    const event = {
+      source: "aws.events",
+      "detail-type": "Scheduled Event",
+      detail: {},
+    };
+
+    const result = await handler(event);
+    expect(result.statusCode).toBe(200);
+    const body = JSON.parse(result.body);
+    expect(body.task).toBe("session-cleanup");
+    expect(body.deletedSessions).toBe(5);
+  });
+
+  it("routes HTTP events normally", async () => {
+    const event = {
+      httpMethod: "GET",
+      path: "/health",
+      headers: {},
+      body: null,
+    };
+
+    const result = await handler(event);
+    expect(result.statusCode).toBe(200);
   });
 });

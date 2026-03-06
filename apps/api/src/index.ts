@@ -1,5 +1,6 @@
 import { GREENHOUSES } from "@greenspace/shared";
 import { createDatabase } from "./db/connection.js";
+import { deleteExpiredSessions } from "./lib/session.js";
 import { requireAdmin } from "./middleware/auth.js";
 import { Router } from "./router.js";
 import type { RequestContext } from "./router.js";
@@ -72,17 +73,28 @@ export function createRouter(): Router {
   return router;
 }
 
-export interface LambdaEvent {
+export interface LambdaHttpEvent {
   httpMethod: string;
   path: string;
   headers: Record<string, string | undefined>;
   body: string | null;
 }
 
+export interface ScheduledEvent {
+  source: string;
+  "detail-type": string;
+}
+
+export type LambdaEvent = LambdaHttpEvent | ScheduledEvent;
+
 export interface LambdaResponse {
   statusCode: number;
   headers: Record<string, string>;
   body: string;
+}
+
+function isScheduledEvent(event: LambdaEvent): event is ScheduledEvent {
+  return "detail-type" in event && (event as ScheduledEvent)["detail-type"] === "Scheduled Event";
 }
 
 let router: Router | undefined;
@@ -107,10 +119,7 @@ async function resolveDbPassword(): Promise<string> {
   return secret["password"] ?? "";
 }
 
-export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
-  if (!router) {
-    router = createRouter();
-  }
+async function ensureDb(): Promise<ReturnType<typeof createDatabase>> {
   if (!db) {
     const password = await resolveDbPassword();
     db = createDatabase({
@@ -122,6 +131,24 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
       ssl: process.env["DB_SSL"] === "true",
     });
   }
+  return db;
+}
+
+export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
+  if (isScheduledEvent(event)) {
+    const database = await ensureDb();
+    const deleted = await deleteExpiredSessions(database);
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task: "session-cleanup", deletedSessions: deleted }),
+    };
+  }
+
+  if (!router) {
+    router = createRouter();
+  }
+  const database = await ensureDb();
 
   let body: unknown = undefined;
   if (event.body) {
@@ -142,7 +169,7 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
   }
 
   const ctx: RequestContext = {
-    db,
+    db: database,
     method: event.httpMethod,
     path: event.path,
     body,

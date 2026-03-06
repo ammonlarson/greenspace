@@ -53,3 +53,28 @@ resource "aws_lambda_function_url" "api" {
   function_name      = aws_lambda_function.api.function_name
   authorization_type = "NONE"
 }
+
+# ---------- Session Cleanup Schedule ----------
+
+resource "aws_cloudwatch_event_rule" "session_cleanup" {
+  name                = "${local.naming_prefix}-session-cleanup"
+  description         = "Trigger expired session cleanup every hour"
+  schedule_expression = "rate(1 hour)"
+
+  tags = {
+    Name = "${local.naming_prefix}-session-cleanup"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "session_cleanup" {
+  rule = aws_cloudwatch_event_rule.session_cleanup.name
+  arn  = aws_lambda_function.api.arn
+}
+
+resource "aws_lambda_permission" "session_cleanup" {
+  statement_id  = "AllowEventBridgeSessionCleanup"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.session_cleanup.arn
+}
