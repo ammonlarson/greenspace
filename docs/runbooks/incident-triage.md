@@ -2,7 +2,7 @@
 
 ## Overview
 
-This runbook covers initial triage steps when a CloudWatch alarm fires or an operational issue is reported for the Greenspace platform.
+This runbook covers initial triage steps when a CloudWatch alarm fires or an operational issue is reported for the UN17 Rooftop Gardens platform.
 
 ## Alarm Reference
 
