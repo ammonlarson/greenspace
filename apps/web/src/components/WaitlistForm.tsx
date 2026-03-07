@@ -227,15 +227,14 @@ export function WaitlistForm({ onCancel }: WaitlistFormProps) {
           />
         </div>
 
-        {/* Door */}
+        {/* Door (optional) */}
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="wl-door" style={labelStyle}>
-            {t("registration.doorLabel")} {needsFloorDoor ? "*" : ""}
+            {t("registration.doorLabel")}
           </label>
           <input
             id="wl-door"
             type="text"
-            required={needsFloorDoor}
             value={door}
             onChange={(e) => setDoor(e.target.value)}
             style={inputStyle}

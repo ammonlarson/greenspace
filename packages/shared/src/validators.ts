@@ -66,21 +66,21 @@ export function isFloorDoorRequired(houseNumber: number): boolean {
   return FLOOR_DOOR_REQUIRED_NUMBERS.includes(houseNumber);
 }
 
-/** Validate floor/door fields based on house number rules */
+/** Validate floor/door fields based on house number rules. Floor is required; door is optional. */
 export function validateFloorDoor(
   houseNumber: number,
   floor: string | null | undefined,
-  door: string | null | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  door?: string | null | undefined,
 ): ValidationResult {
   if (!isFloorDoorRequired(houseNumber)) {
     return { valid: true };
   }
   const hasFloor = floor != null && typeof floor === "string" && floor.trim().length > 0;
-  const hasDoor = door != null && typeof door === "string" && door.trim().length > 0;
-  if (!hasFloor || !hasDoor) {
+  if (!hasFloor) {
     return {
       valid: false,
-      error: `Floor and door are required for house number ${houseNumber}`,
+      error: `Floor is required for house number ${houseNumber}`,
     };
   }
   return { valid: true };

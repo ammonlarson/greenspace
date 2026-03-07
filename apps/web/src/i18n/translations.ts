@@ -39,7 +39,7 @@ const da = {
   "address.changeAddress": "Skift adresse",
   "address.ineligible": "Denne adresse er ikke berettiget til tilmelding.",
   "address.floorDoorHint":
-    "Etage og dør er påkrævet for denne adresse. Vælg den specifikke lejlighed fra forslagene.",
+    "Etage er påkrævet for denne adresse. Dør er valgfri.",
 
   "waitlist.title": "Venteliste",
   "waitlist.description":
@@ -89,7 +89,7 @@ const da = {
   "validation.nameRequired": "Navn er påkrævet",
   "validation.streetInvalid": "Gaden skal være Else Alfelts Vej",
   "validation.houseNumberInvalid": "Husnummer skal være mellem 122 og 202",
-  "validation.floorDoorRequired": "Etage og dør er påkrævet for denne adresse",
+  "validation.floorDoorRequired": "Etage er påkrævet for denne adresse",
   "validation.boxIdInvalid": "Ugyldig plantekasse",
 
   "consent.title": "Databeskyttelse og samtykke",
@@ -262,7 +262,7 @@ const en: Record<TranslationKey, string> = {
   "address.changeAddress": "Change address",
   "address.ineligible": "This address is not eligible for registration.",
   "address.floorDoorHint":
-    "Floor and door are required for this address. Select the specific apartment from the suggestions.",
+    "Floor is required for this address. Door is optional.",
 
   "waitlist.title": "Waitlist",
   "waitlist.description":
@@ -312,7 +312,7 @@ const en: Record<TranslationKey, string> = {
   "validation.nameRequired": "Name is required",
   "validation.streetInvalid": "Street must be Else Alfelts Vej",
   "validation.houseNumberInvalid": "House number must be between 122 and 202",
-  "validation.floorDoorRequired": "Floor and door are required for this address",
+  "validation.floorDoorRequired": "Floor is required for this address",
   "validation.boxIdInvalid": "Invalid planter box",
 
   "consent.title": "Data protection and consent",

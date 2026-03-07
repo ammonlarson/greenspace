@@ -4,12 +4,14 @@ import { useState } from "react";
 import {
   BOX_CATALOG,
   ELIGIBLE_STREET,
+  HOUSE_NUMBER_MIN,
+  HOUSE_NUMBER_MAX,
   ORGANIZER_CONTACTS,
+  isFloorDoorRequired,
   validateRegistrationInput,
   type Language,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { DawaAddressInput, type DawaAddressResult } from "./DawaAddressInput";
 import { SwitchConfirmationDialog, type SwitchDetails } from "./SwitchConfirmationDialog";
 
 interface RegistrationFormProps {
@@ -24,7 +26,9 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [selectedAddress, setSelectedAddress] = useState<DawaAddressResult | null>(null);
+  const [houseNumber, setHouseNumber] = useState("");
+  const [floor, setFloor] = useState("");
+  const [door, setDoor] = useState("");
   const [consentChecked, setConsentChecked] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -32,15 +36,17 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
   const [switchDetails, setSwitchDetails] = useState<SwitchDetails | null>(null);
   const [confirmingSwitch, setConfirmingSwitch] = useState(false);
 
+  const parsedHouseNumber = parseInt(houseNumber, 10);
+  const needsUnitFields = !isNaN(parsedHouseNumber) && isFloorDoorRequired(parsedHouseNumber);
+
   function buildPayload(opts?: { confirmSwitch?: boolean }) {
-    if (!selectedAddress) return null;
     return {
       name: name.trim(),
       email: email.trim(),
       street: ELIGIBLE_STREET,
-      houseNumber: selectedAddress.houseNumber,
-      floor: selectedAddress.floor,
-      door: selectedAddress.door,
+      houseNumber: parsedHouseNumber,
+      floor: floor.trim() || null,
+      door: door.trim() || null,
       language: language as Language,
       boxId,
       ...opts,
@@ -56,13 +62,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
       return;
     }
 
-    if (!selectedAddress) {
-      setErrors([t("address.ineligible")]);
-      return;
-    }
-
     const input = buildPayload();
-    if (!input) return;
 
     const validation = validateRegistrationInput(input);
     if (!validation.valid) {
@@ -118,7 +118,6 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
   async function handleConfirmSwitch() {
     const input = buildPayload({ confirmSwitch: true });
-    if (!input) return;
     setConfirmingSwitch(true);
     setErrors([]);
     try {
@@ -262,12 +261,71 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
           />
         </div>
 
-        {/* DAWA Address Autocomplete */}
-        <DawaAddressInput
-          selectedAddress={selectedAddress}
-          onSelect={setSelectedAddress}
-          onClear={() => setSelectedAddress(null)}
-        />
+        {/* Street (fixed, not editable) */}
+        <div style={{ marginBottom: "1rem" }}>
+          <label htmlFor="reg-street" style={labelStyle}>
+            {t("registration.streetLabel")}
+          </label>
+          <input
+            id="reg-street"
+            type="text"
+            value={ELIGIBLE_STREET}
+            disabled
+            style={{ ...inputStyle, background: "#f0f0f0", color: "#888" }}
+          />
+        </div>
+
+        {/* House number */}
+        <div style={{ marginBottom: "1rem" }}>
+          <label htmlFor="reg-house" style={labelStyle}>
+            {t("registration.houseNumberLabel")} *
+          </label>
+          <input
+            id="reg-house"
+            type="number"
+            required
+            min={HOUSE_NUMBER_MIN}
+            max={HOUSE_NUMBER_MAX}
+            value={houseNumber}
+            onChange={(e) => setHouseNumber(e.target.value)}
+            placeholder="184"
+            style={inputStyle}
+          />
+        </div>
+
+        {/* Conditional unit fields */}
+        {needsUnitFields && (
+          <>
+            {/* Floor (required) */}
+            <div style={{ marginBottom: "1rem" }}>
+              <label htmlFor="reg-floor" style={labelStyle}>
+                {t("registration.floorLabel")} *
+              </label>
+              <input
+                id="reg-floor"
+                type="text"
+                required
+                value={floor}
+                onChange={(e) => setFloor(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Door (optional) */}
+            <div style={{ marginBottom: "1rem" }}>
+              <label htmlFor="reg-door" style={labelStyle}>
+                {t("registration.doorLabel")}
+              </label>
+              <input
+                id="reg-door"
+                type="text"
+                value={door}
+                onChange={(e) => setDoor(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </>
+        )}
 
         {/* Consent section */}
         <fieldset
