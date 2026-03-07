@@ -109,8 +109,8 @@ describe("validateFloorDoor", () => {
     expect(validateFloorDoor(138, null, "th").valid).toBe(false);
   });
 
-  it("fails when required but door missing", () => {
-    expect(validateFloorDoor(144, "2", null).valid).toBe(false);
+  it("passes when required and floor provided but door missing", () => {
+    expect(validateFloorDoor(144, "2", null).valid).toBe(true);
   });
 
   it("fails when required but both empty strings", () => {
