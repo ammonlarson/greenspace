@@ -1,7 +1,7 @@
 import type { Language } from "@greenspace/shared";
 
 const da = {
-  "common.appName": "UN17 Rooftop Gardens",
+  "common.appName": "UN17 Village Taghaver",
   "common.language": "Sprog",
   "common.submit": "Indsend",
   "common.cancel": "Annuller",
@@ -112,7 +112,7 @@ const da = {
     "Du kan ikke selv afmelde dig via systemet. Kontakt arrangørerne via e-mail, hvis du ikke længere ønsker din plantekasse.",
 
   "email.confirmationSubject":
-    "Bekræftelse af din plantekasse-registrering – UN17 Rooftop Gardens",
+    "Bekræftelse af din plantekasse-registrering – UN17 Village Taghaver",
   "email.switchNote":
     "Din tidligere plantekasse er blevet frigivet, og din registrering er flyttet til den nye kasse.",
   "email.careGuidelines":
@@ -224,7 +224,7 @@ const da = {
 export type TranslationKey = keyof typeof da;
 
 const en: Record<TranslationKey, string> = {
-  "common.appName": "UN17 Rooftop Gardens",
+  "common.appName": "UN17 Village Rooftop Gardens",
   "common.language": "Language",
   "common.submit": "Submit",
   "common.cancel": "Cancel",
@@ -335,7 +335,7 @@ const en: Record<TranslationKey, string> = {
     "You cannot unregister yourself through the system. Contact the organizers by email if you no longer want your planter box.",
 
   "email.confirmationSubject":
-    "Confirmation of your planter box registration – UN17 Rooftop Gardens",
+    "Confirmation of your planter box registration – UN17 Village Rooftop Gardens",
   "email.switchNote":
     "Your previous planter box has been released and your registration has been moved to the new box.",
   "email.careGuidelines":

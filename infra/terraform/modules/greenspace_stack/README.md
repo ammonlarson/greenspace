@@ -1,6 +1,6 @@
 # greenspace_stack module
 
-Composable Terraform module for all UN17 Rooftop Gardens AWS resources. Used by both
+Composable Terraform module for all UN17 Village Rooftop Gardens AWS resources. Used by both
 the staging and production environment stacks.
 
 ## Resources provisioned

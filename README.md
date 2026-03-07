@@ -1,9 +1,9 @@
-# UN17 Rooftop Gardens
+# UN17 Village Rooftop Gardens
 
-UN17 Rooftop Gardens is the UN17 rooftop greenhouse registration platform for the 2026 season.
+UN17 Village Rooftop Gardens is the UN17 rooftop greenhouse registration platform for the 2026 season.
 
 Primary product specification:
-- [UN17 Rooftop Gardens Spec](docs/specs/greenspace-2026-spec.md)
+- [UN17 Village Rooftop Gardens Spec](docs/specs/greenspace-2026-spec.md)
 - [Architecture Overview](docs/architecture.md)
 
 ## Repository Layout
