@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_OPENING_DATETIME, type Greenhouse } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useHistoryState } from "@/hooks/useHistoryState";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { PreOpenPage } from "@/components/PreOpenPage";
 import { LandingPage } from "@/components/LandingPage";
@@ -23,8 +24,8 @@ interface PublicStatus {
 
 export default function Home() {
   const { t } = useLanguage();
-  const [view, setView] = useState<View>("public");
-  const [selectedGreenhouse, setSelectedGreenhouse] = useState<Greenhouse | null>(null);
+  const [view, setView] = useHistoryState<View>("home.view", "public");
+  const [selectedGreenhouse, setSelectedGreenhouse] = useHistoryState<Greenhouse | null>("home.greenhouse", null);
   const [status, setStatus] = useState<PublicStatus | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

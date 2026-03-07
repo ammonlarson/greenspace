@@ -6,6 +6,7 @@ import {
   type PlanterBoxPublic,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useHistoryState } from "@/hooks/useHistoryState";
 import { GreenhouseMap } from "./GreenhouseMap";
 import { BoxStateLegend } from "./BoxStateLegend";
 import { RegistrationForm } from "./RegistrationForm";
@@ -22,8 +23,8 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   const { t } = useLanguage();
   const [boxes, setBoxes] = useState<PlanterBoxPublic[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pageView, setPageView] = useState<PageView>("map");
-  const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
+  const [pageView, setPageView] = useHistoryState<PageView>("greenhouse.pageView", "map");
+  const [selectedBoxId, setSelectedBoxId] = useHistoryState<number | null>("greenhouse.boxId", null);
 
   useEffect(() => {
     let cancelled = false;

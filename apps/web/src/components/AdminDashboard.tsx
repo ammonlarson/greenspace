@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useHistoryState } from "@/hooks/useHistoryState";
 import { AdminRegistrations } from "./AdminRegistrations";
 import { AdminWaitlist } from "./AdminWaitlist";
 import { AdminBoxes } from "./AdminBoxes";
@@ -28,7 +29,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<Tab>("registrations");
+  const [activeTab, setActiveTab] = useHistoryState<Tab>("admin.tab", "registrations");
   const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {
