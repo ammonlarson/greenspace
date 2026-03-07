@@ -7,33 +7,28 @@ resource "aws_amplify_app" "web" {
 
   access_token = var.amplify_github_access_token
 
-  build_spec = yamlencode({
-    version = 1
-    applications = [{
-      appRoot = "apps/web"
-      frontend = {
-        phases = {
-          preBuild = {
-            commands = ["cd ../.. && npm ci"]
-          }
-          build = {
-            commands = ["cd ../.. && npm run build --workspace=@greenspace/web"]
-          }
-        }
-        artifacts = {
-          baseDirectory = ".next"
-          files         = ["**/*"]
-        }
-        cache = {
-          paths = [
-            "node_modules/**/*",
-            "../../node_modules/**/*",
-            ".next/cache/**/*",
-          ]
-        }
-      }
-    }]
-  })
+  build_spec = <<-YAML
+    version: 1
+    applications:
+      - appRoot: apps/web
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - cd ../.. && npm ci
+            build:
+              commands:
+                - cd ../.. && npm run build --workspace=@greenspace/web
+          artifacts:
+            baseDirectory: .next
+            files:
+              - "**/*"
+          cache:
+            paths:
+              - node_modules/**/*
+              - ../../node_modules/**/*
+              - .next/cache/**/*
+  YAML
 
   environment_variables = {
     AMPLIFY_MONOREPO_APP_ROOT = "apps/web"
