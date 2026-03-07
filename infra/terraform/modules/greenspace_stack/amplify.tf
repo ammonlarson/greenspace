@@ -14,10 +14,10 @@ resource "aws_amplify_app" "web" {
       frontend = {
         phases = {
           preBuild = {
-            commands = ["npm ci"]
+            commands = ["cd ../.. && npm ci"]
           }
           build = {
-            commands = ["npm run build"]
+            commands = ["cd ../.. && npm run build --workspace=@greenspace/web"]
           }
         }
         artifacts = {
@@ -27,6 +27,7 @@ resource "aws_amplify_app" "web" {
         cache = {
           paths = [
             "node_modules/**/*",
+            "../../node_modules/**/*",
             ".next/cache/**/*",
           ]
         }
