@@ -58,7 +58,7 @@ module "greenspace_stack" {
   ses_sender_domain  = "un17hub.com"
   ses_reply_to_email = "elise7284@gmail.com"
 
-  alarm_email = "elise7284@gmail.com"
+  alarm_email = "ammonl@hotmail.com"
 
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
   cloudfront_distribution_arns = ["arn:aws:cloudfront::222222222222:distribution/PROD_DIST_ID"]

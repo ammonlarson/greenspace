@@ -65,7 +65,7 @@ export const EMAIL_REPLY_TO = "elise7284@gmail.com" as const;
 /** Organizer contacts */
 export const ORGANIZER_CONTACTS = [
   { name: "Elise Larson", email: "elise7284@gmail.com" },
-  { name: "Lena Filthaut", email: "lena@gmail.com" },
+  { name: "Lena Filthaut", email: "lena.filthaut@yahoo.com" },
 ] as const;
 
 /** WhatsApp group link */
@@ -95,8 +95,7 @@ export const RESERVED_LABEL_DEFAULT = "Admin Hold" as const;
 
 /** Initial admin seed emails */
 export const SEED_ADMIN_EMAILS = [
-  "elise7284@gmail.com",
-  "lena@gmail.com",
+  "ammonl@hotmail.com",
 ] as const;
 
 /** Box states visible to public users. Note: "reserved" is shown but not selectable. */

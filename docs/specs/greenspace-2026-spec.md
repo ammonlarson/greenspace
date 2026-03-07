@@ -167,10 +167,9 @@ Søen:
 
 ### 6.1 Admin Authentication
 - Email + password.
-- Seed two initial admins:
-  - `elise7284@gmail.com`
-  - `lena@gmail.com`
-- Initial passwords stored as hashes in DB seed; each admin can change own password after first login.
+- Seed initial admin:
+  - `ammonl@hotmail.com`
+- Initial password stored as hash in DB seed; admins can change own password after first login.
 
 ### 6.2 Reservation Management
 - Admin can:
@@ -231,7 +230,7 @@ Søen:
   - `https://chat.whatsapp.com/FqYOqLLsz98HmDcdsr8a3i`
 - Questions should be directed to:
   - `elise7284@gmail.com` (Elise Larson)
-  - `lena@gmail.com` (Lena Filthaut)
+  - `lena.filthaut@yahoo.com` (Lena Filthaut)
 
 ## 8. Privacy and Consent
 
@@ -245,7 +244,7 @@ Søen:
   - operational data and audit history retained for administrative traceability
 - Link contact emails for data questions:
   - `elise7284@gmail.com`
-  - `lena@gmail.com`
+  - `lena.filthaut@yahoo.com`
 
 ### 8.2 Data Visibility
 - Public never sees registrant names/emails/addresses.

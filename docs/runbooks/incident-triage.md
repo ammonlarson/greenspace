@@ -89,5 +89,5 @@ This runbook covers initial triage steps when a CloudWatch alarm fires or an ope
 
 ## Escalation
 
-- **Primary contact:** Elise (elise7284@gmail.com)
+- **Primary contact:** Ammon Larson (ammonl@hotmail.com)
 - **Infrastructure:** Check repository `CODEOWNERS` or PR history for recent contributors.
