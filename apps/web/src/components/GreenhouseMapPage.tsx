@@ -24,7 +24,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   const [boxes, setBoxes] = useState<PlanterBoxPublic[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageView, setPageView] = useHistoryState<PageView>("greenhouse.pageView", "map");
-  const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
+  const [selectedBoxId, setSelectedBoxId] = useHistoryState<number | null>("greenhouse.boxId", null);
 
   useEffect(() => {
     let cancelled = false;
