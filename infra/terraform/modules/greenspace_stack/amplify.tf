@@ -18,7 +18,7 @@ applications:
             - cd ../.. && npm ci
         build:
           commands:
-            - cd ../.. && npm run build --workspace=@greenspace/web
+            - npm run build
       artifacts:
         baseDirectory: .next
         files:
