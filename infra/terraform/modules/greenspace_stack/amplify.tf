@@ -65,7 +65,8 @@ resource "aws_amplify_branch" "main" {
   app_id      = aws_amplify_app.web.id
   branch_name = var.amplify_branch_name
 
-  enable_auto_build = var.amplify_enable_auto_build
+  enable_auto_build           = var.amplify_enable_auto_build
+  enable_pull_request_preview = var.amplify_enable_preview_branches
 
   framework = "Next.js - SSR"
 
