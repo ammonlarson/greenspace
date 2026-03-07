@@ -1,6 +1,6 @@
 # infra
 
-Infrastructure as code for Greenspace.
+Infrastructure as code for UN17 Village Rooftop Gardens.
 
 All persistent AWS resources must be defined under `infra/terraform`.
 

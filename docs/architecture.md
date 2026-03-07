@@ -1,8 +1,8 @@
-# Greenspace 2026 Architecture
+# UN17 Village Rooftop Gardens Architecture
 
 ## System Overview
 
-Greenspace is a bilingual (Danish/English) registration platform that allows UN17 residents to register for rooftop planter boxes across two greenhouses. The system serves public users (no authentication) and admin users (email/password authentication).
+UN17 Village Rooftop Gardens is a bilingual (Danish/English) registration platform that allows UN17 residents to register for rooftop planter boxes across two greenhouses. The system serves public users (no authentication) and admin users (email/password authentication).
 
 ```mermaid
 graph TB

@@ -24,16 +24,16 @@ export interface NotificationPreview {
 
 const translations = {
   da: {
-    addSubject: "Bekræftelse af din plantekasse-registrering – Greenspace 2026",
-    moveSubject: "Ændring af din plantekasse – Greenspace 2026",
-    removeSubject: "Din plantekasse-registrering er fjernet – Greenspace 2026",
+    addSubject: "Bekræftelse af din plantekasse-registrering – UN17 Village Taghaver",
+    moveSubject: "Ændring af din plantekasse – UN17 Village Taghaver",
+    removeSubject: "Din plantekasse-registrering er fjernet – UN17 Village Taghaver",
 
     greeting: (name: string) => `Kære ${name},`,
-    addIntro: "Du er blevet tilmeldt en plantekasse i Greenspace 2026. Din registrering er nu bekræftet.",
-    moveIntro: "Din plantekasse-registrering i Greenspace 2026 er blevet ændret.",
+    addIntro: "Du er blevet tilmeldt en plantekasse i UN17 Village Taghaver. Din registrering er nu bekræftet.",
+    moveIntro: "Din plantekasse-registrering i UN17 Village Taghaver er blevet ændret.",
     moveDetail: (oldBoxName: string, oldGreenhouse: string, newBoxName: string, newGreenhouse: string) =>
       `Din plantekasse er blevet flyttet fra "${oldBoxName}" i ${oldGreenhouse} til "${newBoxName}" i ${newGreenhouse}.`,
-    removeIntro: "Vi skriver for at informere dig om, at din plantekasse-registrering i Greenspace 2026 er blevet fjernet.",
+    removeIntro: "Vi skriver for at informere dig om, at din plantekasse-registrering i UN17 Village Taghaver er blevet fjernet.",
     removeDetail: (boxName: string, greenhouse: string) =>
       `Din registrering for plantekasse "${boxName}" i ${greenhouse} er ikke længere aktiv.`,
 
@@ -45,19 +45,19 @@ const translations = {
     contactTitle: "Kontakt",
     contactText: "Hvis du har spørgsmål, er du velkommen til at kontakte os:",
     closing: "Med venlig hilsen,",
-    teamSignature: "Greenspace-teamet",
+    teamSignature: "UN17 Village Taghaver-teamet",
   },
   en: {
-    addSubject: "Confirmation of your planter box registration – Greenspace 2026",
-    moveSubject: "Change to your planter box – Greenspace 2026",
-    removeSubject: "Your planter box registration has been removed – Greenspace 2026",
+    addSubject: "Confirmation of your planter box registration – UN17 Village Rooftop Gardens",
+    moveSubject: "Change to your planter box – UN17 Village Rooftop Gardens",
+    removeSubject: "Your planter box registration has been removed – UN17 Village Rooftop Gardens",
 
     greeting: (name: string) => `Dear ${name},`,
-    addIntro: "You have been registered for a planter box in Greenspace 2026. Your registration is now confirmed.",
-    moveIntro: "Your planter box registration in Greenspace 2026 has been updated.",
+    addIntro: "You have been registered for a planter box in UN17 Village Rooftop Gardens. Your registration is now confirmed.",
+    moveIntro: "Your planter box registration in UN17 Village Rooftop Gardens has been updated.",
     moveDetail: (oldBoxName: string, oldGreenhouse: string, newBoxName: string, newGreenhouse: string) =>
       `Your planter box has been moved from "${oldBoxName}" in ${oldGreenhouse} to "${newBoxName}" in ${newGreenhouse}.`,
-    removeIntro: "We are writing to let you know that your planter box registration in Greenspace 2026 has been removed.",
+    removeIntro: "We are writing to let you know that your planter box registration in UN17 Village Rooftop Gardens has been removed.",
     removeDetail: (boxName: string, greenhouse: string) =>
       `Your registration for planter box "${boxName}" in ${greenhouse} is no longer active.`,
 
@@ -69,7 +69,7 @@ const translations = {
     contactTitle: "Contact",
     contactText: "If you have any questions, feel free to reach out to us:",
     closing: "Best regards,",
-    teamSignature: "The Greenspace Team",
+    teamSignature: "The UN17 Village Rooftop Gardens Team",
   },
 } as const;
 
@@ -135,7 +135,7 @@ function wrapEmailHtml(language: Language, subject: string, contentHtml: string)
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333;">
   <div style="max-width: 600px; margin: 0 auto; background: #fff;">
     <div style="background: #2e7d32; padding: 24px 32px;">
-      <h1 style="margin: 0; color: #fff; font-size: 22px;">Greenspace 2026</h1>
+      <h1 style="margin: 0; color: #fff; font-size: 22px;">UN17 Village Rooftop Gardens</h1>
     </div>
 
     <div style="padding: 32px;">
@@ -143,7 +143,7 @@ function wrapEmailHtml(language: Language, subject: string, contentHtml: string)
     </div>
 
     <div style="background: #f5f5f5; padding: 16px 32px; font-size: 12px; color: #888; text-align: center;">
-      <p style="margin: 0;">Greenspace 2026 &ndash; UN17 Hub</p>
+      <p style="margin: 0;">UN17 Village Rooftop Gardens &ndash; UN17 Hub</p>
     </div>
   </div>
 </body>

@@ -1,7 +1,7 @@
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 
 export const metadata = {
-  title: "Greenspace 2026",
+  title: "UN17 Village Rooftop Gardens",
   description: "Rooftop planter box registration",
 };
 
