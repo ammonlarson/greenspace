@@ -1,9 +1,9 @@
-# Greenspace 2026 Product + Technical Specification
+# UN17 Rooftop Gardens Product + Technical Specification
 
 ## 1. Overview
 
 ### 1.1 Product
-- Product name: Greenspace 2026 Registration
+- Product name: UN17 Rooftop Gardens
 - URL: `greenspace.un17hub.com`
 - Season: 2026
 - Purpose: allow eligible UN17 residents to register for rooftop planter boxes in two greenhouses (Kronen and Søen), with bilingual Danish/English UX and admin management.

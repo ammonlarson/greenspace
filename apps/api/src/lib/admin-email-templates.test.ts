@@ -14,13 +14,13 @@ describe("buildAdminNotification — add", () => {
   it("returns Danish subject for da language", () => {
     const result = buildAdminNotification(baseInput);
     expect(result.subject).toContain("Bekræftelse");
-    expect(result.subject).toContain("Greenspace 2026");
+    expect(result.subject).toContain("UN17 Rooftop Gardens");
   });
 
   it("returns English subject for en language", () => {
     const result = buildAdminNotification({ ...baseInput, language: "en" });
     expect(result.subject).toContain("Confirmation");
-    expect(result.subject).toContain("Greenspace 2026");
+    expect(result.subject).toContain("UN17 Rooftop Gardens");
   });
 
   it("includes recipient name in greeting", () => {
@@ -92,13 +92,13 @@ describe("buildAdminNotification — move", () => {
   it("returns Danish move subject", () => {
     const result = buildAdminNotification(moveInput);
     expect(result.subject).toContain("Ændring");
-    expect(result.subject).toContain("Greenspace 2026");
+    expect(result.subject).toContain("UN17 Rooftop Gardens");
   });
 
   it("returns English move subject", () => {
     const result = buildAdminNotification({ ...moveInput, language: "en" });
     expect(result.subject).toContain("Change");
-    expect(result.subject).toContain("Greenspace 2026");
+    expect(result.subject).toContain("UN17 Rooftop Gardens");
   });
 
   it("includes old and new box names", () => {
@@ -137,13 +137,13 @@ describe("buildAdminNotification — remove", () => {
   it("returns Danish remove subject", () => {
     const result = buildAdminNotification(removeInput);
     expect(result.subject).toContain("fjernet");
-    expect(result.subject).toContain("Greenspace 2026");
+    expect(result.subject).toContain("UN17 Rooftop Gardens");
   });
 
   it("returns English remove subject", () => {
     const result = buildAdminNotification({ ...removeInput, language: "en" });
     expect(result.subject).toContain("removed");
-    expect(result.subject).toContain("Greenspace 2026");
+    expect(result.subject).toContain("UN17 Rooftop Gardens");
   });
 
   it("includes removed box info", () => {
@@ -167,9 +167,9 @@ describe("buildAdminNotification — remove", () => {
     expect(result.bodyHtml).toContain("elise7284@gmail.com");
   });
 
-  it("includes Greenspace header", () => {
+  it("includes UN17 Rooftop Gardens header", () => {
     const result = buildAdminNotification(removeInput);
-    expect(result.bodyHtml).toContain("Greenspace 2026");
+    expect(result.bodyHtml).toContain("UN17 Rooftop Gardens");
     expect(result.bodyHtml).toContain("#2e7d32");
   });
 });
