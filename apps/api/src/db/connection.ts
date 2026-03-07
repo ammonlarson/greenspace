@@ -1,7 +1,20 @@
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Kysely, PostgresDialect } from "kysely";
 import pg from "pg";
 
 import type { Database } from "./types.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+let _rdsCaCert: string | undefined;
+function getRdsCaCert(): string {
+  if (!_rdsCaCert) {
+    _rdsCaCert = readFileSync(resolve(__dirname, "rds-global-bundle.pem"), "utf-8");
+  }
+  return _rdsCaCert;
+}
 
 export interface DatabaseConfig {
   host: string;
@@ -21,7 +34,7 @@ export function createDatabase(config: DatabaseConfig): Kysely<Database> {
         database: config.database,
         user: config.user,
         password: config.password,
-        ssl: config.ssl ? { rejectUnauthorized: true } : undefined,
+        ssl: config.ssl ? { rejectUnauthorized: true, ca: getRdsCaCert() } : undefined,
         max: 10,
       }),
     }),

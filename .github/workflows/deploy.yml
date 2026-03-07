@@ -37,7 +37,7 @@ jobs:
 
       - name: Create deployment zip
         working-directory: apps/api/dist/lambda
-        run: zip -j /tmp/api-lambda.zip index.mjs
+        run: zip -j /tmp/api-lambda.zip index.mjs rds-global-bundle.pem
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
