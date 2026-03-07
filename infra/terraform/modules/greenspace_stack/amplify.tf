@@ -9,23 +9,25 @@ resource "aws_amplify_app" "web" {
 
   build_spec = <<-YAML
     version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - cd $CODEBUILD_SRC_DIR && npm ci
-        build:
-          commands:
-            - cd $CODEBUILD_SRC_DIR && npm run build --workspace=@greenspace/web
-      artifacts:
-        baseDirectory: .next
-        files:
-          - "**/*"
-      cache:
-        paths:
-          - node_modules/**/*
-          - $CODEBUILD_SRC_DIR/node_modules/**/*
-          - .next/cache/**/*
+    applications:
+      - appRoot: apps/web
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - cd $CODEBUILD_SRC_DIR && npm ci
+            build:
+              commands:
+                - cd $CODEBUILD_SRC_DIR && npm run build --workspace=@greenspace/web
+          artifacts:
+            baseDirectory: .next
+            files:
+              - "**/*"
+          cache:
+            paths:
+              - node_modules/**/*
+              - $CODEBUILD_SRC_DIR/node_modules/**/*
+              - .next/cache/**/*
   YAML
 
   environment_variables = {
