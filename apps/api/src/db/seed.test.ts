@@ -80,7 +80,7 @@ describe("seed data", () => {
     it("returns the configured seed admin emails", () => {
       const emails = getAdminEmails();
       expect(emails).toEqual(SEED_ADMIN_EMAILS);
-      expect(emails).toHaveLength(2);
+      expect(emails).toHaveLength(1);
     });
 
     it("contains valid email addresses", () => {
