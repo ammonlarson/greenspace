@@ -1,5 +1,3 @@
-"use client";
-
 export function LoadingSplash() {
   return (
     <div
@@ -11,6 +9,7 @@ export function LoadingSplash() {
         minHeight: "100vh",
         background: "#f5f5f5",
       }}
+      role="status"
       aria-busy="true"
       aria-label="Loading"
       data-testid="loading-splash"
@@ -25,7 +24,12 @@ export function LoadingSplash() {
           animation: "splash-spin 0.8s linear infinite",
         }}
       />
-      <style>{`@keyframes splash-spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes splash-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+          [data-testid="loading-splash"] div { animation: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

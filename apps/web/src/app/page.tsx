@@ -90,7 +90,7 @@ export default function Home() {
     );
   }
 
-  if (!ready || status === null) {
+  if (!ready) {
     return <LoadingSplash />;
   }
 
