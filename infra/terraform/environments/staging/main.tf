@@ -67,7 +67,7 @@ module "greenspace_stack" {
   amplify_enable_auto_build       = true
   amplify_domain_prefix           = "greenspace"
   amplify_enable_preview_branches = true
-  amplify_preview_branch_patterns = ["feature/**", "fix/**"]
+  amplify_preview_branch_patterns = ["**"]
 }
 
 variable "amplify_github_access_token" {
