@@ -1,5 +1,8 @@
 import { GREENHOUSES } from "@greenspace/shared";
 import { createDatabase } from "./db/connection.js";
+import { migrateToLatestInline } from "./db/migration-registry.js";
+import { seed } from "./db/seed.js";
+import { hashPassword } from "./lib/password.js";
 import { deleteExpiredSessions } from "./lib/session.js";
 import { requireAdmin } from "./middleware/auth.js";
 import { Router } from "./router.js";
@@ -86,12 +89,20 @@ export interface ScheduledEvent {
   detail: Record<string, unknown>;
 }
 
-export type LambdaEvent = LambdaHttpEvent | ScheduledEvent;
+export interface MigrateEvent {
+  action: "migrate";
+}
+
+export type LambdaEvent = LambdaHttpEvent | ScheduledEvent | MigrateEvent;
 
 export interface LambdaResponse {
   statusCode: number;
   headers: Record<string, string>;
   body: string;
+}
+
+function isMigrateEvent(event: LambdaEvent): event is MigrateEvent {
+  return "action" in event && (event as MigrateEvent).action === "migrate";
 }
 
 function isScheduledEvent(event: LambdaEvent): event is ScheduledEvent {
@@ -136,6 +147,27 @@ async function ensureDb(): Promise<ReturnType<typeof createDatabase>> {
 }
 
 export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
+  if (isMigrateEvent(event)) {
+    try {
+      const database = await ensureDb();
+      const { executedMigrations } = await migrateToLatestInline(database);
+      const seedPassword = process.env["SEED_ADMIN_PASSWORD"] ?? "changeme123";
+      await seed(database, hashPassword, seedPassword);
+      return {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "migrate", executedMigrations, seeded: true }),
+      };
+    } catch (err) {
+      console.error("Migration failed:", err);
+      return {
+        statusCode: 500,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "migrate", error: String(err) }),
+      };
+    }
+  }
+
   if (isScheduledEvent(event)) {
     try {
       const database = await ensureDb();
