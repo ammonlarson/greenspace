@@ -38,24 +38,27 @@ export function useHistoryState<T>(
     skipNextPush.current = false;
   }, []);
 
+  // Store initial in a ref so the popstate listener doesn't go stale if the
+  // consumer passes a derived value (though changes after mount are not
+  // expected).
+  const initialRef = useRef(initial);
+
   // Listen for popstate (Back / Forward).
   useEffect(() => {
     function onPopState(event: PopStateEvent) {
       const stored = event.state?.[keyRef.current];
-      if (stored !== undefined) {
-        skipNextPush.current = true;
-        setValue(stored as T);
-      } else {
-        // No entry for this key — revert to initial.
-        skipNextPush.current = true;
-        setValue(initial);
-      }
+      skipNextPush.current = true;
+      setValue(stored !== undefined ? (stored as T) : initialRef.current);
+      // If React bails out of the state update (same value), the push-effect
+      // won't re-run and skipNextPush would stay true forever.  Clear it on
+      // the next macro-task, which fires after React's commit-phase effects.
+      setTimeout(() => {
+        skipNextPush.current = false;
+      }, 0);
     }
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-    // `initial` is intentionally captured once; changes to it after mount are
-    // not expected.
   }, []);
 
   // Whenever value changes (and the change did NOT come from popstate),
