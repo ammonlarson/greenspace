@@ -13,10 +13,10 @@ resource "aws_amplify_app" "web" {
       phases:
         preBuild:
           commands:
-            - cd ../.. && npm ci
+            - cd $CODEBUILD_SRC_DIR && npm ci
         build:
           commands:
-            - cd ../.. && npm run build --workspace=@greenspace/web
+            - cd $CODEBUILD_SRC_DIR && npm run build --workspace=@greenspace/web
       artifacts:
         baseDirectory: .next
         files:
@@ -24,7 +24,7 @@ resource "aws_amplify_app" "web" {
       cache:
         paths:
           - node_modules/**/*
-          - ../../node_modules/**/*
+          - $CODEBUILD_SRC_DIR/node_modules/**/*
           - .next/cache/**/*
   YAML
 
