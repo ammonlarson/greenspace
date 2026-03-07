@@ -125,6 +125,7 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
       "lambda:GetFunction",
       "lambda:GetFunctionUrlConfig",
       "lambda:ListFunctions",
+      "lambda:InvokeFunction",
     ]
     resources = [
       "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",

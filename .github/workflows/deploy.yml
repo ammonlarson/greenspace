@@ -78,6 +78,20 @@ jobs:
           aws lambda wait function-active-v2 \
             --function-name "${{ vars.API_FUNCTION_NAME }}"
 
+      - name: Run migrations
+        run: |
+          aws lambda invoke \
+            --function-name "${{ vars.API_FUNCTION_NAME }}" \
+            --payload '{"action":"migrate"}' \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/migrate-response.json
+          cat /tmp/migrate-response.json
+          STATUS=$(jq -r '.statusCode' /tmp/migrate-response.json)
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Migration failed"
+            exit 1
+          fi
+
       - name: Get Function URL
         id: url
         run: |
@@ -126,6 +140,20 @@ jobs:
         run: |
           aws lambda wait function-active-v2 \
             --function-name "${{ vars.API_FUNCTION_NAME }}"
+
+      - name: Run migrations
+        run: |
+          aws lambda invoke \
+            --function-name "${{ vars.API_FUNCTION_NAME }}" \
+            --payload '{"action":"migrate"}' \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/migrate-response.json
+          cat /tmp/migrate-response.json
+          STATUS=$(jq -r '.statusCode' /tmp/migrate-response.json)
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Migration failed"
+            exit 1
+          fi
 
       - name: Get Function URL
         id: url
