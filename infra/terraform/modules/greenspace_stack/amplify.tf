@@ -15,10 +15,10 @@ applications:
       phases:
         preBuild:
           commands:
-            - cd $CODEBUILD_SRC_DIR && npm ci
+            - cd ../.. && npm ci
         build:
           commands:
-            - cd $CODEBUILD_SRC_DIR && npm run build --workspace=@greenspace/web
+            - cd ../.. && npm run build --workspace=@greenspace/web
       artifacts:
         baseDirectory: .next
         files:
@@ -26,7 +26,7 @@ applications:
       cache:
         paths:
           - node_modules/**/*
-          - $CODEBUILD_SRC_DIR/node_modules/**/*
+          - ../../node_modules/**/*
           - .next/cache/**/*
   YAML
 
