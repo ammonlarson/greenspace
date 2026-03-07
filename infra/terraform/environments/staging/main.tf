@@ -56,7 +56,7 @@ module "greenspace_stack" {
 
   ses_sender_domain = "staging.un17hub.com"
 
-  alarm_email                     = "elise7284@gmail.com"
+  alarm_email                     = "ammonl@hotmail.com"
   alarm_rds_connections_threshold = 50
 
   # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned

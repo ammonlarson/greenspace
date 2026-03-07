@@ -5,7 +5,7 @@
 Pre-launch verification and production cutover plan for Greenspace 2026. Complete all sections before the registration opening date.
 
 **Opening date:** 2026-04-01 at 10:00 Europe/Copenhagen
-**Primary contact:** Elise Larson (elise7284@gmail.com)
+**Primary contact:** Ammon Larson (ammonl@hotmail.com)
 
 ## 1. Staging Sign-Off
 
@@ -79,7 +79,7 @@ FROM system_settings;
 
 ### 1.5 Admin Accounts
 
-- [x] Admin accounts created for: `elise7284@gmail.com`, `lena@gmail.com`
+- [x] Admin accounts created for: `ammonl@hotmail.com`
 - [x] Both admins can log in and access admin endpoints
 - [x] Admin passwords have been changed from seed defaults
 - [x] Session expiry works (logout after inactivity)
@@ -224,7 +224,7 @@ curl -s -X POST "${PROD_API_URL}/public/validate-address" \
 # Admin login
 curl -s -X POST "${PROD_API_URL}/admin/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"elise7284@gmail.com","password":"<password>"}' \
+  -d '{"email":"ammonl@hotmail.com","password":"<password>"}' \
   -c /tmp/cookies.txt | jq .
 
 # Fetch registrations (with session cookie)

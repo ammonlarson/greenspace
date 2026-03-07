@@ -86,8 +86,7 @@ describe("address constants", () => {
 describe("seed data", () => {
   it("has two seed admin emails", () => {
     expect(SEED_ADMIN_EMAILS).toEqual([
-      "elise7284@gmail.com",
-      "lena@gmail.com",
+      "ammonl@hotmail.com",
     ]);
   });
 });
