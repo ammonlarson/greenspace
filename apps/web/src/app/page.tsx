@@ -8,6 +8,7 @@ import { PreOpenPage } from "@/components/PreOpenPage";
 import { LandingPage } from "@/components/LandingPage";
 import { GreenhouseMapPage } from "@/components/GreenhouseMapPage";
 import { AdminPage } from "@/components/AdminPage";
+import { LoadingSplash } from "@/components/LoadingSplash";
 
 type View = "public" | "admin";
 
@@ -22,7 +23,7 @@ interface PublicStatus {
 }
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, ready } = useLanguage();
   const [view, setView] = useState<View>("public");
   const [selectedGreenhouse, setSelectedGreenhouse] = useState<Greenhouse | null>(null);
   const [status, setStatus] = useState<PublicStatus | null>(null);
@@ -87,6 +88,10 @@ export default function Home() {
         hasAvailableBoxes={status?.hasAvailableBoxes ?? true}
       />
     );
+  }
+
+  if (!ready || status === null) {
+    return <LoadingSplash />;
   }
 
   return (

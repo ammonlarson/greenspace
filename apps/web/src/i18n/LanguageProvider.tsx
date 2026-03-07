@@ -20,6 +20,7 @@ interface LanguageContextValue {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKey) => string;
+  ready: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -35,9 +36,11 @@ function detectBrowserLanguage(): Language {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     setLanguage(detectBrowserLanguage());
+    setReady(true);
   }, []);
 
   useEffect(() => {
@@ -52,8 +55,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ language, setLanguage, t }),
-    [language, t],
+    () => ({ language, setLanguage, t, ready }),
+    [language, t, ready],
   );
 
   return (
