@@ -43,9 +43,11 @@ applications:
   dynamic "auto_branch_creation_config" {
     for_each = var.amplify_enable_preview_branches ? [1] : []
     content {
-      enable_auto_build = true
-      stage             = "DEVELOPMENT"
-      framework         = "Next.js - SSR"
+      enable_auto_build             = true
+      enable_pull_request_preview   = true
+      pull_request_environment_name = "pr"
+      stage                         = "DEVELOPMENT"
+      framework                     = "Next.js - SSR"
       environment_variables = {
         NEXT_PUBLIC_ENV = "preview"
       }
