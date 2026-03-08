@@ -13,10 +13,11 @@ import type { RequestContext, RouteResponse } from "../../router.js";
 interface LoginBody {
   email?: string;
   password?: string;
+  rememberMe?: boolean;
 }
 
 export async function handleLogin(ctx: RequestContext): Promise<RouteResponse> {
-  const { email, password } = (ctx.body ?? {}) as LoginBody;
+  const { email, password, rememberMe } = (ctx.body ?? {}) as LoginBody;
 
   if (!email || !password) {
     throw badRequest("Email and password are required");
@@ -39,13 +40,14 @@ export async function handleLogin(ctx: RequestContext): Promise<RouteResponse> {
     throw unauthorized("Invalid credentials");
   }
 
-  const sessionId = await createSession(ctx.db, admin.id);
+  const persistent = rememberMe === true;
+  const sessionId = await createSession(ctx.db, admin.id, persistent);
 
   return {
     statusCode: 200,
     body: { message: "Authenticated" },
     headers: {
-      "Set-Cookie": sessionCookieHeader(sessionId),
+      "Set-Cookie": sessionCookieHeader(sessionId, persistent),
     },
   };
 }

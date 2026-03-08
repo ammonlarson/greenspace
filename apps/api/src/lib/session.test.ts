@@ -24,13 +24,21 @@ describe("parseSessionCookie", () => {
 });
 
 describe("sessionCookieHeader", () => {
-  it("returns secure cookie string", () => {
+  it("returns secure session cookie without Max-Age by default", () => {
     const header = sessionCookieHeader("test-id");
     expect(header).toContain("session=test-id");
     expect(header).toContain("HttpOnly");
     expect(header).toContain("Secure");
     expect(header).toContain("SameSite=Strict");
     expect(header).toContain("Path=/admin");
+    expect(header).not.toContain("Max-Age");
+  });
+
+  it("includes Max-Age when persistent is true", () => {
+    const header = sessionCookieHeader("test-id", true);
+    expect(header).toContain("session=test-id");
+    expect(header).toContain("HttpOnly");
+    expect(header).toContain("Max-Age=2592000");
   });
 });
 
