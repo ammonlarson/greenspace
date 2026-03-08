@@ -25,6 +25,8 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
+const STORAGE_KEY = "greenspace-language";
+
 function detectBrowserLanguage(): Language {
   if (typeof navigator === "undefined") return DEFAULT_LANGUAGE;
   const browserLang = navigator.language.split("-")[0];
@@ -34,13 +36,41 @@ function detectBrowserLanguage(): Language {
   return DEFAULT_LANGUAGE;
 }
 
+function readStoredLanguage(): Language | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && LANGUAGES.includes(stored as Language)) {
+      return stored as Language;
+    }
+  } catch {
+    // localStorage unavailable (SSR, private browsing, etc.)
+  }
+  return null;
+}
+
+function persistLanguage(lang: Language): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, lang);
+  } catch {
+    // localStorage unavailable
+  }
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setLanguage(detectBrowserLanguage());
+    const stored = readStoredLanguage();
+    const resolved = stored ?? detectBrowserLanguage();
+    setLanguageState(resolved);
+    persistLanguage(resolved);
     setReady(true);
+  }, []);
+
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    persistLanguage(lang);
   }, []);
 
   useEffect(() => {
@@ -56,7 +86,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ language, setLanguage, t, ready }),
-    [language, t, ready],
+    [language, setLanguage, t, ready],
   );
 
   return (
