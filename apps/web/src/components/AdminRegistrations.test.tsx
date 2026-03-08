@@ -136,7 +136,7 @@ describe("AdminRegistrations", () => {
   });
 
   describe("add flow", () => {
-    it("opens add dialog and submits successfully", async () => {
+    it("opens add dialog and submits successfully with floor-required house number", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
         { ok: true, status: 201, body: { id: "r3", boxId: 10, apartmentKey: "Test" } },
@@ -152,15 +152,18 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("admin.registrations.add"));
       });
 
-      expect(screen.getByLabelText("admin.registrations.addName")).toBeDefined();
-      expect(screen.getByLabelText("admin.registrations.addEmail")).toBeDefined();
-      expect(screen.getByLabelText("admin.registrations.addBoxId")).toBeDefined();
+      expect(screen.getByLabelText("admin.registrations.addName *")).toBeDefined();
+      expect(screen.getByLabelText("admin.registrations.addEmail *")).toBeDefined();
+      expect(screen.getByLabelText("admin.registrations.addBoxId *")).toBeDefined();
 
-      fireEvent.change(screen.getByLabelText("admin.registrations.addName"), { target: { value: "Carol" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail"), { target: { value: "carol@test.com" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addStreet"), { target: { value: "Else Alfelts Vej" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber"), { target: { value: "170" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId"), { target: { value: "10" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName *"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail *"), { target: { value: "carol@test.com" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "170" } });
+
+      expect(screen.getByLabelText("admin.registrations.addFloor *")).toBeDefined();
+      fireEvent.change(screen.getByLabelText("admin.registrations.addFloor *"), { target: { value: "2" } });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId *"), { target: { value: "10" } });
 
       await act(async () => {
         fireEvent.click(screen.getByText("common.confirm"));
@@ -170,7 +173,101 @@ describe("AdminRegistrations", () => {
       const createCall = fetchMock.mock.calls[1];
       expect(createCall[0]).toBe("/admin/registrations");
       expect(createCall[1].method).toBe("POST");
+      const createBody = JSON.parse(createCall[1].body);
+      expect(createBody.street).toBe("Else Alfelts Vej");
+      expect(createBody.houseNumber).toBe(170);
+      expect(createBody.floor).toBe("2");
       expect(screen.getByText("admin.registrations.added")).toBeDefined();
+    });
+
+    it("submits successfully with non-floor house number", async () => {
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, status: 201, body: { id: "r3", boxId: 10, apartmentKey: "Test" } },
+        { ok: true, body: registrations },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName *"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail *"), { target: { value: "carol@test.com" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "130" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId *"), { target: { value: "10" } });
+
+      expect(screen.queryByLabelText("admin.registrations.addFloor *")).toBeNull();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(screen.getByText("admin.registrations.added")).toBeDefined();
+    });
+
+    it("shows street as disabled with hard-coded value", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      const streetInput = screen.getByLabelText("admin.registrations.addStreet") as HTMLInputElement;
+      expect(streetInput.disabled).toBe(true);
+      expect(streetInput.value).toBe("Else Alfelts Vej");
+    });
+
+    it("shows validation errors when required fields are missing", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert")).toBeDefined();
+      expect(screen.getByText("validation.nameRequired")).toBeDefined();
+    });
+
+    it("shows floor validation error when floor required but missing", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName *"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail *"), { target: { value: "carol@test.com" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "170" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId *"), { target: { value: "10" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert")).toBeDefined();
+      expect(screen.getByText("validation.floorDoorRequired")).toBeDefined();
     });
 
     it("shows error on add failure", async () => {
@@ -188,17 +285,63 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("admin.registrations.add"));
       });
 
-      fireEvent.change(screen.getByLabelText("admin.registrations.addName"), { target: { value: "Carol" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail"), { target: { value: "carol@test.com" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addStreet"), { target: { value: "Else Alfelts Vej" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber"), { target: { value: "170" } });
-      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId"), { target: { value: "10" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName *"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail *"), { target: { value: "carol@test.com" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "170" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addFloor *"), { target: { value: "2" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId *"), { target: { value: "10" } });
 
       await act(async () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
       expect(screen.getByRole("alert").textContent).toBe("Box is already occupied");
+    });
+
+    it("resets floor/door when house number changes", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "170" } });
+      expect(screen.getByLabelText("admin.registrations.addFloor *")).toBeDefined();
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addFloor *"), { target: { value: "2" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addDoor"), { target: { value: "tv" } });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "130" } });
+      expect(screen.queryByLabelText("admin.registrations.addFloor *")).toBeNull();
+      expect(screen.queryByLabelText("admin.registrations.addDoor")).toBeNull();
+    });
+
+    it("shows invalid email error for malformed email", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName *"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail *"), { target: { value: "notanemail" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "130" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId *"), { target: { value: "10" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert")).toBeDefined();
+      expect(screen.getByText("validation.emailInvalid")).toBeDefined();
     });
 
     it("closes add dialog on cancel", async () => {
@@ -212,13 +355,13 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("admin.registrations.add"));
       });
 
-      expect(screen.getByLabelText("admin.registrations.addName")).toBeDefined();
+      expect(screen.getByLabelText("admin.registrations.addName *")).toBeDefined();
 
       await act(async () => {
         fireEvent.click(screen.getByText("common.cancel"));
       });
 
-      expect(screen.queryByLabelText("admin.registrations.addName")).toBeNull();
+      expect(screen.queryByLabelText("admin.registrations.addName *")).toBeNull();
     });
   });
 
