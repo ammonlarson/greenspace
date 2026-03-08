@@ -182,6 +182,7 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
       .select(["id", "box_id", "name", "email"])
       .where("apartment_key", "=", apartmentKey)
       .where("status", "=", "active")
+      .forUpdate()
       .execute();
 
     if (existingRegs.length > 0 && !body.confirmDuplicate) {
@@ -609,6 +610,7 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
       .select(["id", "box_id", "name", "email"])
       .where("apartment_key", "=", entry.apartment_key)
       .where("status", "=", "active")
+      .forUpdate()
       .execute();
 
     if (existingRegs.length > 0 && !body.confirmDuplicate) {

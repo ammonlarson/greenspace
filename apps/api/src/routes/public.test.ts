@@ -1127,7 +1127,9 @@ function makeMockDbForRegister(opts: MockRegisterOpts): Kysely<Database> {
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                execute: vi.fn().mockResolvedValue(existingRegs),
+                forUpdate: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(existingRegs),
+                }),
               }),
             }),
           }),

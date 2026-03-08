@@ -1051,7 +1051,9 @@ function makeMockAssignDb(opts: {
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                execute: vi.fn().mockResolvedValue(existingRegs),
+                forUpdate: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(existingRegs),
+                }),
               }),
             }),
           }),
@@ -1123,7 +1125,9 @@ function makeMockTrxDb(opts: {
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                execute: vi.fn().mockResolvedValue(existingRegs),
+                forUpdate: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(existingRegs),
+                }),
               }),
             }),
           }),
@@ -1225,7 +1229,9 @@ function makeMockAssignWaitlistDb(opts: MockAssignWaitlistOpts): Kysely<Database
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                execute: vi.fn().mockResolvedValue(existingRegs),
+                forUpdate: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(existingRegs),
+                }),
               }),
             }),
           }),

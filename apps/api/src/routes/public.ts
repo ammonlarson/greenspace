@@ -216,28 +216,34 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
       .select(["id", "box_id", "name", "email", "status"])
       .where("apartment_key", "=", apartmentKey)
       .where("status", "=", "active")
+      .forUpdate()
       .execute();
 
     if (existingRegs.length > 0 && !body.confirmSwitch) {
-      const existingReg = existingRegs[0];
-      const existingBox = BOX_CATALOG.find((b) => b.id === existingReg.box_id);
+      // Show the oldest registration (first created) to the user
+      const oldest = existingRegs.reduce((a, b) =>
+        (a.id < b.id ? a : b),
+      );
+      const existingBox = BOX_CATALOG.find((b) => b.id === oldest.box_id);
       const newBox = BOX_CATALOG.find((b) => b.id === body.boxId);
       return {
         type: "switch_required" as const,
-        existingBoxId: existingReg.box_id,
-        existingBoxName: existingBox?.name ?? `#${existingReg.box_id}`,
+        existingBoxId: oldest.box_id,
+        existingBoxName: existingBox?.name ?? `#${oldest.box_id}`,
         existingGreenhouse: existingBox?.greenhouse ?? "Unknown",
         newBoxId: body.boxId,
         newBoxName: newBox?.name ?? `#${body.boxId}`,
         newGreenhouse: newBox?.greenhouse ?? "Unknown",
+        totalExistingRegistrations: existingRegs.length,
       };
     }
 
     let switchedReg: typeof existingRegs[number] | undefined;
     if (existingRegs.length > 0) {
-      // Randomly select one registration to replace
-      const randomIndex = Math.floor(Math.random() * existingRegs.length);
-      switchedReg = existingRegs[randomIndex];
+      // Replace the oldest registration (deterministic, by earliest id)
+      switchedReg = existingRegs.reduce((a, b) =>
+        (a.id < b.id ? a : b),
+      );
 
       await trx
         .updateTable("registrations")
@@ -260,7 +266,7 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
         before: { box_id: switchedReg.box_id, status: "active" },
         after: { box_id: switchedReg.box_id, status: "switched" },
         reason: existingRegs.length > 1
-          ? `Randomly selected from ${existingRegs.length} active registrations for this address`
+          ? `Replaced oldest of ${existingRegs.length} active registrations for this address`
           : undefined,
       });
 
