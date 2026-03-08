@@ -141,6 +141,41 @@ describe("handleLogin", () => {
     expect(res.headers?.["Set-Cookie"]).toContain("Secure");
     expect(res.headers?.["Set-Cookie"]).toContain("Path=/admin");
     expect(sessionInsert).toHaveBeenCalledWith("sessions");
+    expect(res.headers?.["Set-Cookie"]).not.toContain("Max-Age");
+  });
+
+  it("returns persistent cookie when rememberMe is true", async () => {
+    const storedHash = await hashPassword("test1234");
+    const executeTakeFirstFn = vi.fn().mockResolvedValue({
+      id: "admin-1",
+      password_hash: storedHash,
+    });
+    const whereFn = vi.fn().mockReturnValue({ executeTakeFirst: executeTakeFirstFn });
+    const selectFn = vi.fn().mockReturnValue({ where: whereFn });
+    const innerJoinFn = vi.fn().mockReturnValue({ select: selectFn });
+    const selectFromFn = vi.fn().mockReturnValue({ innerJoin: innerJoinFn });
+    const sessionInsert = vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockReturnValue({
+          executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: "session-456" }),
+        }),
+      }),
+    });
+    const mockDb = {
+      selectFrom: selectFromFn,
+      insertInto: sessionInsert,
+    } as unknown as Kysely<Database>;
+
+    const res = await handleLogin(
+      makeCtx({
+        db: mockDb,
+        body: { email: "admin@test.com", password: "test1234", rememberMe: true },
+      }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers?.["Set-Cookie"]).toContain("session=session-456");
+    expect(res.headers?.["Set-Cookie"]).toContain("Max-Age=2592000");
   });
 });
 
