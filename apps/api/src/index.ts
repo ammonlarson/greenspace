@@ -9,7 +9,7 @@ import { Router } from "./router.js";
 import type { RequestContext } from "./router.js";
 import { handleCreateAdmin, handleDeleteAdmin, handleListAdmins } from "./routes/admin/admins.js";
 import { handleListAuditEvents } from "./routes/admin/audit.js";
-import { handleChangePassword, handleLogin, handleLogout } from "./routes/admin/auth.js";
+import { handleChangePassword, handleLogin, handleLogout, handleMe } from "./routes/admin/auth.js";
 import {
   handleAssignWaitlist,
   handleCreateRegistration,
@@ -54,6 +54,7 @@ export function createRouter(): Router {
   router.get("/public/waitlist/position/:apartmentKey", handleWaitlistPosition);
 
   router.post("/admin/auth/login", handleLogin);
+  router.get("/admin/auth/me", requireAdmin(handleMe));
   router.post("/admin/auth/logout", requireAdmin(handleLogout));
   router.post("/admin/auth/change-password", requireAdmin(handleChangePassword));
 

@@ -50,6 +50,13 @@ export async function handleLogin(ctx: RequestContext): Promise<RouteResponse> {
   };
 }
 
+export async function handleMe(ctx: RequestContext): Promise<RouteResponse> {
+  return {
+    statusCode: 200,
+    body: { authenticated: true, adminId: ctx.adminId },
+  };
+}
+
 export async function handleLogout(ctx: RequestContext): Promise<RouteResponse> {
   const sessionId = parseSessionCookie(ctx.headers["cookie"]);
   if (sessionId) {
