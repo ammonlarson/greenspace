@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
+import { colors, fonts, shadows, alertWarning } from "@/styles/theme";
 import { NotificationComposer, type NotificationValue } from "./NotificationComposer";
 
 interface WaitlistEntry {
@@ -123,13 +124,13 @@ export function AdminWaitlist() {
 
   return (
     <section>
-      <h2 style={{ marginBottom: "1rem" }}>{t("admin.waitlist.title")}</h2>
+      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.waitlist.title")}</h2>
 
       {message && (
         <p
           role={message.type === "error" ? "alert" : "status"}
           style={{
-            color: message.type === "error" ? "#c62828" : "#2d7a3a",
+            color: message.type === "error" ? colors.dustyRose : colors.sageDark,
             fontSize: "0.85rem",
             marginBottom: "1rem",
           }}
@@ -144,25 +145,25 @@ export function AdminWaitlist() {
           role="dialog"
           aria-labelledby="assign-dialog-title"
           style={{
-            border: "1px solid #e0e0e0",
+            border: `1px solid ${colors.borderTan}`,
             borderRadius: 8,
             padding: "1.25rem",
             marginBottom: "1.5rem",
-            background: "#fff",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+            background: colors.white,
+            boxShadow: shadows.card,
           }}
         >
-          <h3 id="assign-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+          <h3 id="assign-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.waitlist.confirmAssign")} – {assigningEntry.name}
           </h3>
-          <p style={{ fontSize: "0.85rem", color: "#555", margin: "0 0 0.75rem 0" }}>
+          <p style={{ fontSize: "0.85rem", color: colors.warmBrown, margin: "0 0 0.75rem 0" }}>
             {assigningEntry.email} · {assigningEntry.apartment_key}
           </p>
 
           <div style={{ marginBottom: "0.75rem" }}>
             <label
               htmlFor="assign-box-id"
-              style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.25rem" }}
+              style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.25rem", color: colors.warmBrown, fontFamily: fonts.body }}
             >
               {t("admin.waitlist.assignBoxId")}
             </label>
@@ -175,10 +176,11 @@ export function AdminWaitlist() {
                 width: "100%",
                 maxWidth: 200,
                 padding: "0.4rem",
-                border: "1px solid #ccc",
+                border: `1px solid ${colors.borderTan}`,
                 borderRadius: 4,
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
+                color: colors.inkBrown,
                 boxSizing: "border-box",
               }}
             />
@@ -200,14 +202,11 @@ export function AdminWaitlist() {
             <div
               role="alert"
               style={{
-                background: "#fff3e0",
-                border: "1px solid #e67e22",
-                borderRadius: 6,
-                padding: "0.75rem",
+                ...alertWarning,
                 marginTop: "0.75rem",
               }}
             >
-              <p style={{ margin: "0 0 0.5rem", fontWeight: 600, color: "#d35400", fontSize: "0.85rem" }}>
+              <p style={{ margin: "0 0 0.5rem", fontWeight: 600, fontSize: "0.85rem" }}>
                 {t("admin.waitlist.duplicateWarning")}
               </p>
               {assignDuplicateWarning.length > 0 && (
@@ -219,7 +218,7 @@ export function AdminWaitlist() {
                   ))}
                 </ul>
               )}
-              <p style={{ margin: 0, fontSize: "0.8rem", color: "#555" }}>
+              <p style={{ margin: 0, fontSize: "0.8rem" }}>
                 {t("admin.waitlist.duplicateConfirmHint")}
               </p>
             </div>
@@ -235,11 +234,11 @@ export function AdminWaitlist() {
                   padding: "0.4rem 1rem",
                   border: "none",
                   borderRadius: 4,
-                  background: "#e67e22",
-                  color: "#fff",
+                  background: colors.terracotta,
+                  color: colors.white,
                   cursor: submitting || (assignNotification.sendEmail && !assignNotification.valid) ? "not-allowed" : "pointer",
                   fontSize: "0.85rem",
-                  fontFamily: "inherit",
+                  fontFamily: fonts.body,
                   fontWeight: 600,
                 }}
               >
@@ -254,11 +253,11 @@ export function AdminWaitlist() {
                   padding: "0.4rem 1rem",
                   border: "none",
                   borderRadius: 4,
-                  background: "#1565c0",
-                  color: "#fff",
+                  background: colors.sage,
+                  color: colors.white,
                   cursor: submitting || (assignNotification.sendEmail && !assignNotification.valid) ? "not-allowed" : "pointer",
                   fontSize: "0.85rem",
-                  fontFamily: "inherit",
+                  fontFamily: fonts.body,
                 }}
               >
                 {t("common.confirm")}
@@ -270,12 +269,13 @@ export function AdminWaitlist() {
               disabled={submitting}
               style={{
                 padding: "0.4rem 1rem",
-                border: "1px solid #ccc",
+                border: `1px solid ${colors.borderTan}`,
                 borderRadius: 4,
-                background: "#fff",
+                background: colors.white,
+                color: colors.warmBrown,
                 cursor: submitting ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
               }}
             >
               {t("common.cancel")}
@@ -285,7 +285,7 @@ export function AdminWaitlist() {
       )}
 
       {entries.length === 0 ? (
-        <p style={{ color: "#888", fontStyle: "italic" }}>
+        <p style={{ color: colors.warmBrown, fontStyle: "italic" }}>
           {t("admin.waitlist.noEntries")}
         </p>
       ) : (
@@ -298,18 +298,18 @@ export function AdminWaitlist() {
             }}
           >
             <thead>
-              <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
-                <th style={{ padding: "0.5rem" }}>{t("admin.waitlist.name")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.waitlist.email")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.waitlist.apartment")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.waitlist.status")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.waitlist.date")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.waitlist.actions")}</th>
+              <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.name")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.email")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.apartment")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.status")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.date")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {entries.map((entry) => (
-                <tr key={entry.id} style={{ borderBottom: "1px solid #eee" }}>
+                <tr key={entry.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem" }}>{entry.name}</td>
                   <td style={{ padding: "0.5rem" }}>{entry.email}</td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>
@@ -323,8 +323,8 @@ export function AdminWaitlist() {
                         borderRadius: 12,
                         fontSize: "0.75rem",
                         fontWeight: 600,
-                        background: entry.status === "waiting" ? "#fef9e7" : "#f5f5f5",
-                        color: entry.status === "waiting" ? "#8a6d00" : "#888",
+                        background: entry.status === "waiting" ? colors.warningBg : colors.parchment,
+                        color: entry.status === "waiting" ? colors.mutedGold : colors.warmBrown,
                       }}
                     >
                       {entry.status}
@@ -341,13 +341,13 @@ export function AdminWaitlist() {
                         disabled={assigningEntry !== null}
                         style={{
                           padding: "0.25rem 0.75rem",
-                          border: "1px solid #1565c0",
+                          border: `1px solid ${colors.sage}`,
                           borderRadius: 4,
-                          background: "#fff",
-                          color: "#1565c0",
+                          background: colors.white,
+                          color: colors.sage,
                           cursor: assigningEntry !== null ? "not-allowed" : "pointer",
                           fontSize: "0.8rem",
-                          fontFamily: "inherit",
+                          fontFamily: fonts.body,
                         }}
                       >
                         {t("admin.waitlist.assign")}

@@ -2,6 +2,7 @@
 
 import { AUDIT_ACTIONS } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 
 interface AuditEvent {
   id: string;
@@ -64,15 +65,15 @@ export function AuditTimeline({
 
   return (
     <section style={{ maxWidth: 1000, margin: "0 auto", padding: "2rem 1rem" }}>
-      <h2 style={{ marginBottom: "1rem" }}>{t("audit.title")}</h2>
+      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("audit.title")}</h2>
 
       <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
-        <label style={{ display: "flex", flexDirection: "column", fontSize: "0.85rem" }}>
+        <label style={{ display: "flex", flexDirection: "column", fontSize: "0.85rem", fontFamily: fonts.body, color: colors.warmBrown }}>
           {t("audit.filterByAction")}
           <select
             value={actionFilter ?? ""}
             onChange={(e) => onActionFilterChange?.(e.target.value)}
-            style={{ padding: "0.4rem", marginTop: "0.25rem", fontFamily: "inherit" }}
+            style={{ padding: "0.4rem", marginTop: "0.25rem", fontFamily: fonts.body, border: `1px solid ${colors.borderTan}`, borderRadius: 4 }}
           >
             <option value="">{t("audit.allActions")}</option>
             {AUDIT_ACTIONS.map((a) => (
@@ -83,12 +84,12 @@ export function AuditTimeline({
           </select>
         </label>
 
-        <label style={{ display: "flex", flexDirection: "column", fontSize: "0.85rem" }}>
+        <label style={{ display: "flex", flexDirection: "column", fontSize: "0.85rem", fontFamily: fonts.body, color: colors.warmBrown }}>
           {t("audit.filterByActor")}
           <select
             value={actorTypeFilter ?? ""}
             onChange={(e) => onActorTypeFilterChange?.(e.target.value)}
-            style={{ padding: "0.4rem", marginTop: "0.25rem", fontFamily: "inherit" }}
+            style={{ padding: "0.4rem", marginTop: "0.25rem", fontFamily: fonts.body, border: `1px solid ${colors.borderTan}`, borderRadius: 4 }}
           >
             <option value="">{t("audit.allActors")}</option>
             <option value="admin">admin</option>
@@ -99,7 +100,7 @@ export function AuditTimeline({
       </div>
 
       {events.length === 0 ? (
-        <p style={{ color: "#888", fontStyle: "italic" }}>{t("audit.noEvents")}</p>
+        <p style={{ color: colors.warmBrown, fontStyle: "italic" }}>{t("audit.noEvents")}</p>
       ) : (
         <div style={{ overflowX: "auto" }}>
           <table
@@ -110,22 +111,22 @@ export function AuditTimeline({
             }}
           >
             <thead>
-              <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
-                <th style={{ padding: "0.5rem" }}>{t("audit.timestamp")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("audit.action")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("audit.actor")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("audit.entity")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("audit.details")}</th>
+              <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.timestamp")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.action")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.actor")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.entity")}</th>
+                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.details")}</th>
               </tr>
             </thead>
             <tbody>
               {events.map((evt) => (
-                <tr key={evt.id} style={{ borderBottom: "1px solid #eee" }}>
+                <tr key={evt.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>
                     {formatTimestamp(evt.timestamp, language)}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
-                    <code style={{ fontSize: "0.8rem", background: "#f4f4f4", padding: "0.1rem 0.3rem", borderRadius: 3 }}>
+                    <code style={{ fontSize: "0.8rem", background: colors.parchment, color: colors.inkBrown, padding: "0.1rem 0.3rem", borderRadius: 3 }}>
                       {evt.action}
                     </code>
                   </td>
@@ -136,7 +137,7 @@ export function AuditTimeline({
                   <td style={{ padding: "0.5rem" }}>
                     {evt.entityType} / {truncateId(evt.entityId)}
                   </td>
-                  <td style={{ padding: "0.5rem", fontSize: "0.8rem", color: "#555" }}>
+                  <td style={{ padding: "0.5rem", fontSize: "0.8rem", color: colors.warmBrown }}>
                     {evt.before && (
                       <div>
                         <strong>Before:</strong> {formatSnapshot(evt.before)}
@@ -168,11 +169,11 @@ export function AuditTimeline({
           style={{
             marginTop: "1rem",
             padding: "0.5rem 1.5rem",
-            border: "1px solid #ccc",
+            border: `1px solid ${colors.borderTan}`,
             borderRadius: 4,
-            background: "#fff",
+            background: colors.white,
             cursor: "pointer",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
           }}
         >
           {t("audit.loadMore")}

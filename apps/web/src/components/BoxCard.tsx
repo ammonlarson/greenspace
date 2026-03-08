@@ -3,6 +3,7 @@
 import type { PublicBoxState } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BOX_STATE_COLORS } from "./boxStateColors";
+import { colors as themeColors, fonts } from "@/styles/theme";
 
 interface BoxCardProps {
   id: number;
@@ -35,7 +36,7 @@ export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
         opacity: state !== "available" ? 0.7 : 1,
         minWidth: 100,
         textAlign: "center",
-        fontFamily: "inherit",
+        fontFamily: fonts.body,
         fontSize: "inherit",
         transition: "box-shadow 0.15s",
       }}
@@ -51,8 +52,8 @@ export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
       >
         {t(`map.state.${state}`)}
       </span>
-      <span style={{ fontSize: "1.25rem", fontWeight: 700 }}>#{id}</span>
-      <span style={{ fontSize: "0.85rem", color: "#555" }}>{name}</span>
+      <span style={{ fontSize: "1.25rem", fontWeight: 700, color: themeColors.inkBrown }}>#{id}</span>
+      <span style={{ fontSize: "0.85rem", color: themeColors.warmBrown }}>{name}</span>
     </button>
   );
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { OPENING_TIMEZONE } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 
 interface OpeningTimeData {
   openingDatetime: string;
@@ -76,13 +77,13 @@ export function AdminSettings() {
 
   return (
     <section style={{ maxWidth: 500, margin: "2rem auto", padding: "0 1rem" }}>
-      <h2>{t("admin.openingTimeTitle")}</h2>
-      <p style={{ color: "#555", fontSize: "0.9rem" }}>
+      <h2 style={{ fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.openingTimeTitle")}</h2>
+      <p style={{ color: colors.warmBrown, fontSize: "0.9rem" }}>
         {t("admin.openingTimeDescription")} ({OPENING_TIMEZONE})
       </p>
 
       {data && (
-        <div style={{ marginBottom: "1rem", fontSize: "0.9rem", color: "#555" }}>
+        <div style={{ marginBottom: "1rem", fontSize: "0.9rem", color: colors.warmBrown }}>
           <p style={{ margin: "0.25rem 0" }}>
             <strong>{t("admin.currentValue")}:</strong>{" "}
             {formatDisplay(data.openingDatetime, language)}
@@ -98,7 +99,7 @@ export function AdminSettings() {
 
       <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>
             {t("admin.newOpeningTime")}
           </span>
           <input
@@ -106,7 +107,7 @@ export function AdminSettings() {
             required
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            style={{ padding: "0.5rem", border: "1px solid #ccc", borderRadius: 4, fontSize: "1rem" }}
+            style={{ padding: "0.5rem", border: `1px solid ${colors.borderTan}`, borderRadius: 4, fontSize: "1rem", fontFamily: fonts.body }}
           />
         </label>
 
@@ -114,7 +115,7 @@ export function AdminSettings() {
           <p
             role="alert"
             style={{
-              color: message.type === "error" ? "#c62828" : "#2d7a3a",
+              color: message.type === "error" ? colors.dustyRose : colors.sageDark,
               margin: 0,
               fontSize: "0.85rem",
             }}
@@ -128,13 +129,13 @@ export function AdminSettings() {
           disabled={saving}
           style={{
             padding: "0.5rem 1rem",
-            background: "#1565c0",
-            color: "#fff",
+            background: colors.sage,
+            color: colors.white,
             border: "none",
             borderRadius: 4,
             cursor: saving ? "not-allowed" : "pointer",
             fontSize: "1rem",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
             alignSelf: "flex-start",
           }}
         >

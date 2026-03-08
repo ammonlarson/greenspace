@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts, headingStyle, inputStyle as themeInputStyle } from "@/styles/theme";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -43,32 +44,32 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
 
   return (
     <section style={{ maxWidth: 400, margin: "2rem auto", padding: "0 1rem" }}>
-      <h2>{t("admin.login")}</h2>
+      <h2 style={headingStyle}>{t("admin.login")}</h2>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{t("admin.email")}</span>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>{t("admin.email")}</span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            style={{ padding: "0.5rem", border: "1px solid #ccc", borderRadius: 4, fontSize: "1rem" }}
+            style={{ ...themeInputStyle, fontSize: "1rem" }}
           />
         </label>
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{t("admin.password")}</span>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>{t("admin.password")}</span>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            style={{ padding: "0.5rem", border: "1px solid #ccc", borderRadius: 4, fontSize: "1rem" }}
+            style={{ ...themeInputStyle, fontSize: "1rem" }}
           />
         </label>
         {error && (
-          <p role="alert" style={{ color: "#c62828", margin: 0, fontSize: "0.85rem" }}>
+          <p role="alert" style={{ color: colors.dustyRose, margin: 0, fontSize: "0.85rem" }}>
             {error}
           </p>
         )}
@@ -77,13 +78,13 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           disabled={loading}
           style={{
             padding: "0.5rem 1rem",
-            background: "#1565c0",
-            color: "#fff",
+            background: colors.sage,
+            color: colors.white,
             border: "none",
             borderRadius: 4,
             cursor: loading ? "not-allowed" : "pointer",
             fontSize: "1rem",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
           }}
         >
           {loading ? t("common.loading") : t("admin.login")}
