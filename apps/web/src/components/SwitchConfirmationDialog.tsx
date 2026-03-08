@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts, alertWarning } from "@/styles/theme";
 
 export interface SwitchDetails {
   existingBoxId: number;
@@ -32,17 +33,19 @@ export function SwitchConfirmationDialog({
       aria-labelledby="switch-title"
       aria-describedby="switch-explainer"
       style={{
-        background: "#fff",
-        border: "2px solid #e67e22",
+        background: colors.white,
+        border: `2px solid ${colors.terracotta}`,
         borderRadius: 10,
         padding: "1.5rem",
         maxWidth: 520,
         margin: "2rem auto",
+        fontFamily: fonts.body,
+        color: colors.inkBrown,
       }}
     >
       <h3
         id="switch-title"
-        style={{ margin: "0 0 1rem", color: "#d35400", fontSize: "1.1rem" }}
+        style={{ margin: "0 0 1rem", color: colors.terracottaDark, fontSize: "1.1rem", fontFamily: fonts.heading }}
       >
         {t("registration.switchTitle")}
       </h3>
@@ -50,59 +53,53 @@ export function SwitchConfirmationDialog({
       <p
         id="switch-explainer"
         style={{
-          background: "#fef9e7",
-          border: "1px solid #f0c040",
-          borderRadius: 6,
-          padding: "0.75rem",
-          fontSize: "0.9rem",
-          lineHeight: 1.5,
+          ...alertWarning,
           margin: "0 0 1.25rem",
+          lineHeight: 1.5,
         }}
       >
         {t("registration.switchExplainer")}
       </p>
 
       <div style={{ display: "flex", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
-        {/* Current box */}
         <div
           data-testid="current-box"
           style={{
             flex: 1,
             minWidth: 200,
-            border: "1px solid #e74c3c",
+            border: `1px solid ${colors.dustyRose}`,
             borderRadius: 8,
             padding: "0.75rem",
           }}
         >
-          <div style={{ fontSize: "0.8rem", color: "#767676", marginBottom: "0.25rem" }}>
+          <div style={{ fontSize: "0.8rem", color: colors.warmBrown, marginBottom: "0.25rem" }}>
             {t("registration.switchCurrentBox")}
           </div>
           <div style={{ fontWeight: 600 }}>
             #{switchDetails.existingBoxId} {switchDetails.existingBoxName}
           </div>
-          <div style={{ fontSize: "0.85rem", color: "#555" }}>
+          <div style={{ fontSize: "0.85rem", color: colors.warmBrown }}>
             {switchDetails.existingGreenhouse}
           </div>
         </div>
 
-        {/* New box */}
         <div
           data-testid="new-box"
           style={{
             flex: 1,
             minWidth: 200,
-            border: "1px solid #2d7a3a",
+            border: `1px solid ${colors.sage}`,
             borderRadius: 8,
             padding: "0.75rem",
           }}
         >
-          <div style={{ fontSize: "0.8rem", color: "#767676", marginBottom: "0.25rem" }}>
+          <div style={{ fontSize: "0.8rem", color: colors.warmBrown, marginBottom: "0.25rem" }}>
             {t("registration.switchNewBox")}
           </div>
           <div style={{ fontWeight: 600 }}>
             #{switchDetails.newBoxId} {switchDetails.newBoxName}
           </div>
-          <div style={{ fontSize: "0.85rem", color: "#555" }}>
+          <div style={{ fontSize: "0.85rem", color: colors.warmBrown }}>
             {switchDetails.newGreenhouse}
           </div>
         </div>
@@ -115,12 +112,13 @@ export function SwitchConfirmationDialog({
           disabled={confirming}
           style={{
             padding: "0.5rem 1rem",
-            background: "#f5f5f5",
-            border: "1px solid #ccc",
+            background: colors.parchment,
+            border: `1px solid ${colors.borderTan}`,
             borderRadius: 6,
             cursor: confirming ? "default" : "pointer",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
             fontSize: "0.9rem",
+            color: colors.warmBrown,
           }}
         >
           {t("registration.switchKeep")}
@@ -131,12 +129,12 @@ export function SwitchConfirmationDialog({
           disabled={confirming}
           style={{
             padding: "0.5rem 1rem",
-            background: confirming ? "#999" : "#e67e22",
-            color: "#fff",
+            background: confirming ? colors.borderTan : colors.terracotta,
+            color: colors.white,
             border: "none",
             borderRadius: 6,
             cursor: confirming ? "default" : "pointer",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
             fontSize: "0.9rem",
             fontWeight: 600,
           }}

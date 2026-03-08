@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors } from "@/styles/theme";
 import { AuditTimeline } from "./AuditTimeline";
 
 interface AuditEvent {
@@ -83,7 +84,7 @@ export function AdminAuditLog() {
   }
 
   if (error && events.length === 0) {
-    return <p style={{ color: "#c62828" }}>{t("common.error")}</p>;
+    return <p style={{ color: colors.dustyRose }}>{t("common.error")}</p>;
   }
 
   return (

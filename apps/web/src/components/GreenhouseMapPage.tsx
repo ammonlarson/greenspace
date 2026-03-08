@@ -11,6 +11,7 @@ import { GreenhouseMap } from "./GreenhouseMap";
 import { BoxStateLegend } from "./BoxStateLegend";
 import { RegistrationForm } from "./RegistrationForm";
 import { WaitlistForm } from "./WaitlistForm";
+import { colors, fonts, containerStyle, headingStyle, alertWarning } from "@/styles/theme";
 
 interface GreenhouseMapPageProps {
   greenhouse: Greenhouse;
@@ -69,7 +70,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   }
 
   return (
-    <section style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
+    <section style={{ ...containerStyle, maxWidth: 800 }}>
       <button
         type="button"
         onClick={onBack}
@@ -78,16 +79,16 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
           border: "none",
           cursor: "pointer",
           fontSize: "0.9rem",
-          color: "#555",
+          color: colors.warmBrown,
           padding: "0.25rem 0",
           marginBottom: "1rem",
-          fontFamily: "inherit",
+          fontFamily: fonts.body,
         }}
       >
         &larr; {t("map.back")}
       </button>
 
-      <h2 style={{ margin: "0 0 0.5rem" }}>{greenhouse}</h2>
+      <h2 style={{ ...headingStyle, marginBottom: "0.5rem" }}>{greenhouse}</h2>
 
       <div
         style={{
@@ -95,7 +96,8 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
           gap: "1.5rem",
           flexWrap: "wrap",
           fontSize: "0.9rem",
-          color: "#555",
+          color: colors.warmBrown,
+          fontFamily: fonts.body,
           marginBottom: "1.25rem",
         }}
       >
@@ -104,7 +106,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
         </span>
         <span>
           {t("greenhouse.available")}:{" "}
-          <strong style={{ color: "#2d7a3a" }}>{available}</strong>
+          <strong style={{ color: colors.sageDark }}>{available}</strong>
         </span>
         <span>
           {t("greenhouse.occupied")}: <strong>{occupied}</strong>
@@ -115,7 +117,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
 
       <div style={{ marginTop: "1.25rem" }}>
         {loading ? (
-          <p style={{ color: "#888" }}>{t("common.loading")}</p>
+          <p style={{ color: colors.warmBrown }}>{t("common.loading")}</p>
         ) : (
           <GreenhouseMap
             boxes={boxes}
@@ -131,16 +133,14 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
         <div style={{ marginTop: "1.5rem" }}>
           <section
             style={{
-              border: "1px solid #e0c547",
-              borderRadius: 8,
-              backgroundColor: "#fef9e7",
+              ...alertWarning,
               padding: "1.25rem",
             }}
           >
-            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>
+            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
               {t("waitlist.title")}
             </h3>
-            <p style={{ margin: "0 0 0.75rem", color: "#555", fontSize: "0.95rem" }}>
+            <p style={{ margin: "0 0 0.75rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
               {t("waitlist.description")}
             </p>
             <button
@@ -148,12 +148,12 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
               onClick={() => setPageView("waitlist")}
               style={{
                 padding: "0.5rem 1rem",
-                background: "#b8860b",
-                color: "#fff",
+                background: colors.mutedGold,
+                color: colors.white,
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
                 fontSize: "0.95rem",
                 fontWeight: 600,
               }}

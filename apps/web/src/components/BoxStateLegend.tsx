@@ -3,6 +3,7 @@
 import { PUBLIC_BOX_STATES } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BOX_STATE_COLORS } from "./boxStateColors";
+import { colors as themeColors, fonts } from "@/styles/theme";
 
 export function BoxStateLegend() {
   const { t } = useLanguage();
@@ -31,7 +32,7 @@ export function BoxStateLegend() {
                 background: colors.background,
               }}
             />
-            <span style={{ fontSize: "0.85rem" }}>{t(`map.state.${state}`)}</span>
+            <span style={{ fontSize: "0.85rem", fontFamily: fonts.body, color: themeColors.inkBrown }}>{t(`map.state.${state}`)}</span>
           </div>
         );
       })}

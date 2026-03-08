@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 
 interface WaitlistBannerProps {
   position?: number | null;
@@ -13,17 +14,17 @@ export function WaitlistBanner({ position, alreadyOnWaitlist }: WaitlistBannerPr
   return (
     <section
       style={{
-        border: "1px solid #e0c547",
-        borderRadius: 8,
-        backgroundColor: "#fef9e7",
+        border: `1px solid ${colors.mutedGold}`,
+        borderRadius: 10,
+        backgroundColor: colors.warningBg,
         padding: "1.25rem",
         marginTop: "1.5rem",
       }}
     >
-      <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>
+      <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
         {t("waitlist.title")}
       </h3>
-      <p style={{ margin: "0 0 0.75rem", color: "#555", fontSize: "0.95rem" }}>
+      <p style={{ margin: "0 0 0.75rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
         {alreadyOnWaitlist
           ? t("waitlist.alreadyOnWaitlist")
           : t("waitlist.description")}
@@ -34,6 +35,8 @@ export function WaitlistBanner({ position, alreadyOnWaitlist }: WaitlistBannerPr
             margin: 0,
             fontWeight: 600,
             fontSize: "1rem",
+            fontFamily: fonts.body,
+            color: colors.mutedGold,
           }}
         >
           {t("waitlist.positionLabel")}: #{position}

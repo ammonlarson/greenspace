@@ -10,6 +10,7 @@ import { LandingPage } from "@/components/LandingPage";
 import { GreenhouseMapPage } from "@/components/GreenhouseMapPage";
 import { AdminPage } from "@/components/AdminPage";
 import { LoadingSplash } from "@/components/LoadingSplash";
+import { colors, fonts } from "@/styles/theme";
 
 type View = "public" | "admin";
 
@@ -99,17 +100,18 @@ export default function Home() {
   }
 
   return (
-    <main>
+    <main style={{ fontFamily: fonts.body, color: colors.inkBrown }}>
       <header
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           padding: "1rem",
-          borderBottom: "1px solid #eee",
+          background: colors.parchment,
+          borderBottom: `1px solid ${colors.borderTan}`,
         }}
       >
-        <h1 style={{ fontSize: "1.25rem", margin: 0 }}>
+        <h1 style={{ fontSize: "1.25rem", margin: 0, fontFamily: fonts.heading, color: colors.warmBrown }}>
           {t("common.appName")}
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -122,8 +124,9 @@ export default function Home() {
                 border: "none",
                 cursor: "pointer",
                 fontSize: "0.8rem",
-                color: "#888",
-                fontFamily: "inherit",
+                color: colors.warmBrown,
+                opacity: 0.6,
+                fontFamily: fonts.body,
               }}
             >
               {t("admin.link")}

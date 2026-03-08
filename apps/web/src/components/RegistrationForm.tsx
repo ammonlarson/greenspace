@@ -12,6 +12,7 @@ import {
   type Language,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts, shadows, alertError } from "@/styles/theme";
 import { SwitchConfirmationDialog, type SwitchDetails } from "./SwitchConfirmationDialog";
 
 interface RegistrationFormProps {
@@ -150,7 +151,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
   if (switchDetails) {
     return (
-      <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem" }}>
+      <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem", fontFamily: fonts.body, color: colors.inkBrown }}>
         <SwitchConfirmationDialog
           switchDetails={switchDetails}
           onConfirm={handleConfirmSwitch}
@@ -163,8 +164,8 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
 
   if (success) {
     return (
-      <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem" }}>
-        <h2 style={{ color: "#2d7a3a" }}>{t("registration.success")}</h2>
+      <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem", fontFamily: fonts.body, color: colors.inkBrown }}>
+        <h2 style={{ color: colors.sageDark, fontFamily: fonts.heading }}>{t("registration.success")}</h2>
         <p style={{ marginTop: "1rem" }}>
           {t("registration.unregisterInfo")}
         </p>
@@ -173,14 +174,15 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
           onClick={onCancel}
           style={{
             marginTop: "1.5rem",
-            padding: "0.5rem 1rem",
-            background: "#2d7a3a",
-            color: "#fff",
+            padding: "0.5rem 1.25rem",
+            background: colors.sage,
+            color: colors.white,
             border: "none",
             borderRadius: 6,
             cursor: "pointer",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
             fontSize: "0.95rem",
+            fontWeight: 600,
           }}
         >
           {t("common.close")}
@@ -190,7 +192,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
   }
 
   return (
-    <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem" }}>
+    <section style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem", fontFamily: fonts.body, color: colors.inkBrown }}>
       <button
         type="button"
         onClick={onCancel}
@@ -199,26 +201,26 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
           border: "none",
           cursor: "pointer",
           fontSize: "0.9rem",
-          color: "#555",
+          color: colors.warmBrown,
           padding: "0.25rem 0",
           marginBottom: "1rem",
-          fontFamily: "inherit",
+          fontFamily: fonts.body,
         }}
       >
         &larr; {t("common.cancel")}
       </button>
 
-      <h2 style={{ margin: "0 0 0.25rem" }}>{t("registration.formTitle")}</h2>
+      <h2 style={{ margin: "0 0 0.25rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("registration.formTitle")}</h2>
       {box && (
-        <p style={{ color: "#555", margin: "0 0 1.5rem" }}>
+        <p style={{ color: colors.warmBrown, margin: "0 0 1.5rem" }}>
           {t("registration.boxLabel")}: <strong>#{box.id} {box.name}</strong> ({box.greenhouse})
         </p>
       )}
 
-      {/* Policy notices */}
       <div
         style={{
-          background: "#f5f5f0",
+          background: colors.parchment,
+          border: `1px solid ${colors.borderTan}`,
           borderRadius: 8,
           padding: "1rem",
           marginBottom: "1.25rem",
@@ -231,112 +233,56 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Name */}
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="reg-name" style={labelStyle}>
             {t("registration.nameLabel")} *
           </label>
-          <input
-            id="reg-name"
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-          />
+          <input id="reg-name" type="text" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
         </div>
 
-        {/* Email */}
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="reg-email" style={labelStyle}>
             {t("registration.emailLabel")} *
           </label>
-          <input
-            id="reg-email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-          />
+          <input id="reg-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
         </div>
 
-        {/* Street (fixed, not editable) */}
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="reg-street" style={labelStyle}>
             {t("registration.streetLabel")}
           </label>
-          <input
-            id="reg-street"
-            type="text"
-            value={ELIGIBLE_STREET}
-            disabled
-            style={{ ...inputStyle, background: "#f0f0f0", color: "#888" }}
-          />
+          <input id="reg-street" type="text" value={ELIGIBLE_STREET} disabled style={{ ...inputStyle, background: colors.parchmentDark, color: colors.warmBrown }} />
         </div>
 
-        {/* House number */}
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="reg-house" style={labelStyle}>
             {t("registration.houseNumberLabel")} *
           </label>
-          <input
-            id="reg-house"
-            type="number"
-            required
-            min={HOUSE_NUMBER_MIN}
-            max={HOUSE_NUMBER_MAX}
-            value={houseNumber}
-            onChange={(e) => setHouseNumber(e.target.value)}
-            placeholder="184"
-            style={inputStyle}
-          />
+          <input id="reg-house" type="number" required min={HOUSE_NUMBER_MIN} max={HOUSE_NUMBER_MAX} value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} placeholder="184" style={inputStyle} />
         </div>
 
-        {/* Conditional unit fields */}
         {needsUnitFields && (
           <>
-            {/* Floor (required) */}
             <div style={{ marginBottom: "1rem" }}>
-              <label htmlFor="reg-floor" style={labelStyle}>
-                {t("registration.floorLabel")} *
-              </label>
-              <input
-                id="reg-floor"
-                type="text"
-                required
-                value={floor}
-                onChange={(e) => setFloor(e.target.value)}
-                style={inputStyle}
-              />
+              <label htmlFor="reg-floor" style={labelStyle}>{t("registration.floorLabel")} *</label>
+              <input id="reg-floor" type="text" required value={floor} onChange={(e) => setFloor(e.target.value)} style={inputStyle} />
             </div>
-
-            {/* Door (optional) */}
             <div style={{ marginBottom: "1rem" }}>
-              <label htmlFor="reg-door" style={labelStyle}>
-                {t("registration.doorLabel")}
-              </label>
-              <input
-                id="reg-door"
-                type="text"
-                value={door}
-                onChange={(e) => setDoor(e.target.value)}
-                style={inputStyle}
-              />
+              <label htmlFor="reg-door" style={labelStyle}>{t("registration.doorLabel")}</label>
+              <input id="reg-door" type="text" value={door} onChange={(e) => setDoor(e.target.value)} style={inputStyle} />
             </div>
           </>
         )}
 
-        {/* Consent section */}
         <fieldset
           style={{
-            border: "1px solid #ccc",
+            border: `1px solid ${colors.borderTan}`,
             borderRadius: 8,
             padding: "1rem",
             marginBottom: "1.25rem",
           }}
         >
-          <legend style={{ fontWeight: 600, fontSize: "0.95rem", padding: "0 0.25rem" }}>
+          <legend style={{ fontWeight: 600, fontSize: "0.95rem", padding: "0 0.25rem", color: colors.warmBrown }}>
             {t("consent.title")}
           </legend>
 
@@ -349,46 +295,20 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
               {ORGANIZER_CONTACTS.map((c, i) => (
                 <span key={c.email}>
                   {i > 0 && ", "}
-                  <a href={`mailto:${c.email}`}>{c.name} ({c.email})</a>
+                  <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.name} ({c.email})</a>
                 </span>
               ))}
             </li>
           </ul>
 
-          <label
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "0.5rem",
-              marginTop: "0.75rem",
-              fontSize: "0.9rem",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={consentChecked}
-              onChange={(e) => setConsentChecked(e.target.checked)}
-              style={{ marginTop: "0.2rem" }}
-            />
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.75rem", fontSize: "0.9rem", cursor: "pointer" }}>
+            <input type="checkbox" checked={consentChecked} onChange={(e) => setConsentChecked(e.target.checked)} style={{ marginTop: "0.2rem" }} />
             <span>{t("consent.acknowledgment")}</span>
           </label>
         </fieldset>
 
-        {/* Errors */}
         {errors.length > 0 && (
-          <div
-            role="alert"
-            style={{
-              background: "#fef0f0",
-              border: "1px solid #e74c3c",
-              borderRadius: 6,
-              padding: "0.75rem",
-              marginBottom: "1rem",
-              fontSize: "0.9rem",
-              color: "#c0392b",
-            }}
-          >
+          <div role="alert" style={{ ...alertError, marginBottom: "1rem" }}>
             {errors.map((err) => (
               <p key={err} style={{ margin: "0.25rem 0" }}>{err}</p>
             ))}
@@ -401,14 +321,15 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
           style={{
             width: "100%",
             padding: "0.75rem",
-            background: submitting ? "#999" : "#2d7a3a",
-            color: "#fff",
+            background: submitting ? colors.borderTan : colors.sage,
+            color: colors.white,
             border: "none",
             borderRadius: 6,
             cursor: submitting ? "default" : "pointer",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
             fontSize: "1rem",
             fontWeight: 600,
+            boxShadow: shadows.soft,
           }}
         >
           {submitting ? t("common.loading") : t("common.submit")}
@@ -423,14 +344,18 @@ const labelStyle: React.CSSProperties = {
   fontSize: "0.9rem",
   fontWeight: 500,
   marginBottom: "0.25rem",
+  color: colors.warmBrown,
+  fontFamily: fonts.body,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  padding: "0.5rem",
-  border: "1px solid #ccc",
+  padding: "0.5rem 0.75rem",
+  border: `1px solid ${colors.borderTan}`,
   borderRadius: 6,
-  fontFamily: "inherit",
+  fontFamily: fonts.body,
   fontSize: "0.95rem",
   boxSizing: "border-box",
+  color: colors.inkBrown,
+  background: colors.white,
 };
