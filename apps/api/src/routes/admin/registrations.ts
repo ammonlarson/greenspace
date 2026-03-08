@@ -135,6 +135,7 @@ interface CreateRegistrationBody {
   door?: string | null;
   language?: string;
   notification?: NotificationInput;
+  confirmDuplicate?: boolean;
 }
 
 export async function handleCreateRegistration(ctx: RequestContext): Promise<RouteResponse> {
@@ -176,18 +177,57 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
       throw conflict("Box is already occupied", "BOX_OCCUPIED");
     }
 
-    const existingReg = await trx
+    const existingRegs = await trx
       .selectFrom("registrations")
-      .select(["id"])
+      .select(["id", "box_id", "name", "email"])
       .where("apartment_key", "=", apartmentKey)
       .where("status", "=", "active")
-      .executeTakeFirst();
+      .execute();
 
-    if (existingReg) {
-      throw conflict(
-        "This apartment already has an active registration",
-        "APARTMENT_HAS_REGISTRATION",
-      );
+    if (existingRegs.length > 0 && !body.confirmDuplicate) {
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "duplicate_address_warning_shown",
+        entity_type: "registration",
+        entity_id: apartmentKey,
+        after: {
+          apartment_key: apartmentKey,
+          existing_count: existingRegs.length,
+          existing_registrations: existingRegs.map((r) => ({
+            id: r.id,
+            box_id: r.box_id,
+          })),
+        },
+      });
+
+      return {
+        type: "duplicate_warning" as const,
+        existingRegistrations: existingRegs.map((r) => ({
+          id: r.id,
+          boxId: r.box_id,
+          name: r.name,
+          email: r.email,
+        })),
+      };
+    }
+
+    if (existingRegs.length > 0 && body.confirmDuplicate) {
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "duplicate_address_confirmed",
+        entity_type: "registration",
+        entity_id: apartmentKey,
+        after: {
+          apartment_key: apartmentKey,
+          existing_count: existingRegs.length,
+          existing_registrations: existingRegs.map((r) => ({
+            id: r.id,
+            box_id: r.box_id,
+          })),
+        },
+      });
     }
 
     const [newReg] = await trx
@@ -232,8 +272,19 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
       after: { state: "occupied" },
     });
 
-    return newReg;
+    return { type: "created" as const, id: newReg.id };
   });
+
+  if (result.type === "duplicate_warning") {
+    return {
+      statusCode: 409,
+      body: {
+        error: "This apartment already has active registrations",
+        code: "DUPLICATE_ADDRESS_WARNING",
+        existingRegistrations: result.existingRegistrations,
+      },
+    };
+  }
 
   await sendNotificationIfRequested(
     ctx.db,
@@ -505,6 +556,7 @@ interface AssignWaitlistBody {
   waitlistEntryId?: string;
   boxId?: number;
   notification?: NotificationInput;
+  confirmDuplicate?: boolean;
 }
 
 export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteResponse> {
@@ -552,18 +604,57 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
       throw conflict("Box is already occupied", "BOX_OCCUPIED");
     }
 
-    const existingReg = await trx
+    const existingRegs = await trx
       .selectFrom("registrations")
-      .select(["id"])
+      .select(["id", "box_id", "name", "email"])
       .where("apartment_key", "=", entry.apartment_key)
       .where("status", "=", "active")
-      .executeTakeFirst();
+      .execute();
 
-    if (existingReg) {
-      throw conflict(
-        "This apartment already has an active registration",
-        "APARTMENT_HAS_REGISTRATION",
-      );
+    if (existingRegs.length > 0 && !body.confirmDuplicate) {
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "duplicate_address_warning_shown",
+        entity_type: "waitlist_entry",
+        entity_id: waitlistEntryId,
+        after: {
+          apartment_key: entry.apartment_key,
+          existing_count: existingRegs.length,
+          existing_registrations: existingRegs.map((r) => ({
+            id: r.id,
+            box_id: r.box_id,
+          })),
+        },
+      });
+
+      return {
+        type: "duplicate_warning" as const,
+        existingRegistrations: existingRegs.map((r) => ({
+          id: r.id,
+          boxId: r.box_id,
+          name: r.name,
+          email: r.email,
+        })),
+      };
+    }
+
+    if (existingRegs.length > 0 && body.confirmDuplicate) {
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "duplicate_address_confirmed",
+        entity_type: "waitlist_entry",
+        entity_id: waitlistEntryId,
+        after: {
+          apartment_key: entry.apartment_key,
+          existing_count: existingRegs.length,
+          existing_registrations: existingRegs.map((r) => ({
+            id: r.id,
+            box_id: r.box_id,
+          })),
+        },
+      });
     }
 
     const [newReg] = await trx
@@ -629,12 +720,24 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
     });
 
     return {
+      type: "created" as const,
       registrationId: newReg.id,
       recipientName: entry.name,
       recipientEmail: entry.email,
       language: entry.language as Language,
     };
   });
+
+  if (result.type === "duplicate_warning") {
+    return {
+      statusCode: 409,
+      body: {
+        error: "This apartment already has active registrations",
+        code: "DUPLICATE_ADDRESS_WARNING",
+        existingRegistrations: result.existingRegistrations,
+      },
+    };
+  }
 
   await sendNotificationIfRequested(
     ctx.db,

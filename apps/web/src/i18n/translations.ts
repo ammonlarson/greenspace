@@ -167,6 +167,11 @@ const da = {
   "admin.registrations.addBoxId": "Plantekasse",
   "admin.registrations.addLanguage": "Sprog",
   "admin.registrations.selectBox": "Vælg plantekasse...",
+  "admin.registrations.duplicateWarning":
+    "Denne adresse har allerede aktive tilmeldinger. Oprettelse af en duplikat er kun tilladt for administratorer.",
+  "admin.registrations.duplicateConfirmHint":
+    "Klik 'Bekræft duplikat' for at fortsætte med at oprette en ekstra tilmelding for denne adresse.",
+  "admin.registrations.confirmDuplicate": "Bekræft duplikat",
 
   "admin.notification.title": "Notifikation",
   "admin.notification.send": "Send notifikation",
@@ -191,6 +196,12 @@ const da = {
   "admin.waitlist.assigned": "Tildelt",
   "admin.waitlist.assignBoxId": "Kasse-ID",
   "admin.waitlist.confirmAssign": "Bekræft tildeling",
+  "admin.waitlist.duplicateWarning":
+    "Denne adresse har allerede aktive tilmeldinger. Tildeling vil oprette en duplikat, hvilket kun er tilladt for administratorer.",
+  "admin.waitlist.duplicateConfirmHint":
+    "Klik 'Bekræft duplikat' for at fortsætte med tildelingen.",
+  "admin.waitlist.confirmDuplicate": "Bekræft duplikat",
+  "admin.waitlist.box": "Kasse",
 
   "admin.boxes.title": "Plantekasseoversigt",
   "admin.boxes.greenhouse": "Drivhus",
@@ -393,6 +404,11 @@ const en: Record<TranslationKey, string> = {
   "admin.registrations.addBoxId": "Planter box",
   "admin.registrations.addLanguage": "Language",
   "admin.registrations.selectBox": "Select planter box...",
+  "admin.registrations.duplicateWarning":
+    "This address already has active registrations. Creating a duplicate is admin-only behavior.",
+  "admin.registrations.duplicateConfirmHint":
+    "Click 'Confirm Duplicate' to proceed with creating an additional registration for this address.",
+  "admin.registrations.confirmDuplicate": "Confirm Duplicate",
 
   "admin.notification.title": "Notification",
   "admin.notification.send": "Send notification",
@@ -417,6 +433,12 @@ const en: Record<TranslationKey, string> = {
   "admin.waitlist.assigned": "Assigned",
   "admin.waitlist.assignBoxId": "Box ID",
   "admin.waitlist.confirmAssign": "Confirm assignment",
+  "admin.waitlist.duplicateWarning":
+    "This address already has active registrations. Assigning will create a duplicate, which is admin-only behavior.",
+  "admin.waitlist.duplicateConfirmHint":
+    "Click 'Confirm Duplicate' to proceed with the assignment.",
+  "admin.waitlist.confirmDuplicate": "Confirm Duplicate",
+  "admin.waitlist.box": "Box",
 
   "admin.boxes.title": "Box Overview",
   "admin.boxes.greenhouse": "Greenhouse",

@@ -806,7 +806,7 @@ describe("handleAssignWaitlist (happy path)", () => {
     }
   });
 
-  it("throws 409 when apartment already has active registration", async () => {
+  it("returns 409 duplicate warning when apartment already has active registration", async () => {
     const mockDb = makeMockAssignDb({
       entry: {
         id: "wl-1", name: "Bob", email: "bob@b.com",
@@ -818,46 +818,63 @@ describe("handleAssignWaitlist (happy path)", () => {
       existingReg: { id: "existing-reg" },
     });
 
-    try {
-      await handleAssignWaitlist(
-        makeCtx({ db: mockDb, body: { waitlistEntryId: "wl-1", boxId: 10 } }),
-      );
-      expect.fail("should have thrown");
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect((err as AppError).statusCode).toBe(409);
-      expect((err as AppError).code).toBe("APARTMENT_HAS_REGISTRATION");
-    }
+    const result = await handleAssignWaitlist(
+      makeCtx({ db: mockDb, body: { waitlistEntryId: "wl-1", boxId: 10 } }),
+    );
+    expect(result.statusCode).toBe(409);
+    const body = result.body as Record<string, unknown>;
+    expect(body.code).toBe("DUPLICATE_ADDRESS_WARNING");
   });
 });
 
-describe("one-apartment constraint in admin create", () => {
-  it("throws 409 when apartment already has active registration", async () => {
+describe("duplicate-address warning in admin create", () => {
+  it("returns 409 duplicate warning when apartment already has active registration", async () => {
     const mockDb = makeMockTrxDb({
       boxResult: { id: 1, state: "available" },
       existingReg: { id: "existing-reg" },
     });
 
-    try {
-      await handleCreateRegistration(
-        makeCtx({
-          db: mockDb,
-          body: {
-            boxId: 1,
-            name: "Alice",
-            email: "a@b.com",
-            street: "Else Alfelts Vej",
-            houseNumber: 130,
-            language: "da",
-          },
-        }),
-      );
-      expect.fail("should have thrown");
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect((err as AppError).statusCode).toBe(409);
-      expect((err as AppError).code).toBe("APARTMENT_HAS_REGISTRATION");
-    }
+    const result = await handleCreateRegistration(
+      makeCtx({
+        db: mockDb,
+        body: {
+          boxId: 1,
+          name: "Alice",
+          email: "a@b.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+          language: "da",
+        },
+      }),
+    );
+    expect(result.statusCode).toBe(409);
+    const body = result.body as Record<string, unknown>;
+    expect(body.code).toBe("DUPLICATE_ADDRESS_WARNING");
+  });
+
+  it("creates registration when confirmDuplicate is true", async () => {
+    const mockDb = makeMockTrxDb({
+      boxResult: { id: 1, state: "available" },
+      existingReg: { id: "existing-reg" },
+    });
+
+    const result = await handleCreateRegistration(
+      makeCtx({
+        db: mockDb,
+        body: {
+          boxId: 1,
+          name: "Alice",
+          email: "a@b.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+          language: "da",
+          confirmDuplicate: true,
+        },
+      }),
+    );
+    expect(result.statusCode).toBe(201);
+    const body = result.body as Record<string, unknown>;
+    expect(body.id).toBe("new-reg-id");
   });
 });
 
@@ -1004,6 +1021,7 @@ function makeMockAssignDb(opts: {
   box?: { id: number; state: string };
   existingReg?: { id: string };
 }): Kysely<Database> {
+  const existingRegs = opts.existingReg ? [opts.existingReg] : [];
   const mockTrx = {
     selectFrom: vi.fn().mockImplementation((table: string) => {
       if (table === "waitlist_entries") {
@@ -1033,7 +1051,7 @@ function makeMockAssignDb(opts: {
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+                execute: vi.fn().mockResolvedValue(existingRegs),
               }),
             }),
           }),
@@ -1086,6 +1104,7 @@ function makeMockTrxDb(opts: {
   boxResult?: { id: number; state: string };
   existingReg?: { id: string };
 }): Kysely<Database> {
+  const existingRegs = opts.existingReg ? [opts.existingReg] : [];
   const mockTrx = {
     selectFrom: vi.fn().mockImplementation((table: string) => {
       if (table === "planter_boxes") {
@@ -1104,7 +1123,7 @@ function makeMockTrxDb(opts: {
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+                execute: vi.fn().mockResolvedValue(existingRegs),
               }),
             }),
           }),
@@ -1176,6 +1195,7 @@ interface MockAssignWaitlistOpts {
 }
 
 function makeMockAssignWaitlistDb(opts: MockAssignWaitlistOpts): Kysely<Database> {
+  const existingRegs = opts.existingReg ? [opts.existingReg] : [];
   const mockTrx = {
     selectFrom: vi.fn().mockImplementation((table: string) => {
       if (table === "waitlist_entries") {
@@ -1205,7 +1225,7 @@ function makeMockAssignWaitlistDb(opts: MockAssignWaitlistOpts): Kysely<Database
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+                execute: vi.fn().mockResolvedValue(existingRegs),
               }),
             }),
           }),
