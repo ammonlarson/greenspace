@@ -95,7 +95,7 @@ export function AdminMessaging() {
       if (res.ok) {
         const data = await res.json();
         setSuccess(
-          `${t("admin.messaging.sent")} (${data.sentCount}/${data.recipientCount})`,
+          `${t("admin.messaging.sent")} (${data.queuedCount}/${data.recipientCount})`,
         );
         setSubject("");
         setBodyHtml("");

@@ -127,8 +127,8 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
     throw badRequest("No recipients found for the selected audience");
   }
 
-  let sentCount = 0;
-  let failedCount = 0;
+  let queuedCount = 0;
+  let queueFailedCount = 0;
 
   for (const recipient of recipients) {
     const emailId = await queueAndSendEmail(ctx.db, {
@@ -139,9 +139,9 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
     });
 
     if (emailId) {
-      sentCount++;
+      queuedCount++;
     } else {
-      failedCount++;
+      queueFailedCount++;
     }
   }
 
@@ -154,21 +154,21 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
     after: {
       audience,
       recipient_count: recipients.length,
-      sent_count: sentCount,
-      failed_count: failedCount,
+      queued_count: queuedCount,
+      queue_failed_count: queueFailedCount,
       subject,
     },
   });
 
-  logger.info(`Bulk email sent: audience=${audience}, sent=${sentCount}, failed=${failedCount}`);
+  logger.info(`Bulk email sent: audience=${audience}, queued=${queuedCount}, queue_failed=${queueFailedCount}`);
 
   return {
     statusCode: 200,
     body: {
       audience,
       recipientCount: recipients.length,
-      sentCount,
-      failedCount,
+      queuedCount,
+      queueFailedCount,
     },
   };
 }

@@ -199,12 +199,12 @@ describe("handleSendBulkEmail", () => {
     const body = result.body as {
       audience: string;
       recipientCount: number;
-      sentCount: number;
-      failedCount: number;
+      queuedCount: number;
+      queueFailedCount: number;
     };
     expect(body.audience).toBe("all");
     expect(body.recipientCount).toBe(2);
-    expect(body.sentCount).toBe(2);
-    expect(body.failedCount).toBe(0);
+    expect(body.queuedCount).toBe(2);
+    expect(body.queueFailedCount).toBe(0);
   });
 });
