@@ -79,12 +79,12 @@ export function AdminRegistrations() {
   const [addDoor, setAddDoor] = useState("");
   const [addBoxId, setAddBoxId] = useState("");
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
-  const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+  const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [addErrors, setAddErrors] = useState<string[]>([]);
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
-  const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+  const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
-  const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+  const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -113,7 +113,7 @@ export function AdminRegistrations() {
     setAddDoor("");
     setAddBoxId("");
     setAddLanguage("da");
-    setAddNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setAddNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setAddErrors([]);
     setMessage(null);
     setActiveDialog({ type: "add" });
@@ -121,14 +121,14 @@ export function AdminRegistrations() {
 
   function openMoveDialog(reg: Registration) {
     setMoveNewBoxId("");
-    setMoveNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setMoveNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setMessage(null);
     setActiveDialog({ type: "move", registration: reg });
   }
 
   function openRemoveDialog(reg: Registration) {
     setRemoveMakePublic(true);
-    setRemoveNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setRemoveNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setMessage(null);
     setActiveDialog({ type: "remove", registration: reg });
   }
@@ -424,14 +424,14 @@ export function AdminRegistrations() {
             <button
               type="button"
               onClick={handleAdd}
-              disabled={submitting}
+              disabled={submitting || (addNotification.sendEmail && !addNotification.valid)}
               style={{
                 padding: "0.4rem 1rem",
                 border: "none",
                 borderRadius: 4,
                 background: "#2d7a3a",
                 color: "#fff",
-                cursor: submitting ? "not-allowed" : "pointer",
+                cursor: submitting || (addNotification.sendEmail && !addNotification.valid) ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
                 fontFamily: "inherit",
               }}
@@ -492,14 +492,14 @@ export function AdminRegistrations() {
             <button
               type="button"
               onClick={handleMove}
-              disabled={submitting}
+              disabled={submitting || (moveNotification.sendEmail && !moveNotification.valid)}
               style={{
                 padding: "0.4rem 1rem",
                 border: "none",
                 borderRadius: 4,
                 background: "#1565c0",
                 color: "#fff",
-                cursor: submitting ? "not-allowed" : "pointer",
+                cursor: submitting || (moveNotification.sendEmail && !moveNotification.valid) ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
                 fontFamily: "inherit",
               }}
@@ -571,14 +571,14 @@ export function AdminRegistrations() {
             <button
               type="button"
               onClick={handleRemove}
-              disabled={submitting}
+              disabled={submitting || (removeNotification.sendEmail && !removeNotification.valid)}
               style={{
                 padding: "0.4rem 1rem",
                 border: "none",
                 borderRadius: 4,
                 background: "#c62828",
                 color: "#fff",
-                cursor: submitting ? "not-allowed" : "pointer",
+                cursor: submitting || (removeNotification.sendEmail && !removeNotification.valid) ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
                 fontFamily: "inherit",
               }}
