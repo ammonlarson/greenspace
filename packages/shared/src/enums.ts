@@ -2,6 +2,10 @@
 export const BOX_STATES = ["available", "occupied", "reserved"] as const;
 export type BoxState = (typeof BOX_STATES)[number];
 
+/** Box states visible to public users (reserved is mapped to occupied) */
+export const PUBLIC_BOX_STATES = ["available", "occupied"] as const;
+export type PublicBoxState = (typeof PUBLIC_BOX_STATES)[number];
+
 /** Registration lifecycle states */
 export const REGISTRATION_STATUSES = ["active", "switched", "removed"] as const;
 export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
