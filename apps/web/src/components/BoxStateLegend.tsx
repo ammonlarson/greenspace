@@ -1,6 +1,6 @@
 "use client";
 
-import { BOX_STATES } from "@greenspace/shared";
+import { PUBLIC_BOX_STATES } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BOX_STATE_COLORS } from "./boxStateColors";
 
@@ -13,7 +13,7 @@ export function BoxStateLegend() {
       aria-label={t("map.legend")}
       style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
     >
-      {BOX_STATES.map((state) => {
+      {PUBLIC_BOX_STATES.map((state) => {
         const colors = BOX_STATE_COLORS[state];
         return (
           <div

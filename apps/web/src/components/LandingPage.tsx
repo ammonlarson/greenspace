@@ -40,7 +40,7 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: La
 
   const displayGreenhouses = greenhouses.length > 0
     ? greenhouses
-    : GREENHOUSES.map((name) => ({ name, totalBoxes: 0, availableBoxes: 0, occupiedBoxes: 0, reservedBoxes: 0 }));
+    : GREENHOUSES.map((name) => ({ name, totalBoxes: 0, availableBoxes: 0, occupiedBoxes: 0 }));
 
   return (
     <section style={{ maxWidth: 700, margin: "0 auto", padding: "2rem 1rem" }}>
