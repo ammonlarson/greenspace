@@ -252,7 +252,7 @@ export function AdminBoxes() {
       const fieldErrors: string[] = [];
       if (validation.errors["name"]) fieldErrors.push(t("validation.nameRequired"));
       if (validation.errors["email"]) {
-        const isRequired = validation.errors["email"].toLowerCase().includes("required");
+        const isRequired = !addEmail.trim();
         fieldErrors.push(t(isRequired ? "validation.emailRequired" : "validation.emailInvalid"));
       }
       if (validation.errors["houseNumber"]) fieldErrors.push(t("validation.houseNumberInvalid"));

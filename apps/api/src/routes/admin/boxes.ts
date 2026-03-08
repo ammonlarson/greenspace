@@ -49,7 +49,7 @@ export async function handleReserveBox(ctx: RequestContext): Promise<RouteRespon
   const body = (ctx.body ?? {}) as ReserveBoxBody;
   const { boxId } = body;
 
-  if (!boxId) {
+  if (typeof boxId !== "number") {
     throw badRequest("boxId is required");
   }
 
@@ -104,7 +104,7 @@ export async function handleReleaseBox(ctx: RequestContext): Promise<RouteRespon
   const body = (ctx.body ?? {}) as ReleaseBoxBody;
   const { boxId } = body;
 
-  if (!boxId) {
+  if (typeof boxId !== "number") {
     throw badRequest("boxId is required");
   }
 
