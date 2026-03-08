@@ -442,6 +442,24 @@ describe("AdminRegistrations", () => {
       expect(options[15].textContent).toBe("Søen 15 - Robin");
     });
 
+    it("shows error when move submitted without selecting a box", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.move"));
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert").textContent).toBe("common.error");
+    });
+
     it("shows error on move failure", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
