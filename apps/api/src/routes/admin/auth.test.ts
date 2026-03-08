@@ -145,10 +145,10 @@ describe("handleLogin", () => {
 });
 
 describe("handleMe", () => {
-  it("returns 200 with authenticated status and adminId", async () => {
+  it("returns 200 with authenticated status", async () => {
     const res = await handleMe(makeCtx({ adminId: "admin-1" }));
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ authenticated: true, adminId: "admin-1" });
+    expect(res.body).toEqual({ authenticated: true });
   });
 });
 
