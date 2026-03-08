@@ -12,6 +12,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       if (!res.ok) {
@@ -67,6 +68,14 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
             autoComplete="current-password"
             style={{ ...themeInputStyle, fontSize: "1rem" }}
           />
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <span style={{ fontSize: "0.85rem", fontFamily: fonts.body, color: colors.warmBrown }}>{t("admin.rememberMe")}</span>
         </label>
         {error && (
           <p role="alert" style={{ color: colors.dustyRose, margin: 0, fontSize: "0.85rem" }}>

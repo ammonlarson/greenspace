@@ -2,12 +2,15 @@ import type { Kysely } from "kysely";
 import type { Database } from "../db/types.js";
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+const PERSISTENT_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export async function createSession(
   db: Kysely<Database>,
   adminId: string,
+  persistent = false,
 ): Promise<string> {
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+  const ttl = persistent ? PERSISTENT_SESSION_TTL_MS : SESSION_TTL_MS;
+  const expiresAt = new Date(Date.now() + ttl).toISOString();
   const result = await db
     .insertInto("sessions")
     .values({ admin_id: adminId, expires_at: expiresAt })
@@ -61,8 +64,13 @@ export function parseSessionCookie(cookieHeader: string | undefined): string | n
   return match ? match[1] : null;
 }
 
-export function sessionCookieHeader(sessionId: string): string {
-  return `session=${sessionId}; HttpOnly; Secure; SameSite=Strict; Path=/admin`;
+export function sessionCookieHeader(sessionId: string, persistent = false): string {
+  const base = `session=${sessionId}; HttpOnly; Secure; SameSite=Strict; Path=/admin`;
+  if (persistent) {
+    const maxAgeSeconds = Math.floor(PERSISTENT_SESSION_TTL_MS / 1000);
+    return `${base}; Max-Age=${maxAgeSeconds}`;
+  }
+  return base;
 }
 
 export function clearSessionCookieHeader(): string {
