@@ -1,6 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  ELIGIBLE_STREET,
+  HOUSE_NUMBER_MIN,
+  HOUSE_NUMBER_MAX,
+  isFloorDoorRequired,
+  validateRegistrationInput,
+} from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
 import { NotificationComposer } from "./NotificationComposer";
@@ -43,6 +50,11 @@ const labelStyle: React.CSSProperties = {
   marginBottom: "0.25rem",
 };
 
+const requiredLabelStyle: React.CSSProperties = {
+  ...labelStyle,
+  color: "#333",
+};
+
 const dialogStyle: React.CSSProperties = {
   border: "1px solid #e0e0e0",
   borderRadius: 8,
@@ -62,13 +74,13 @@ export function AdminRegistrations() {
 
   const [addName, setAddName] = useState("");
   const [addEmail, setAddEmail] = useState("");
-  const [addStreet, setAddStreet] = useState("");
   const [addHouseNumber, setAddHouseNumber] = useState("");
   const [addFloor, setAddFloor] = useState("");
   const [addDoor, setAddDoor] = useState("");
   const [addBoxId, setAddBoxId] = useState("");
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
   const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+  const [addErrors, setAddErrors] = useState<string[]>([]);
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
   const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
@@ -96,13 +108,13 @@ export function AdminRegistrations() {
   function openAddDialog() {
     setAddName("");
     setAddEmail("");
-    setAddStreet("");
     setAddHouseNumber("");
     setAddFloor("");
     setAddDoor("");
     setAddBoxId("");
     setAddLanguage("da");
     setAddNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setAddErrors([]);
     setMessage(null);
     setActiveDialog({ type: "add" });
   }
@@ -125,11 +137,35 @@ export function AdminRegistrations() {
     setActiveDialog(null);
   }
 
+  const parsedAddHouseNumber = parseInt(addHouseNumber, 10);
+  const addNeedsUnitFields = !isNaN(parsedAddHouseNumber) && isFloorDoorRequired(parsedAddHouseNumber);
+
   async function handleAdd() {
-    const boxId = Number(addBoxId);
-    const houseNum = Number(addHouseNumber);
-    if (!addName || !addEmail || !addStreet || !addHouseNumber || isNaN(houseNum) || houseNum < 1 || isNaN(boxId) || boxId < 1) {
-      setMessage({ type: "error", text: t("common.error") });
+    setAddErrors([]);
+
+    const input = {
+      name: addName.trim(),
+      email: addEmail.trim(),
+      street: ELIGIBLE_STREET,
+      houseNumber: parsedAddHouseNumber,
+      floor: addFloor.trim() || null,
+      door: addDoor.trim() || null,
+      language: addLanguage,
+      boxId: Number(addBoxId),
+    };
+
+    const validation = validateRegistrationInput(input);
+    if (!validation.valid) {
+      const fieldErrors: string[] = [];
+      if (validation.errors["name"]) fieldErrors.push(t("validation.nameRequired"));
+      if (validation.errors["email"]) {
+        const isRequired = validation.errors["email"].toLowerCase().includes("required");
+        fieldErrors.push(t(isRequired ? "validation.emailRequired" : "validation.emailInvalid"));
+      }
+      if (validation.errors["houseNumber"]) fieldErrors.push(t("validation.houseNumberInvalid"));
+      if (validation.errors["floorDoor"]) fieldErrors.push(t("validation.floorDoorRequired"));
+      if (validation.errors["boxId"]) fieldErrors.push(t("validation.boxIdInvalid"));
+      setAddErrors(fieldErrors.length > 0 ? fieldErrors : [t("common.error")]);
       return;
     }
 
@@ -142,14 +178,14 @@ export function AdminRegistrations() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          boxId,
-          name: addName,
-          email: addEmail,
-          street: addStreet,
-          houseNumber: Number(addHouseNumber),
-          floor: addFloor || null,
-          door: addDoor || null,
-          language: addLanguage,
+          boxId: input.boxId,
+          name: input.name,
+          email: input.email,
+          street: input.street,
+          houseNumber: input.houseNumber,
+          floor: input.floor,
+          door: input.door,
+          language: input.language,
           notification: {
             sendEmail: addNotification.sendEmail,
             subject: addNotification.subject || undefined,
@@ -298,41 +334,79 @@ export function AdminRegistrations() {
           <h3 id="add-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem" }}>{t("admin.registrations.add")}</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
             <div>
-              <label htmlFor="add-name" style={labelStyle}>{t("admin.registrations.addName")}</label>
+              <label htmlFor="add-name" style={requiredLabelStyle}>{t("admin.registrations.addName")} *</label>
               <input id="add-name" type="text" value={addName} onChange={(e) => setAddName(e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label htmlFor="add-email" style={labelStyle}>{t("admin.registrations.addEmail")}</label>
+              <label htmlFor="add-email" style={requiredLabelStyle}>{t("admin.registrations.addEmail")} *</label>
               <input id="add-email" type="email" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} style={inputStyle} />
             </div>
             <div>
               <label htmlFor="add-street" style={labelStyle}>{t("admin.registrations.addStreet")}</label>
-              <input id="add-street" type="text" value={addStreet} onChange={(e) => setAddStreet(e.target.value)} style={inputStyle} />
+              <input id="add-street" type="text" value={ELIGIBLE_STREET} disabled style={{ ...inputStyle, background: "#f0f0f0", color: "#888" }} />
             </div>
             <div>
-              <label htmlFor="add-house-number" style={labelStyle}>{t("admin.registrations.addHouseNumber")}</label>
-              <input id="add-house-number" type="number" value={addHouseNumber} onChange={(e) => setAddHouseNumber(e.target.value)} style={inputStyle} />
+              <label htmlFor="add-house-number" style={requiredLabelStyle}>{t("admin.registrations.addHouseNumber")} *</label>
+              <input
+                id="add-house-number"
+                type="number"
+                min={HOUSE_NUMBER_MIN}
+                max={HOUSE_NUMBER_MAX}
+                value={addHouseNumber}
+                onChange={(e) => { setAddHouseNumber(e.target.value); setAddFloor(""); setAddDoor(""); }}
+                placeholder={String(HOUSE_NUMBER_MIN)}
+                style={inputStyle}
+              />
             </div>
+            {addNeedsUnitFields && (
+              <>
+                <div>
+                  <label htmlFor="add-floor" style={requiredLabelStyle}>{t("admin.registrations.addFloor")} *</label>
+                  <input id="add-floor" type="text" value={addFloor} onChange={(e) => setAddFloor(e.target.value)} style={inputStyle} />
+                </div>
+                <div>
+                  <label htmlFor="add-door" style={labelStyle}>{t("admin.registrations.addDoor")}</label>
+                  <input id="add-door" type="text" value={addDoor} onChange={(e) => setAddDoor(e.target.value)} style={inputStyle} />
+                </div>
+              </>
+            )}
             <div>
-              <label htmlFor="add-floor" style={labelStyle}>{t("admin.registrations.addFloor")}</label>
-              <input id="add-floor" type="text" value={addFloor} onChange={(e) => setAddFloor(e.target.value)} style={inputStyle} />
-            </div>
-            <div>
-              <label htmlFor="add-door" style={labelStyle}>{t("admin.registrations.addDoor")}</label>
-              <input id="add-door" type="text" value={addDoor} onChange={(e) => setAddDoor(e.target.value)} style={inputStyle} />
-            </div>
-            <div>
-              <label htmlFor="add-box-id" style={labelStyle}>{t("admin.registrations.addBoxId")}</label>
+              <label htmlFor="add-box-id" style={requiredLabelStyle}>{t("admin.registrations.addBoxId")} *</label>
               <input id="add-box-id" type="number" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label htmlFor="add-language" style={labelStyle}>{t("admin.registrations.addLanguage")}</label>
+              <label htmlFor="add-language" style={requiredLabelStyle}>{t("admin.registrations.addLanguage")} *</label>
               <select id="add-language" value={addLanguage} onChange={(e) => setAddLanguage(e.target.value as "da" | "en")} style={inputStyle}>
                 <option value="da">Dansk</option>
                 <option value="en">English</option>
               </select>
             </div>
           </div>
+
+          {addNeedsUnitFields && (
+            <p style={{ fontSize: "0.8rem", color: "#666", margin: "0.5rem 0 0" }}>
+              {t("address.floorDoorHint")}
+            </p>
+          )}
+
+          {addErrors.length > 0 && (
+            <div
+              role="alert"
+              style={{
+                background: "#fef0f0",
+                border: "1px solid #e74c3c",
+                borderRadius: 6,
+                padding: "0.75rem",
+                marginTop: "0.75rem",
+                fontSize: "0.85rem",
+                color: "#c0392b",
+              }}
+            >
+              {addErrors.map((err) => (
+                <p key={err} style={{ margin: "0.25rem 0" }}>{err}</p>
+              ))}
+            </div>
+          )}
 
           {addName && addEmail && addBoxId && Number(addBoxId) > 0 && (
             <NotificationComposer
