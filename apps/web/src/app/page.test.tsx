@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
+import { render, screen, act, cleanup } from "@testing-library/react";
 import {
   GREENHOUSES,
   DEFAULT_OPENING_DATETIME,
@@ -350,5 +351,95 @@ describe("isBeforeOpening", () => {
     vi.setSystemTime(new Date("2026-04-01T08:00:01Z"));
     expect(isBeforeOpening("2026-04-01T10:00:00")).toBe(false);
     vi.useRealTimers();
+  });
+});
+
+vi.mock("@/i18n/LanguageProvider", () => ({
+  useLanguage: () => ({ language: "en", ready: true, setLanguage: vi.fn(), t: (key: string) => key }),
+}));
+vi.mock("@/hooks/useHistoryState", async () => {
+  const react = await vi.importActual<typeof import("react")>("react");
+  return {
+    useHistoryState: <T,>(_key: string, initial: T): [T, (v: T) => void] => {
+      return react.useState<T>(initial);
+    },
+  };
+});
+vi.mock("@/components/LanguageSelector", () => ({
+  LanguageSelector: () => <div data-testid="lang-selector" />,
+}));
+vi.mock("@/components/PreOpenPage", () => ({
+  PreOpenPage: () => <div data-testid="pre-open-page" />,
+}));
+vi.mock("@/components/LandingPage", () => ({
+  LandingPage: () => <div data-testid="landing-page" />,
+}));
+vi.mock("@/components/GreenhouseMapPage", () => ({
+  GreenhouseMapPage: () => <div data-testid="greenhouse-map-page" />,
+}));
+vi.mock("@/components/AdminPage", () => ({
+  AdminPage: () => <div data-testid="admin-page" />,
+}));
+vi.mock("@/components/LoadingSplash", () => ({
+  LoadingSplash: () => <div data-testid="loading-splash" />,
+}));
+
+describe("Home page render gating", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("shows loading splash while status is being fetched (not pre-open page)", async () => {
+    let resolveStatus!: (value: Response) => void;
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise((r) => { resolveStatus = r; })));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    expect(screen.getByTestId("loading-splash")).toBeDefined();
+    expect(screen.queryByTestId("pre-open-page")).toBeNull();
+    expect(screen.queryByTestId("landing-page")).toBeNull();
+
+    await act(async () => {
+      resolveStatus(new Response(JSON.stringify({ isOpen: true, openingDatetime: "2026-04-01T10:00:00", hasAvailableBoxes: true }), { status: 200 }));
+    });
+
+    expect(screen.queryByTestId("loading-splash")).toBeNull();
+    expect(screen.getByTestId("landing-page")).toBeDefined();
+    expect(screen.queryByTestId("pre-open-page")).toBeNull();
+  });
+
+  it("shows landing page directly when status responds with isOpen: true", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ isOpen: true, openingDatetime: "2026-04-01T10:00:00", hasAvailableBoxes: true }), { status: 200 }),
+    ));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    expect(screen.getByTestId("landing-page")).toBeDefined();
+    expect(screen.queryByTestId("pre-open-page")).toBeNull();
+  });
+
+  it("shows pre-open page when status responds with isOpen: false", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ isOpen: false, openingDatetime: "2026-04-01T10:00:00", hasAvailableBoxes: true }), { status: 200 }),
+    ));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    expect(screen.getByTestId("pre-open-page")).toBeDefined();
+    expect(screen.queryByTestId("landing-page")).toBeNull();
   });
 });

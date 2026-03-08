@@ -91,7 +91,7 @@ export default function Home() {
     );
   }
 
-  if (!ready) {
+  if (!ready || status === null) {
     return <LoadingSplash />;
   }
 
