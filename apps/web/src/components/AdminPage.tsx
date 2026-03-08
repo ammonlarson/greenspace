@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { AdminLogin } from "./AdminLogin";
 import { AdminDashboard } from "./AdminDashboard";
@@ -9,9 +9,32 @@ interface AdminPageProps {
   onBack: () => void;
 }
 
+type AuthState = "checking" | "authenticated" | "unauthenticated";
+
 export function AdminPage({ onBack }: AdminPageProps) {
   const { t } = useLanguage();
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>("checking");
+
+  const checkSession = useCallback(async () => {
+    try {
+      const res = await fetch("/admin/auth/me", { credentials: "include" });
+      setAuthState(res.ok ? "authenticated" : "unauthenticated");
+    } catch {
+      setAuthState("unauthenticated");
+    }
+  }, []);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
+  function handleLogin() {
+    setAuthState("authenticated");
+  }
+
+  function handleLogout() {
+    setAuthState("unauthenticated");
+  }
 
   return (
     <div>
@@ -33,10 +56,18 @@ export function AdminPage({ onBack }: AdminPageProps) {
         </button>
       </div>
 
-      {authenticated ? (
-        <AdminDashboard onLogout={() => setAuthenticated(false)} />
-      ) : (
-        <AdminLogin onLogin={() => setAuthenticated(true)} />
+      {authState === "checking" && (
+        <p style={{ textAlign: "center", color: "#888", padding: "2rem" }}>
+          {t("common.loading")}
+        </p>
+      )}
+
+      {authState === "authenticated" && (
+        <AdminDashboard onLogout={handleLogout} />
+      )}
+
+      {authState === "unauthenticated" && (
+        <AdminLogin onLogin={handleLogin} />
       )}
     </div>
   );
