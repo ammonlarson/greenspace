@@ -24,15 +24,7 @@ interface NotificationComposerProps {
 }
 
 function isHtmlValid(html: string): boolean {
-  if (!html.trim()) return false;
-  try {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const errors = doc.querySelector("parsererror");
-    if (errors) return false;
-    return true;
-  } catch {
-    return false;
-  }
+  return html.trim().length > 0;
 }
 
 export function NotificationComposer({

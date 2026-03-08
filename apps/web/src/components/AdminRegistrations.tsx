@@ -10,7 +10,7 @@ import {
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
-import { NotificationComposer } from "./NotificationComposer";
+import { NotificationComposer, type NotificationValue } from "./NotificationComposer";
 
 interface Registration {
   id: string;
@@ -79,12 +79,12 @@ export function AdminRegistrations() {
   const [addDoor, setAddDoor] = useState("");
   const [addBoxId, setAddBoxId] = useState("");
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
-  const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [addNotification, setAddNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [addErrors, setAddErrors] = useState<string[]>([]);
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
-  const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [moveNotification, setMoveNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
-  const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [removeNotification, setRemoveNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
 
   const fetchRegistrations = useCallback(async () => {
     try {
