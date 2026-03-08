@@ -28,6 +28,13 @@ interface Registration {
   created_at: string;
 }
 
+interface DuplicateExisting {
+  id: string;
+  boxId: number;
+  name: string;
+  email: string;
+}
+
 type ActiveDialog =
   | { type: "add" }
   | { type: "move"; registration: Registration }
@@ -86,6 +93,7 @@ export function AdminRegistrations() {
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
   const [addNotification, setAddNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [addErrors, setAddErrors] = useState<string[]>([]);
+  const [addDuplicateWarning, setAddDuplicateWarning] = useState<DuplicateExisting[] | null>(null);
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
   const [moveNotification, setMoveNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
@@ -120,6 +128,7 @@ export function AdminRegistrations() {
     setAddLanguage("da");
     setAddNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setAddErrors([]);
+    setAddDuplicateWarning(null);
     setMessage(null);
     setActiveDialog({ type: "add" });
   }
@@ -145,7 +154,7 @@ export function AdminRegistrations() {
   const parsedAddHouseNumber = parseInt(addHouseNumber, 10);
   const addNeedsUnitFields = !isNaN(parsedAddHouseNumber) && isFloorDoorRequired(parsedAddHouseNumber);
 
-  async function handleAdd() {
+  async function handleAdd(confirmDuplicate = false) {
     setAddErrors([]);
 
     const input = {
@@ -191,6 +200,7 @@ export function AdminRegistrations() {
           floor: input.floor,
           door: input.door,
           language: input.language,
+          confirmDuplicate,
           notification: {
             sendEmail: addNotification.sendEmail,
             subject: addNotification.subject || undefined,
@@ -200,12 +210,17 @@ export function AdminRegistrations() {
       });
 
       if (res.ok) {
+        setAddDuplicateWarning(null);
         setMessage({ type: "success", text: t("admin.registrations.added") });
         setActiveDialog(null);
         await fetchRegistrations();
       } else {
         const body = await res.json();
-        setMessage({ type: "error", text: body.error ?? t("common.error") });
+        if (body.code === "DUPLICATE_ADDRESS_WARNING" || body.code === "APARTMENT_HAS_REGISTRATION") {
+          setAddDuplicateWarning(body.existingRegistrations ?? []);
+        } else {
+          setMessage({ type: "error", text: body.error ?? t("common.error") });
+        }
       }
     } catch {
       setMessage({ type: "error", text: t("common.error") });
@@ -432,24 +447,74 @@ export function AdminRegistrations() {
             />
           )}
 
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={submitting || (addNotification.sendEmail && !addNotification.valid)}
+          {addDuplicateWarning !== null && (
+            <div
+              role="alert"
               style={{
-                padding: "0.4rem 1rem",
-                border: "none",
-                borderRadius: 4,
-                background: "#2d7a3a",
-                color: "#fff",
-                cursor: submitting || (addNotification.sendEmail && !addNotification.valid) ? "not-allowed" : "pointer",
-                fontSize: "0.85rem",
-                fontFamily: "inherit",
+                background: "#fff3e0",
+                border: "1px solid #e67e22",
+                borderRadius: 6,
+                padding: "0.75rem",
+                marginTop: "0.75rem",
               }}
             >
-              {t("common.confirm")}
-            </button>
+              <p style={{ margin: "0 0 0.5rem", fontWeight: 600, color: "#d35400", fontSize: "0.85rem" }}>
+                {t("admin.registrations.duplicateWarning")}
+              </p>
+              {addDuplicateWarning.length > 0 && (
+                <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
+                  {addDuplicateWarning.map((r) => (
+                    <li key={r.id}>
+                      {r.name} ({r.email}) — {t("admin.registrations.box")} #{r.boxId}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#555" }}>
+                {t("admin.registrations.duplicateConfirmHint")}
+              </p>
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            {addDuplicateWarning !== null ? (
+              <button
+                type="button"
+                onClick={() => handleAdd(true)}
+                disabled={submitting || (addNotification.sendEmail && !addNotification.valid)}
+                style={{
+                  padding: "0.4rem 1rem",
+                  border: "none",
+                  borderRadius: 4,
+                  background: "#e67e22",
+                  color: "#fff",
+                  cursor: submitting || (addNotification.sendEmail && !addNotification.valid) ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  fontFamily: "inherit",
+                  fontWeight: 600,
+                }}
+              >
+                {t("admin.registrations.confirmDuplicate")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleAdd()}
+                disabled={submitting || (addNotification.sendEmail && !addNotification.valid)}
+                style={{
+                  padding: "0.4rem 1rem",
+                  border: "none",
+                  borderRadius: 4,
+                  background: "#2d7a3a",
+                  color: "#fff",
+                  cursor: submitting || (addNotification.sendEmail && !addNotification.valid) ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  fontFamily: "inherit",
+                }}
+              >
+                {t("common.confirm")}
+              </button>
+            )}
             <button
               type="button"
               onClick={closeDialog}

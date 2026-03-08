@@ -135,6 +135,7 @@ interface CreateRegistrationBody {
   door?: string | null;
   language?: string;
   notification?: NotificationInput;
+  confirmDuplicate?: boolean;
 }
 
 export async function handleCreateRegistration(ctx: RequestContext): Promise<RouteResponse> {
@@ -161,79 +162,142 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
     body.door ?? null,
   );
 
-  const result = await ctx.db.transaction().execute(async (trx) => {
-    const box = await trx
-      .selectFrom("planter_boxes")
-      .select(["id", "state"])
-      .where("id", "=", boxId)
-      .forUpdate()
-      .executeTakeFirst();
+  let result: { type: "duplicate_warning"; existingRegistrations: { id: string; boxId: number; name: string; email: string }[] } | { type: "created"; id: string };
 
-    if (!box) {
-      throw badRequest("Box not found");
-    }
-    if (box.state === "occupied") {
-      throw conflict("Box is already occupied", "BOX_OCCUPIED");
-    }
+  try {
+    result = await ctx.db.transaction().execute(async (trx) => {
+      const box = await trx
+        .selectFrom("planter_boxes")
+        .select(["id", "state"])
+        .where("id", "=", boxId)
+        .forUpdate()
+        .executeTakeFirst();
 
-    const existingReg = await trx
-      .selectFrom("registrations")
-      .select(["id"])
-      .where("apartment_key", "=", apartmentKey)
-      .where("status", "=", "active")
-      .executeTakeFirst();
+      if (!box) {
+        throw badRequest("Box not found");
+      }
+      if (box.state === "occupied") {
+        throw conflict("Box is already occupied", "BOX_OCCUPIED");
+      }
 
-    if (existingReg) {
+      const existingRegs = await trx
+        .selectFrom("registrations")
+        .select(["id", "box_id", "name", "email"])
+        .where("apartment_key", "=", apartmentKey)
+        .where("status", "=", "active")
+        .forUpdate()
+        .execute();
+
+      if (existingRegs.length > 0 && !body.confirmDuplicate) {
+        await logAuditEvent(trx, {
+          actor_type: "admin",
+          actor_id: adminId,
+          action: "duplicate_address_warning_shown",
+          entity_type: "registration",
+          entity_id: apartmentKey,
+          after: {
+            apartment_key: apartmentKey,
+            existing_count: existingRegs.length,
+            existing_registrations: existingRegs.map((r) => ({
+              id: r.id,
+              box_id: r.box_id,
+            })),
+          },
+        });
+
+        return {
+          type: "duplicate_warning" as const,
+          existingRegistrations: existingRegs.map((r) => ({
+            id: r.id,
+            boxId: r.box_id,
+            name: r.name,
+            email: r.email,
+          })),
+        };
+      }
+
+      if (existingRegs.length > 0 && body.confirmDuplicate) {
+        await logAuditEvent(trx, {
+          actor_type: "admin",
+          actor_id: adminId,
+          action: "duplicate_address_confirmed",
+          entity_type: "registration",
+          entity_id: apartmentKey,
+          after: {
+            apartment_key: apartmentKey,
+            existing_count: existingRegs.length,
+            existing_registrations: existingRegs.map((r) => ({
+              id: r.id,
+              box_id: r.box_id,
+            })),
+          },
+        });
+      }
+
+      const [newReg] = await trx
+        .insertInto("registrations")
+        .values({
+          box_id: boxId,
+          name,
+          email,
+          street,
+          house_number: houseNumber,
+          floor: body.floor ?? null,
+          door: body.door ?? null,
+          apartment_key: apartmentKey,
+          language: language as "da" | "en",
+          status: "active",
+        })
+        .returning(["id"])
+        .execute();
+
+      await trx
+        .updateTable("planter_boxes")
+        .set({ state: "occupied", reserved_label: null, updated_at: new Date().toISOString() })
+        .where("id", "=", boxId)
+        .execute();
+
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "registration_create",
+        entity_type: "registration",
+        entity_id: newReg.id,
+        after: { box_id: boxId, apartment_key: apartmentKey, name, email },
+      });
+
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "box_state_change",
+        entity_type: "planter_box",
+        entity_id: String(boxId),
+        before: { state: box.state },
+        after: { state: "occupied" },
+      });
+
+      return { type: "created" as const, id: newReg.id };
+    });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
       throw conflict(
         "This apartment already has an active registration",
         "APARTMENT_HAS_REGISTRATION",
       );
     }
+    throw err;
+  }
 
-    const [newReg] = await trx
-      .insertInto("registrations")
-      .values({
-        box_id: boxId,
-        name,
-        email,
-        street,
-        house_number: houseNumber,
-        floor: body.floor ?? null,
-        door: body.door ?? null,
-        apartment_key: apartmentKey,
-        language: language as "da" | "en",
-        status: "active",
-      })
-      .returning(["id"])
-      .execute();
-
-    await trx
-      .updateTable("planter_boxes")
-      .set({ state: "occupied", reserved_label: null, updated_at: new Date().toISOString() })
-      .where("id", "=", boxId)
-      .execute();
-
-    await logAuditEvent(trx, {
-      actor_type: "admin",
-      actor_id: adminId,
-      action: "registration_create",
-      entity_type: "registration",
-      entity_id: newReg.id,
-      after: { box_id: boxId, apartment_key: apartmentKey, name, email },
-    });
-
-    await logAuditEvent(trx, {
-      actor_type: "admin",
-      actor_id: adminId,
-      action: "box_state_change",
-      entity_type: "planter_box",
-      entity_id: String(boxId),
-      before: { state: box.state },
-      after: { state: "occupied" },
-    });
-
-    return newReg;
-  });
+  if (result.type === "duplicate_warning") {
+    return {
+      statusCode: 409,
+      body: {
+        error: "This apartment already has active registrations",
+        code: "DUPLICATE_ADDRESS_WARNING",
+        existingRegistrations: result.existingRegistrations,
+      },
+    };
+  }
 
   await sendNotificationIfRequested(
     ctx.db,
@@ -505,6 +569,7 @@ interface AssignWaitlistBody {
   waitlistEntryId?: string;
   boxId?: number;
   notification?: NotificationInput;
+  confirmDuplicate?: boolean;
 }
 
 export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteResponse> {
@@ -520,121 +585,189 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
     throw badRequest("waitlistEntryId and boxId are required");
   }
 
-  const result = await ctx.db.transaction().execute(async (trx) => {
-    const entry = await trx
-      .selectFrom("waitlist_entries")
-      .select([
-        "id", "name", "email", "street", "house_number",
-        "floor", "door", "apartment_key", "language", "status",
-      ])
-      .where("id", "=", waitlistEntryId)
-      .forUpdate()
-      .executeTakeFirst();
+  type AssignResult =
+    | { type: "duplicate_warning"; existingRegistrations: { id: string; boxId: number; name: string; email: string }[] }
+    | { type: "created"; registrationId: string; recipientName: string; recipientEmail: string; language: Language };
 
-    if (!entry) {
-      throw notFound("Waitlist entry not found");
-    }
-    if (entry.status !== "waiting") {
-      throw badRequest("Waitlist entry is not in waiting status");
-    }
+  let result: AssignResult;
 
-    const box = await trx
-      .selectFrom("planter_boxes")
-      .select(["id", "state"])
-      .where("id", "=", boxId)
-      .forUpdate()
-      .executeTakeFirst();
+  try {
+    result = await ctx.db.transaction().execute(async (trx) => {
+      const entry = await trx
+        .selectFrom("waitlist_entries")
+        .select([
+          "id", "name", "email", "street", "house_number",
+          "floor", "door", "apartment_key", "language", "status",
+        ])
+        .where("id", "=", waitlistEntryId)
+        .forUpdate()
+        .executeTakeFirst();
 
-    if (!box) {
-      throw badRequest("Box not found");
-    }
-    if (box.state === "occupied") {
-      throw conflict("Box is already occupied", "BOX_OCCUPIED");
-    }
+      if (!entry) {
+        throw notFound("Waitlist entry not found");
+      }
+      if (entry.status !== "waiting") {
+        throw badRequest("Waitlist entry is not in waiting status");
+      }
 
-    const existingReg = await trx
-      .selectFrom("registrations")
-      .select(["id"])
-      .where("apartment_key", "=", entry.apartment_key)
-      .where("status", "=", "active")
-      .executeTakeFirst();
+      const box = await trx
+        .selectFrom("planter_boxes")
+        .select(["id", "state"])
+        .where("id", "=", boxId)
+        .forUpdate()
+        .executeTakeFirst();
 
-    if (existingReg) {
+      if (!box) {
+        throw badRequest("Box not found");
+      }
+      if (box.state === "occupied") {
+        throw conflict("Box is already occupied", "BOX_OCCUPIED");
+      }
+
+      const existingRegs = await trx
+        .selectFrom("registrations")
+        .select(["id", "box_id", "name", "email"])
+        .where("apartment_key", "=", entry.apartment_key)
+        .where("status", "=", "active")
+        .forUpdate()
+        .execute();
+
+      if (existingRegs.length > 0 && !body.confirmDuplicate) {
+        await logAuditEvent(trx, {
+          actor_type: "admin",
+          actor_id: adminId,
+          action: "duplicate_address_warning_shown",
+          entity_type: "waitlist_entry",
+          entity_id: waitlistEntryId,
+          after: {
+            apartment_key: entry.apartment_key,
+            existing_count: existingRegs.length,
+            existing_registrations: existingRegs.map((r) => ({
+              id: r.id,
+              box_id: r.box_id,
+            })),
+          },
+        });
+
+        return {
+          type: "duplicate_warning" as const,
+          existingRegistrations: existingRegs.map((r) => ({
+            id: r.id,
+            boxId: r.box_id,
+            name: r.name,
+            email: r.email,
+          })),
+        };
+      }
+
+      if (existingRegs.length > 0 && body.confirmDuplicate) {
+        await logAuditEvent(trx, {
+          actor_type: "admin",
+          actor_id: adminId,
+          action: "duplicate_address_confirmed",
+          entity_type: "waitlist_entry",
+          entity_id: waitlistEntryId,
+          after: {
+            apartment_key: entry.apartment_key,
+            existing_count: existingRegs.length,
+            existing_registrations: existingRegs.map((r) => ({
+              id: r.id,
+              box_id: r.box_id,
+            })),
+          },
+        });
+      }
+
+      const [newReg] = await trx
+        .insertInto("registrations")
+        .values({
+          box_id: boxId,
+          name: entry.name,
+          email: entry.email,
+          street: entry.street,
+          house_number: entry.house_number,
+          floor: entry.floor,
+          door: entry.door,
+          apartment_key: entry.apartment_key,
+          language: entry.language,
+          status: "active",
+        })
+        .returning(["id"])
+        .execute();
+
+      await trx
+        .updateTable("planter_boxes")
+        .set({ state: "occupied", reserved_label: null, updated_at: new Date().toISOString() })
+        .where("id", "=", boxId)
+        .execute();
+
+      await trx
+        .updateTable("waitlist_entries")
+        .set({ status: "assigned", updated_at: new Date().toISOString() })
+        .where("id", "=", waitlistEntryId)
+        .execute();
+
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "waitlist_assign",
+        entity_type: "waitlist_entry",
+        entity_id: waitlistEntryId,
+        before: { status: "waiting" },
+        after: { status: "assigned", registration_id: newReg.id, box_id: boxId },
+      });
+
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "registration_create",
+        entity_type: "registration",
+        entity_id: newReg.id,
+        after: {
+          box_id: boxId,
+          apartment_key: entry.apartment_key,
+          from_waitlist: waitlistEntryId,
+        },
+      });
+
+      await logAuditEvent(trx, {
+        actor_type: "admin",
+        actor_id: adminId,
+        action: "box_state_change",
+        entity_type: "planter_box",
+        entity_id: String(boxId),
+        before: { state: box.state },
+        after: { state: "occupied" },
+      });
+
+      return {
+        type: "created" as const,
+        registrationId: newReg.id,
+        recipientName: entry.name,
+        recipientEmail: entry.email,
+        language: entry.language as Language,
+      };
+    });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
       throw conflict(
         "This apartment already has an active registration",
         "APARTMENT_HAS_REGISTRATION",
       );
     }
+    throw err;
+  }
 
-    const [newReg] = await trx
-      .insertInto("registrations")
-      .values({
-        box_id: boxId,
-        name: entry.name,
-        email: entry.email,
-        street: entry.street,
-        house_number: entry.house_number,
-        floor: entry.floor,
-        door: entry.door,
-        apartment_key: entry.apartment_key,
-        language: entry.language,
-        status: "active",
-      })
-      .returning(["id"])
-      .execute();
-
-    await trx
-      .updateTable("planter_boxes")
-      .set({ state: "occupied", reserved_label: null, updated_at: new Date().toISOString() })
-      .where("id", "=", boxId)
-      .execute();
-
-    await trx
-      .updateTable("waitlist_entries")
-      .set({ status: "assigned", updated_at: new Date().toISOString() })
-      .where("id", "=", waitlistEntryId)
-      .execute();
-
-    await logAuditEvent(trx, {
-      actor_type: "admin",
-      actor_id: adminId,
-      action: "waitlist_assign",
-      entity_type: "waitlist_entry",
-      entity_id: waitlistEntryId,
-      before: { status: "waiting" },
-      after: { status: "assigned", registration_id: newReg.id, box_id: boxId },
-    });
-
-    await logAuditEvent(trx, {
-      actor_type: "admin",
-      actor_id: adminId,
-      action: "registration_create",
-      entity_type: "registration",
-      entity_id: newReg.id,
-      after: {
-        box_id: boxId,
-        apartment_key: entry.apartment_key,
-        from_waitlist: waitlistEntryId,
-      },
-    });
-
-    await logAuditEvent(trx, {
-      actor_type: "admin",
-      actor_id: adminId,
-      action: "box_state_change",
-      entity_type: "planter_box",
-      entity_id: String(boxId),
-      before: { state: box.state },
-      after: { state: "occupied" },
-    });
-
+  if (result.type === "duplicate_warning") {
     return {
-      registrationId: newReg.id,
-      recipientName: entry.name,
-      recipientEmail: entry.email,
-      language: entry.language as Language,
+      statusCode: 409,
+      body: {
+        error: "This apartment already has active registrations",
+        code: "DUPLICATE_ADDRESS_WARNING",
+        existingRegistrations: result.existingRegistrations,
+      },
     };
-  });
+  }
 
   await sendNotificationIfRequested(
     ctx.db,
@@ -709,4 +842,13 @@ export async function handleNotificationPreview(ctx: RequestContext): Promise<Ro
     statusCode: 200,
     body: preview,
   };
+}
+
+function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: string }).code === "23505"
+  );
 }
