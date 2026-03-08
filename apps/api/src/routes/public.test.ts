@@ -655,13 +655,12 @@ describe("handlePublicGreenhouses", () => {
     expect(kronen.totalBoxes).toBe(3);
     expect(kronen.availableBoxes).toBe(2);
     expect(kronen.occupiedBoxes).toBe(1);
-    expect(kronen.reservedBoxes).toBe(0);
+    expect(kronen).not.toHaveProperty("reservedBoxes");
 
     const soen = body.find((g) => g.name === "Søen")!;
     expect(soen.totalBoxes).toBe(2);
     expect(soen.availableBoxes).toBe(0);
-    expect(soen.occupiedBoxes).toBe(1);
-    expect(soen.reservedBoxes).toBe(1);
+    expect(soen.occupiedBoxes).toBe(2);
   });
 
   it("returns zero counts when no boxes exist", async () => {
@@ -677,7 +676,7 @@ describe("handlePublicGreenhouses", () => {
       expect(gh.totalBoxes).toBe(0);
       expect(gh.availableBoxes).toBe(0);
       expect(gh.occupiedBoxes).toBe(0);
-      expect(gh.reservedBoxes).toBe(0);
+      expect(gh).not.toHaveProperty("reservedBoxes");
     }
   });
 });
@@ -702,7 +701,7 @@ describe("handlePublicBoxes", () => {
 
     expect(body[0]).toEqual({ id: 1, name: "Linaria", greenhouse: "Kronen", state: "available" });
     expect(body[1]).toEqual({ id: 2, name: "Harebell", greenhouse: "Kronen", state: "occupied" });
-    expect(body[2]).toEqual({ id: 15, name: "Robin", greenhouse: "Søen", state: "reserved" });
+    expect(body[2]).toEqual({ id: 15, name: "Robin", greenhouse: "Søen", state: "occupied" });
   });
 
   it("returns empty array when no boxes exist", async () => {
@@ -797,7 +796,7 @@ describe("stale-state regression", () => {
     expect(after[1].state).toBe("occupied");
   });
 
-  it("boxes endpoint reflects admin reserve state", async () => {
+  it("boxes endpoint maps reserved state to occupied for public users", async () => {
     const rows = [
       { id: 1, name: "Linaria", greenhouse_name: "Kronen", state: "reserved" },
     ];
@@ -809,12 +808,12 @@ describe("stale-state regression", () => {
 
     const res = await handlePublicBoxes(makeCtx({ db: mockDb }));
     const body = res.body as Array<Record<string, unknown>>;
-    expect(body[0].state).toBe("reserved");
+    expect(body[0].state).toBe("occupied");
   });
 });
 
-describe("role visibility — public endpoints do not expose reserved_label", () => {
-  it("handlePublicBoxes only returns id, name, greenhouse, and state", async () => {
+describe("role visibility — public endpoints do not expose reserved status or label", () => {
+  it("handlePublicBoxes only returns id, name, greenhouse, and state (reserved mapped to occupied)", async () => {
     const mockRows = [
       {
         id: 1,
@@ -833,12 +832,13 @@ describe("role visibility — public endpoints do not expose reserved_label", ()
     const body = res.body as Array<Record<string, unknown>>;
     const keys = Object.keys(body[0]);
     expect(keys).toEqual(["id", "name", "greenhouse", "state"]);
+    expect(body[0].state).toBe("occupied");
     expect(body[0]).not.toHaveProperty("reserved_label");
     expect(body[0]).not.toHaveProperty("adminId");
     expect(body[0]).not.toHaveProperty("email");
   });
 
-  it("handlePublicGreenhouses only returns summary counts, not individual registrations", async () => {
+  it("handlePublicGreenhouses does not include reservedBoxes field", async () => {
     const mockBoxes = [
       { greenhouse_name: "Kronen", state: "reserved" },
     ];
@@ -852,8 +852,10 @@ describe("role visibility — public endpoints do not expose reserved_label", ()
     const kronen = body.find((g) => g.name === "Kronen")!;
     const keys = Object.keys(kronen);
     expect(keys).toEqual([
-      "name", "totalBoxes", "availableBoxes", "occupiedBoxes", "reservedBoxes",
+      "name", "totalBoxes", "availableBoxes", "occupiedBoxes",
     ]);
+    expect(kronen.occupiedBoxes).toBe(1);
+    expect(kronen).not.toHaveProperty("reservedBoxes");
     expect(kronen).not.toHaveProperty("registrations");
     expect(kronen).not.toHaveProperty("reserved_label");
   });

@@ -55,8 +55,7 @@ export async function handlePublicGreenhouses(ctx: RequestContext): Promise<Rout
       name,
       totalBoxes: ghBoxes.length,
       availableBoxes: ghBoxes.filter((b) => b.state === "available").length,
-      occupiedBoxes: ghBoxes.filter((b) => b.state === "occupied").length,
-      reservedBoxes: ghBoxes.filter((b) => b.state === "reserved").length,
+      occupiedBoxes: ghBoxes.filter((b) => b.state === "occupied" || b.state === "reserved").length,
     };
   });
 
@@ -77,7 +76,7 @@ export async function handlePublicBoxes(ctx: RequestContext): Promise<RouteRespo
     id: b.id,
     name: b.name,
     greenhouse: b.greenhouse_name,
-    state: b.state,
+    state: b.state === "reserved" ? "occupied" as const : b.state,
   }));
 
   return {
