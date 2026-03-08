@@ -50,7 +50,8 @@ export async function handleLogin(ctx: RequestContext): Promise<RouteResponse> {
   };
 }
 
-export async function handleMe(_ctx: RequestContext): Promise<RouteResponse> {
+export async function handleMe(ctx: RequestContext): Promise<RouteResponse> {
+  void ctx;
   return {
     statusCode: 200,
     body: { authenticated: true },
