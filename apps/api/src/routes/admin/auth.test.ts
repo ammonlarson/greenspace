@@ -8,6 +8,7 @@ import {
   handleChangePassword,
   handleLogin,
   handleLogout,
+  handleMe,
 } from "./auth.js";
 
 function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
@@ -140,6 +141,14 @@ describe("handleLogin", () => {
     expect(res.headers?.["Set-Cookie"]).toContain("Secure");
     expect(res.headers?.["Set-Cookie"]).toContain("Path=/admin");
     expect(sessionInsert).toHaveBeenCalledWith("sessions");
+  });
+});
+
+describe("handleMe", () => {
+  it("returns 200 with authenticated status", async () => {
+    const res = await handleMe(makeCtx({ adminId: "admin-1" }));
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ authenticated: true });
   });
 });
 
