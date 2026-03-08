@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 import { AdminRegistrations } from "./AdminRegistrations";
 import { AdminWaitlist } from "./AdminWaitlist";
 import { AdminBoxes } from "./AdminBoxes";
@@ -49,7 +50,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "1rem" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "1rem", fontFamily: fonts.body }}>
       <div
         style={{
           display: "flex",
@@ -63,7 +64,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           style={{
             display: "flex",
             gap: "0.25rem",
-            borderBottom: "2px solid #e0e0e0",
+            borderBottom: `2px solid ${colors.borderTan}`,
             overflowX: "auto",
             flex: 1,
           }}
@@ -78,13 +79,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               style={{
                 padding: "0.6rem 1.25rem",
                 border: "none",
-                borderBottom: activeTab === tab ? "2px solid #1565c0" : "2px solid transparent",
+                borderBottom: activeTab === tab ? `2px solid ${colors.sage}` : "2px solid transparent",
                 background: "none",
                 cursor: "pointer",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
                 fontSize: "0.9rem",
                 fontWeight: activeTab === tab ? 600 : 400,
-                color: activeTab === tab ? "#1565c0" : "#555",
+                color: activeTab === tab ? colors.sageDark : colors.warmBrown,
                 whiteSpace: "nowrap",
                 marginBottom: "-2px",
               }}
@@ -100,12 +101,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           style={{
             padding: "0.5rem 1rem",
             background: "none",
-            border: "1px solid #c62828",
-            color: "#c62828",
+            border: `1px solid ${colors.dustyRose}`,
+            color: colors.dustyRose,
             borderRadius: 4,
             cursor: loggingOut ? "not-allowed" : "pointer",
             fontSize: "0.85rem",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
             whiteSpace: "nowrap",
             marginLeft: "1rem",
           }}

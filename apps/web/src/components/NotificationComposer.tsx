@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 
 type Tab = "preview" | "source";
 
@@ -106,29 +107,31 @@ export function NotificationComposer({
     onChange({ ...value, bodyHtml, valid: isHtmlValid(bodyHtml) });
   }
 
-  const tabStyle = (tab: Tab): React.CSSProperties => ({
+  const tabButtonStyle = (tab: Tab): React.CSSProperties => ({
     padding: "0.4rem 1rem",
     border: "none",
-    borderBottom: activeTab === tab ? "2px solid #1565c0" : "2px solid transparent",
+    borderBottom: activeTab === tab ? `2px solid ${colors.sage}` : "2px solid transparent",
     background: "none",
     cursor: "pointer",
     fontSize: "0.8rem",
-    fontFamily: "inherit",
+    fontFamily: fonts.body,
     fontWeight: activeTab === tab ? 600 : 400,
-    color: activeTab === tab ? "#1565c0" : "#555",
+    color: activeTab === tab ? colors.sageDark : colors.warmBrown,
   });
 
   return (
     <div
       style={{
-        border: "1px solid #e0e0e0",
+        border: `1px solid ${colors.borderTan}`,
         borderRadius: 6,
         padding: "1rem",
         marginTop: "0.75rem",
-        background: "#fafafa",
+        background: colors.parchment,
+        fontFamily: fonts.body,
+        color: colors.inkBrown,
       }}
     >
-      <h4 style={{ margin: "0 0 0.75rem 0", fontSize: "0.9rem" }}>
+      <h4 style={{ margin: "0 0 0.75rem 0", fontSize: "0.9rem", color: colors.warmBrown }}>
         {t("admin.notification.title")}
       </h4>
 
@@ -144,12 +147,12 @@ export function NotificationComposer({
       {value.sendEmail && (
         <>
           {previewLoading && (
-            <p style={{ fontSize: "0.8rem", color: "#888" }}>
+            <p style={{ fontSize: "0.8rem", color: colors.warmBrown }}>
               {t("admin.notification.previewLoading")}
             </p>
           )}
           {previewError && (
-            <p role="alert" style={{ fontSize: "0.8rem", color: "#c62828" }}>
+            <p role="alert" style={{ fontSize: "0.8rem", color: colors.dustyRose }}>
               {t("admin.notification.previewError")}
             </p>
           )}
@@ -158,7 +161,7 @@ export function NotificationComposer({
               <div style={{ marginBottom: "0.5rem" }}>
                 <label
                   htmlFor="notification-subject"
-                  style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.25rem" }}
+                  style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.25rem", color: colors.warmBrown }}
                 >
                   {t("admin.notification.subject")}
                 </label>
@@ -170,11 +173,13 @@ export function NotificationComposer({
                   style={{
                     width: "100%",
                     padding: "0.4rem",
-                    border: "1px solid #ccc",
+                    border: `1px solid ${colors.borderTan}`,
                     borderRadius: 4,
                     fontSize: "0.85rem",
-                    fontFamily: "inherit",
+                    fontFamily: fonts.body,
                     boxSizing: "border-box",
+                    color: colors.inkBrown,
+                    background: colors.white,
                   }}
                 />
               </div>
@@ -183,7 +188,7 @@ export function NotificationComposer({
                 role="tablist"
                 style={{
                   display: "flex",
-                  borderBottom: "1px solid #e0e0e0",
+                  borderBottom: `1px solid ${colors.borderTan}`,
                   marginBottom: "0.5rem",
                 }}
               >
@@ -193,7 +198,7 @@ export function NotificationComposer({
                   aria-selected={activeTab === "preview"}
                   aria-controls="notification-tab-preview"
                   onClick={() => setActiveTab("preview")}
-                  style={tabStyle("preview")}
+                  style={tabButtonStyle("preview")}
                 >
                   {t("admin.notification.preview")}
                 </button>
@@ -203,18 +208,14 @@ export function NotificationComposer({
                   aria-selected={activeTab === "source"}
                   aria-controls="notification-tab-source"
                   onClick={() => setActiveTab("source")}
-                  style={tabStyle("source")}
+                  style={tabButtonStyle("source")}
                 >
                   {t("admin.notification.source")}
                 </button>
               </div>
 
               {activeTab === "preview" && (
-                <div
-                  id="notification-tab-preview"
-                  role="tabpanel"
-                  style={{ marginBottom: "0.5rem" }}
-                >
+                <div id="notification-tab-preview" role="tabpanel" style={{ marginBottom: "0.5rem" }}>
                   <iframe
                     title={t("admin.notification.preview")}
                     srcDoc={value.bodyHtml}
@@ -222,20 +223,16 @@ export function NotificationComposer({
                     style={{
                       width: "100%",
                       height: 300,
-                      border: "1px solid #ccc",
+                      border: `1px solid ${colors.borderTan}`,
                       borderRadius: 4,
-                      background: "#fff",
+                      background: colors.white,
                     }}
                   />
                 </div>
               )}
 
               {activeTab === "source" && (
-                <div
-                  id="notification-tab-source"
-                  role="tabpanel"
-                  style={{ marginBottom: "0.5rem" }}
-                >
+                <div id="notification-tab-source" role="tabpanel" style={{ marginBottom: "0.5rem" }}>
                   <textarea
                     id="notification-body"
                     aria-label={t("admin.notification.body")}
@@ -245,16 +242,18 @@ export function NotificationComposer({
                     style={{
                       width: "100%",
                       padding: "0.4rem",
-                      border: `1px solid ${!value.valid ? "#c62828" : "#ccc"}`,
+                      border: `1px solid ${!value.valid ? colors.dustyRose : colors.borderTan}`,
                       borderRadius: 4,
                       fontSize: "0.8rem",
                       fontFamily: "monospace",
                       resize: "vertical",
                       boxSizing: "border-box",
+                      color: colors.inkBrown,
+                      background: colors.white,
                     }}
                   />
                   {!value.valid && (
-                    <p role="alert" style={{ fontSize: "0.8rem", color: "#c62828", margin: "0.25rem 0 0 0" }}>
+                    <p role="alert" style={{ fontSize: "0.8rem", color: colors.dustyRose, margin: "0.25rem 0 0 0" }}>
                       {t("admin.notification.sourceError")}
                     </p>
                   )}
@@ -266,12 +265,13 @@ export function NotificationComposer({
                 onClick={handleReset}
                 style={{
                   padding: "0.25rem 0.75rem",
-                  border: "1px solid #ccc",
+                  border: `1px solid ${colors.borderTan}`,
                   borderRadius: 4,
-                  background: "#fff",
+                  background: colors.white,
                   cursor: "pointer",
                   fontSize: "0.8rem",
-                  fontFamily: "inherit",
+                  fontFamily: fonts.body,
+                  color: colors.warmBrown,
                 }}
               >
                 {t("admin.notification.reset")}

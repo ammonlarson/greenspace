@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 import { AdminLogin } from "./AdminLogin";
 import { AdminDashboard } from "./AdminDashboard";
 
@@ -47,9 +48,9 @@ export function AdminPage({ onBack }: AdminPageProps) {
             border: "none",
             cursor: "pointer",
             fontSize: "0.9rem",
-            color: "#555",
+            color: colors.warmBrown,
             padding: "0.25rem 0",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
           }}
         >
           &larr; {t("admin.backToPublic")}
@@ -57,7 +58,7 @@ export function AdminPage({ onBack }: AdminPageProps) {
       </div>
 
       {authState === "checking" && (
-        <p style={{ textAlign: "center", color: "#888", padding: "2rem" }}>
+        <p style={{ textAlign: "center", color: colors.warmBrown, padding: "2rem" }}>
           {t("common.loading")}
         </p>
       )}

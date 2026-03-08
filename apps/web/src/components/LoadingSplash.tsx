@@ -1,3 +1,5 @@
+import { colors } from "@/styles/theme";
+
 export function LoadingSplash() {
   return (
     <div
@@ -7,7 +9,7 @@ export function LoadingSplash() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        background: "#f5f5f5",
+        background: colors.cream,
       }}
       role="status"
       aria-busy="true"
@@ -18,8 +20,8 @@ export function LoadingSplash() {
         style={{
           width: 48,
           height: 48,
-          border: "4px solid #e0e0e0",
-          borderTopColor: "#2e7d32",
+          border: `4px solid ${colors.borderTan}`,
+          borderTopColor: colors.sage,
           borderRadius: "50%",
           animation: "splash-spin 0.8s linear infinite",
         }}

@@ -9,6 +9,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseCard } from "./GreenhouseCard";
 import { WaitlistBanner } from "./WaitlistBanner";
+import { containerStyle, headingStyle } from "@/styles/theme";
 
 interface LandingPageProps {
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
@@ -43,9 +44,9 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: La
     : GREENHOUSES.map((name) => ({ name, totalBoxes: 0, availableBoxes: 0, occupiedBoxes: 0 }));
 
   return (
-    <section style={{ maxWidth: 700, margin: "0 auto", padding: "2rem 1rem" }}>
-      <h2>{t("greenhouse.title")}</h2>
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1rem" }}>
+    <section style={{ ...containerStyle, maxWidth: 700 }}>
+      <h2 style={{ ...headingStyle, fontSize: "1.5rem" }}>{t("greenhouse.title")}</h2>
+      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginTop: "1rem" }}>
         {displayGreenhouses.map((gh) => (
           <GreenhouseCard
             key={gh.name}

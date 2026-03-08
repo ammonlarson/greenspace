@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { BoxState } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts } from "@/styles/theme";
 import { BOX_STATE_COLORS } from "./boxStateColors";
 
 interface Box {
@@ -42,14 +43,14 @@ export function AdminBoxes() {
   }
 
   if (error) {
-    return <p style={{ color: "#c62828" }}>{t("common.error")}</p>;
+    return <p style={{ color: colors.dustyRose }}>{t("common.error")}</p>;
   }
 
   const greenhouses = [...new Set(boxes.map((b) => b.greenhouse))];
 
   return (
     <section>
-      <h2 style={{ marginBottom: "1rem" }}>{t("admin.boxes.title")}</h2>
+      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.boxes.title")}</h2>
 
       {greenhouses.map((gh) => {
         const ghBoxes = boxes.filter((b) => b.greenhouse === gh);
@@ -59,9 +60,9 @@ export function AdminBoxes() {
 
         return (
           <div key={gh} style={{ marginBottom: "2rem" }}>
-            <h3 style={{ marginBottom: "0.5rem" }}>
+            <h3 style={{ marginBottom: "0.5rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
               {gh}
-              <span style={{ fontSize: "0.8rem", fontWeight: 400, color: "#555", marginLeft: "0.75rem" }}>
+              <span style={{ fontSize: "0.8rem", fontWeight: 400, color: colors.warmBrown, marginLeft: "0.75rem" }}>
                 {available} {t("greenhouse.available")} / {occupied} {t("greenhouse.occupied")} / {reserved} {t("greenhouse.reserved")}
               </span>
             </h3>
@@ -75,17 +76,17 @@ export function AdminBoxes() {
                 }}
               >
                 <thead>
-                  <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
-                    <th style={{ padding: "0.5rem" }}>{t("admin.boxes.id")}</th>
-                    <th style={{ padding: "0.5rem" }}>{t("admin.boxes.name")}</th>
-                    <th style={{ padding: "0.5rem" }}>{t("admin.boxes.state")}</th>
+                  <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
+                    <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.boxes.id")}</th>
+                    <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.boxes.name")}</th>
+                    <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.boxes.state")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ghBoxes.map((box) => {
-                    const colors = BOX_STATE_COLORS[box.state];
+                    const boxColors = BOX_STATE_COLORS[box.state];
                     return (
-                      <tr key={box.id} style={{ borderBottom: "1px solid #eee" }}>
+                      <tr key={box.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                         <td style={{ padding: "0.5rem", fontWeight: 700 }}>#{box.id}</td>
                         <td style={{ padding: "0.5rem" }}>{box.name}</td>
                         <td style={{ padding: "0.5rem" }}>
@@ -96,9 +97,9 @@ export function AdminBoxes() {
                               borderRadius: 12,
                               fontSize: "0.75rem",
                               fontWeight: 600,
-                              background: colors.background,
-                              color: colors.text,
-                              border: `1px solid ${colors.border}`,
+                              background: boxColors.background,
+                              color: boxColors.text,
+                              border: `1px solid ${boxColors.border}`,
                             }}
                           >
                             {t(`map.state.${box.state}`)}

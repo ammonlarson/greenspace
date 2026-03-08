@@ -8,6 +8,7 @@ import {
   type DawaAutocompleteSuggestion,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { colors, fonts, shadows } from "@/styles/theme";
 
 export interface DawaAddressResult {
   houseNumber: number;
@@ -139,7 +140,7 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
     const hasFloorDoor = hasFloor && hasDoor;
 
     return (
-      <div style={{ marginBottom: "1rem" }}>
+      <div style={{ marginBottom: "1rem", fontFamily: fonts.body }}>
         <span style={labelStyle}>{t("address.selectedAddress")}</span>
         <div
           style={{
@@ -147,10 +148,11 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
             alignItems: "center",
             justifyContent: "space-between",
             padding: "0.5rem 0.75rem",
-            background: "#f0f8f0",
-            border: "1px solid #2d7a3a",
+            background: colors.lightSage,
+            border: `1px solid ${colors.sage}`,
             borderRadius: 6,
             fontSize: "0.95rem",
+            color: colors.inkBrown,
           }}
         >
           <span>{selectedAddress.displayText}</span>
@@ -160,10 +162,10 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
             style={{
               background: "none",
               border: "none",
-              color: "#555",
+              color: colors.warmBrown,
               cursor: "pointer",
               fontSize: "0.85rem",
-              fontFamily: "inherit",
+              fontFamily: fonts.body,
               textDecoration: "underline",
             }}
           >
@@ -171,7 +173,7 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
           </button>
         </div>
         {needsFloorDoor && !hasFloorDoor && (
-          <p style={{ color: "#c0392b", fontSize: "0.85rem", margin: "0.25rem 0 0" }}>
+          <p style={{ color: colors.dustyRose, fontSize: "0.85rem", margin: "0.25rem 0 0" }}>
             {t("address.floorDoorHint")}
           </p>
         )}
@@ -180,11 +182,11 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
   }
 
   return (
-    <div ref={containerRef} style={{ position: "relative", marginBottom: "1rem" }}>
+    <div ref={containerRef} style={{ position: "relative", marginBottom: "1rem", fontFamily: fonts.body }}>
       <label htmlFor="dawa-address" style={labelStyle}>
         {t("registration.streetLabel")} *
       </label>
-      <p style={{ fontSize: "0.8rem", color: "#666", margin: "0 0 0.25rem" }}>
+      <p style={{ fontSize: "0.8rem", color: colors.warmBrown, margin: "0 0 0.25rem" }}>
         {t("address.searchHint")}
       </p>
       <input
@@ -206,7 +208,7 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
       />
 
       {loading && (
-        <span style={{ position: "absolute", right: 12, top: "50%", fontSize: "0.8rem", color: "#999" }}>
+        <span style={{ position: "absolute", right: 12, top: "50%", fontSize: "0.8rem", color: colors.warmBrown }}>
           {t("common.loading")}
         </span>
       )}
@@ -223,14 +225,14 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
             margin: 0,
             padding: 0,
             listStyle: "none",
-            background: "#fff",
-            border: "1px solid #ccc",
+            background: colors.white,
+            border: `1px solid ${colors.borderTan}`,
             borderTop: "none",
             borderRadius: "0 0 6px 6px",
             maxHeight: 200,
             overflowY: "auto",
             zIndex: 10,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            boxShadow: shadows.card,
           }}
         >
           {suggestions.map((s, i) => (
@@ -244,9 +246,10 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
               style={{
                 padding: "0.5rem 0.75rem",
                 cursor: "pointer",
-                background: i === highlightIndex ? "#f0f8f0" : "#fff",
+                background: i === highlightIndex ? colors.lightSage : colors.white,
                 fontSize: "0.9rem",
-                borderBottom: i < suggestions.length - 1 ? "1px solid #eee" : "none",
+                borderBottom: i < suggestions.length - 1 ? `1px solid ${colors.parchment}` : "none",
+                color: colors.inkBrown,
               }}
             >
               {s.tekst}
@@ -263,12 +266,12 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
             left: 0,
             right: 0,
             padding: "0.5rem 0.75rem",
-            background: "#fff",
-            border: "1px solid #ccc",
+            background: colors.white,
+            border: `1px solid ${colors.borderTan}`,
             borderTop: "none",
             borderRadius: "0 0 6px 6px",
             fontSize: "0.85rem",
-            color: "#888",
+            color: colors.warmBrown,
             zIndex: 10,
           }}
         >
@@ -284,14 +287,18 @@ const labelStyle: React.CSSProperties = {
   fontSize: "0.9rem",
   fontWeight: 500,
   marginBottom: "0.25rem",
+  color: colors.warmBrown,
+  fontFamily: fonts.body,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  padding: "0.5rem",
-  border: "1px solid #ccc",
+  padding: "0.5rem 0.75rem",
+  border: `1px solid ${colors.borderTan}`,
   borderRadius: 6,
-  fontFamily: "inherit",
+  fontFamily: fonts.body,
   fontSize: "0.95rem",
   boxSizing: "border-box",
+  color: colors.inkBrown,
+  background: colors.white,
 };

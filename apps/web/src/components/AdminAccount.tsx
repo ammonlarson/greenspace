@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
+import { colors, fonts } from "@/styles/theme";
 
 interface Admin {
   id: string;
@@ -144,32 +145,33 @@ export function AdminAccount() {
 
   const inputStyle = {
     padding: "0.5rem",
-    border: "1px solid #ccc",
+    border: `1px solid ${colors.borderTan}`,
     borderRadius: 4,
     fontSize: "1rem",
+    fontFamily: fonts.body,
   };
 
   const buttonStyle = {
     padding: "0.5rem 1rem",
-    background: "#1565c0",
-    color: "#fff",
+    background: colors.sage,
+    color: colors.white,
     border: "none",
     borderRadius: 4,
     cursor: "pointer",
     fontSize: "1rem",
-    fontFamily: "inherit",
+    fontFamily: fonts.body,
     alignSelf: "flex-start" as const,
   };
 
   return (
     <section style={{ maxWidth: 700, margin: "0 auto", padding: "0 1rem" }}>
-      <h2>{t("admin.account.title")}</h2>
+      <h2 style={{ fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.account.title")}</h2>
 
       {message && (
         <p
           role="alert"
           style={{
-            color: message.type === "error" ? "#c62828" : "#2d7a3a",
+            color: message.type === "error" ? colors.dustyRose : colors.sageDark,
             margin: "0 0 1rem",
             fontSize: "0.85rem",
           }}
@@ -178,11 +180,11 @@ export function AdminAccount() {
         </p>
       )}
 
-      <h3>{t("admin.account.admins")}</h3>
+      <h3 style={{ fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.account.admins")}</h3>
       {loading ? (
-        <p style={{ color: "#555", fontSize: "0.9rem" }}>{t("common.loading")}</p>
+        <p style={{ color: colors.warmBrown, fontSize: "0.9rem" }}>{t("common.loading")}</p>
       ) : admins.length === 0 ? (
-        <p style={{ color: "#555", fontSize: "0.9rem" }}>{t("admin.account.noAdmins")}</p>
+        <p style={{ color: colors.warmBrown, fontSize: "0.9rem" }}>{t("admin.account.noAdmins")}</p>
       ) : (
         <table
           style={{
@@ -193,15 +195,15 @@ export function AdminAccount() {
           }}
         >
           <thead>
-            <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
-              <th style={{ padding: "0.5rem" }}>{t("admin.account.email")}</th>
-              <th style={{ padding: "0.5rem" }}>{t("admin.account.created")}</th>
-              <th style={{ padding: "0.5rem" }}>{t("admin.account.actions")}</th>
+            <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
+              <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.account.email")}</th>
+              <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.account.created")}</th>
+              <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.account.actions")}</th>
             </tr>
           </thead>
           <tbody>
             {admins.map((admin) => (
-              <tr key={admin.id} style={{ borderBottom: "1px solid #e0e0e0" }}>
+              <tr key={admin.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                 <td style={{ padding: "0.5rem" }}>{admin.email}</td>
                 <td style={{ padding: "0.5rem" }}>{formatDate(admin.created_at, language)}</td>
                 <td style={{ padding: "0.5rem" }}>
@@ -210,13 +212,13 @@ export function AdminAccount() {
                     onClick={() => handleDelete(admin)}
                     style={{
                       background: "none",
-                      border: "1px solid #c62828",
-                      color: "#c62828",
+                      border: `1px solid ${colors.dustyRose}`,
+                      color: colors.dustyRose,
                       borderRadius: 4,
                       padding: "0.25rem 0.5rem",
                       cursor: "pointer",
                       fontSize: "0.85rem",
-                      fontFamily: "inherit",
+                      fontFamily: fonts.body,
                     }}
                   >
                     {t("admin.account.delete")}
@@ -228,13 +230,13 @@ export function AdminAccount() {
         </table>
       )}
 
-      <h3>{t("admin.account.createTitle")}</h3>
+      <h3 style={{ fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.account.createTitle")}</h3>
       <form
         onSubmit={handleCreate}
         style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "2rem" }}
       >
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>
             {t("admin.account.createEmail")}
           </span>
           <input
@@ -247,7 +249,7 @@ export function AdminAccount() {
           />
         </label>
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>
             {t("admin.account.createPassword")}
           </span>
           <input
@@ -265,13 +267,13 @@ export function AdminAccount() {
         </button>
       </form>
 
-      <h3>{t("admin.account.changePasswordTitle")}</h3>
+      <h3 style={{ fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.account.changePasswordTitle")}</h3>
       <form
         onSubmit={handleChangePassword}
         style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
       >
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>
             {t("admin.account.currentPassword")}
           </span>
           <input
@@ -284,7 +286,7 @@ export function AdminAccount() {
           />
         </label>
         <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, fontFamily: fonts.body, color: colors.warmBrown }}>
             {t("admin.account.newPassword")}
           </span>
           <input
