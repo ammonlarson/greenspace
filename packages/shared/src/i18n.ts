@@ -144,6 +144,7 @@ export const I18N_KEYS = {
     boxesId: "admin.boxes.id",
     boxesName: "admin.boxes.name",
     boxesState: "admin.boxes.state",
+    registrationsSelectBox: "admin.registrations.selectBox",
   },
 } as const;
 
