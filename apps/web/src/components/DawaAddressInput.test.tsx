@@ -57,7 +57,6 @@ describe("DawaAddressInput", () => {
     it("renders search input when no address is selected", () => {
       setup();
       expect(screen.getByRole("combobox")).toBeDefined();
-      expect(screen.getByText("address.searchHint")).toBeDefined();
     });
 
     it("sets aria-expanded to false initially", () => {

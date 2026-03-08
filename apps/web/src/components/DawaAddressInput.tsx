@@ -186,9 +186,6 @@ export function DawaAddressInput({ onSelect, onClear, selectedAddress }: DawaAdd
       <label htmlFor="dawa-address" style={labelStyle}>
         {t("registration.streetLabel")} *
       </label>
-      <p style={{ fontSize: "0.8rem", color: colors.warmBrown, margin: "0 0 0.25rem" }}>
-        {t("address.searchHint")}
-      </p>
       <input
         id="dawa-address"
         type="text"

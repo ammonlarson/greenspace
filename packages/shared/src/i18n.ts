@@ -55,7 +55,6 @@ export const I18N_KEYS = {
   },
   address: {
     searchPlaceholder: "address.searchPlaceholder",
-    searchHint: "address.searchHint",
     noResults: "address.noResults",
     selectedAddress: "address.selectedAddress",
     changeAddress: "address.changeAddress",

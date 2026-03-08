@@ -207,7 +207,6 @@ describe("translations", () => {
   it("includes address/DAWA translations", () => {
     const addressKeys: TranslationKey[] = [
       "address.searchPlaceholder",
-      "address.searchHint",
       "address.noResults",
       "address.selectedAddress",
       "address.changeAddress",

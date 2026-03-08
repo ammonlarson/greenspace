@@ -32,8 +32,6 @@ const da = {
   "map.state.reserved": "Reserveret",
 
   "address.searchPlaceholder": "Søg din adresse...",
-  "address.searchHint":
-    "Skriv dit husnummer for at finde din adresse (Else Alfelts Vej 122–202)",
   "address.noResults": "Ingen adresser fundet. Kontrollér at husnummeret er korrekt.",
   "address.selectedAddress": "Valgt adresse",
   "address.changeAddress": "Skift adresse",
@@ -269,8 +267,6 @@ const en: Record<TranslationKey, string> = {
   "map.state.reserved": "Reserved",
 
   "address.searchPlaceholder": "Search your address...",
-  "address.searchHint":
-    "Type your house number to find your address (Else Alfelts Vej 122–202)",
   "address.noResults": "No addresses found. Check that the house number is correct.",
   "address.selectedAddress": "Selected address",
   "address.changeAddress": "Change address",
