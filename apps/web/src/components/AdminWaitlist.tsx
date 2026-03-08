@@ -323,7 +323,7 @@ export function AdminWaitlist() {
                         borderRadius: 12,
                         fontSize: "0.75rem",
                         fontWeight: 600,
-                        background: entry.status === "waiting" ? "#FCF8EE" : colors.parchment,
+                        background: entry.status === "waiting" ? colors.warningBg : colors.parchment,
                         color: entry.status === "waiting" ? colors.mutedGold : colors.warmBrown,
                       }}
                     >

@@ -16,7 +16,7 @@ export function WaitlistBanner({ position, alreadyOnWaitlist }: WaitlistBannerPr
       style={{
         border: `1px solid ${colors.mutedGold}`,
         borderRadius: 10,
-        backgroundColor: "#FCF8EE",
+        backgroundColor: colors.warningBg,
         padding: "1.25rem",
         marginTop: "1.5rem",
       }}
