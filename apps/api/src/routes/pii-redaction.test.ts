@@ -664,6 +664,7 @@ interface MockRegisterOpts {
 
 function makeMockDbForRegister(opts: MockRegisterOpts): Kysely<Database> {
   const settingsResult = { opening_datetime: opts.openingDatetime };
+  const existingRegs = opts.existingReg ? [opts.existingReg] : [];
 
   const mockTrx = {
     selectFrom: vi.fn().mockImplementation((table: string) => {
@@ -683,7 +684,9 @@ function makeMockDbForRegister(opts: MockRegisterOpts): Kysely<Database> {
           select: vi.fn().mockReturnValue({
             where: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                executeTakeFirst: vi.fn().mockResolvedValue(opts.existingReg),
+                forUpdate: vi.fn().mockReturnValue({
+                  execute: vi.fn().mockResolvedValue(existingRegs),
+                }),
               }),
             }),
           }),

@@ -19,6 +19,13 @@ interface WaitlistEntry {
   created_at: string;
 }
 
+interface DuplicateExisting {
+  id: string;
+  boxId: number;
+  name: string;
+  email: string;
+}
+
 export function AdminWaitlist() {
   const { t, language } = useLanguage();
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
@@ -28,6 +35,7 @@ export function AdminWaitlist() {
   const [assigningEntry, setAssigningEntry] = useState<WaitlistEntry | null>(null);
   const [assignBoxId, setAssignBoxId] = useState("");
   const [assignNotification, setAssignNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [assignDuplicateWarning, setAssignDuplicateWarning] = useState<DuplicateExisting[] | null>(null);
 
   const fetchWaitlist = useCallback(async () => {
     try {
@@ -51,6 +59,7 @@ export function AdminWaitlist() {
   function openAssignDialog(entry: WaitlistEntry) {
     setAssignBoxId("");
     setAssignNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+    setAssignDuplicateWarning(null);
     setMessage(null);
     setAssigningEntry(entry);
   }
@@ -59,7 +68,7 @@ export function AdminWaitlist() {
     setAssigningEntry(null);
   }
 
-  async function handleAssign() {
+  async function handleAssign(confirmDuplicate = false) {
     if (!assigningEntry) return;
 
     const boxId = Number(assignBoxId);
@@ -79,6 +88,7 @@ export function AdminWaitlist() {
         body: JSON.stringify({
           waitlistEntryId: assigningEntry.id,
           boxId,
+          confirmDuplicate,
           notification: {
             sendEmail: assignNotification.sendEmail,
             subject: assignNotification.subject || undefined,
@@ -88,12 +98,17 @@ export function AdminWaitlist() {
       });
 
       if (res.ok) {
+        setAssignDuplicateWarning(null);
         setMessage({ type: "success", text: t("admin.waitlist.assigned") });
         setAssigningEntry(null);
         await fetchWaitlist();
       } else {
         const body = await res.json();
-        setMessage({ type: "error", text: body.error ?? t("common.error") });
+        if (body.code === "DUPLICATE_ADDRESS_WARNING" || body.code === "APARTMENT_HAS_REGISTRATION") {
+          setAssignDuplicateWarning(body.existingRegistrations ?? []);
+        } else {
+          setMessage({ type: "error", text: body.error ?? t("common.error") });
+        }
       }
     } catch {
       setMessage({ type: "error", text: t("common.error") });
@@ -181,24 +196,74 @@ export function AdminWaitlist() {
             />
           )}
 
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            <button
-              type="button"
-              onClick={handleAssign}
-              disabled={submitting || (assignNotification.sendEmail && !assignNotification.valid)}
+          {assignDuplicateWarning !== null && (
+            <div
+              role="alert"
               style={{
-                padding: "0.4rem 1rem",
-                border: "none",
-                borderRadius: 4,
-                background: "#1565c0",
-                color: "#fff",
-                cursor: submitting || (assignNotification.sendEmail && !assignNotification.valid) ? "not-allowed" : "pointer",
-                fontSize: "0.85rem",
-                fontFamily: "inherit",
+                background: "#fff3e0",
+                border: "1px solid #e67e22",
+                borderRadius: 6,
+                padding: "0.75rem",
+                marginTop: "0.75rem",
               }}
             >
-              {t("common.confirm")}
-            </button>
+              <p style={{ margin: "0 0 0.5rem", fontWeight: 600, color: "#d35400", fontSize: "0.85rem" }}>
+                {t("admin.waitlist.duplicateWarning")}
+              </p>
+              {assignDuplicateWarning.length > 0 && (
+                <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
+                  {assignDuplicateWarning.map((r) => (
+                    <li key={r.id}>
+                      {r.name} ({r.email}) — {t("admin.waitlist.box")} #{r.boxId}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#555" }}>
+                {t("admin.waitlist.duplicateConfirmHint")}
+              </p>
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            {assignDuplicateWarning !== null ? (
+              <button
+                type="button"
+                onClick={() => handleAssign(true)}
+                disabled={submitting || (assignNotification.sendEmail && !assignNotification.valid)}
+                style={{
+                  padding: "0.4rem 1rem",
+                  border: "none",
+                  borderRadius: 4,
+                  background: "#e67e22",
+                  color: "#fff",
+                  cursor: submitting || (assignNotification.sendEmail && !assignNotification.valid) ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  fontFamily: "inherit",
+                  fontWeight: 600,
+                }}
+              >
+                {t("admin.waitlist.confirmDuplicate")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleAssign()}
+                disabled={submitting || (assignNotification.sendEmail && !assignNotification.valid)}
+                style={{
+                  padding: "0.4rem 1rem",
+                  border: "none",
+                  borderRadius: 4,
+                  background: "#1565c0",
+                  color: "#fff",
+                  cursor: submitting || (assignNotification.sendEmail && !assignNotification.valid) ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  fontFamily: "inherit",
+                }}
+              >
+                {t("common.confirm")}
+              </button>
+            )}
             <button
               type="button"
               onClick={closeAssignDialog}
