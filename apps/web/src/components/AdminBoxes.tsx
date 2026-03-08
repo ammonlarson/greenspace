@@ -20,7 +20,7 @@ export function AdminBoxes() {
 
   const fetchBoxes = useCallback(async () => {
     try {
-      const res = await fetch("/public/boxes", { credentials: "include" });
+      const res = await fetch("/admin/boxes", { credentials: "include" });
       if (res.ok) {
         setBoxes(await res.json());
       } else {
