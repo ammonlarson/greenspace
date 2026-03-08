@@ -54,10 +54,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
     return (
       <RegistrationForm
         boxId={selectedBoxId}
-        onCancel={() => {
-          setSelectedBoxId(null);
-          setPageView("map");
-        }}
+        onCancel={() => setPageView("map")}
         onBoxUnavailable={() => setPageView("waitlist")}
       />
     );

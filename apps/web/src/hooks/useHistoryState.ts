@@ -45,6 +45,7 @@ export function useHistoryState<T>(
 
   // Listen for popstate (Back / Forward).
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     function onPopState(event: PopStateEvent) {
       const stored = event.state?.[keyRef.current];
       skipNextPush.current = true;
@@ -52,13 +53,16 @@ export function useHistoryState<T>(
       // If React bails out of the state update (same value), the push-effect
       // won't re-run and skipNextPush would stay true forever.  Clear it on
       // the next macro-task, which fires after React's commit-phase effects.
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         skipNextPush.current = false;
       }, 0);
     }
 
     window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   // Whenever value changes (and the change did NOT come from popstate),
@@ -69,16 +73,24 @@ export function useHistoryState<T>(
       isFirstRender.current = false;
       // Seed the current history entry with our initial state so that the
       // very first Back press can restore it.
-      const merged = { ...window.history.state, [key]: value };
-      window.history.replaceState(merged, "");
+      try {
+        const merged = { ...window.history.state, [key]: value };
+        window.history.replaceState(merged, "");
+      } catch {
+        // SecurityError or DataCloneError — degrade to plain useState.
+      }
       return;
     }
     if (skipNextPush.current) {
       skipNextPush.current = false;
       return;
     }
-    const merged = { ...window.history.state, [key]: value };
-    window.history.pushState(merged, "");
+    try {
+      const merged = { ...window.history.state, [key]: value };
+      window.history.pushState(merged, "");
+    } catch {
+      // SecurityError or DataCloneError — degrade to plain useState.
+    }
   }, [value, key]);
 
   const set = useCallback((next: T) => {
