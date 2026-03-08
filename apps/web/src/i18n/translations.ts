@@ -164,8 +164,9 @@ const da = {
   "admin.registrations.addHouseNumber": "Husnummer",
   "admin.registrations.addFloor": "Etage",
   "admin.registrations.addDoor": "Dør",
-  "admin.registrations.addBoxId": "Kasse-ID",
+  "admin.registrations.addBoxId": "Plantekasse",
   "admin.registrations.addLanguage": "Sprog",
+  "admin.registrations.selectBox": "Vælg plantekasse...",
 
   "admin.notification.title": "Notifikation",
   "admin.notification.send": "Send notifikation",
@@ -387,8 +388,9 @@ const en: Record<TranslationKey, string> = {
   "admin.registrations.addHouseNumber": "House number",
   "admin.registrations.addFloor": "Floor",
   "admin.registrations.addDoor": "Door",
-  "admin.registrations.addBoxId": "Box ID",
+  "admin.registrations.addBoxId": "Planter box",
   "admin.registrations.addLanguage": "Language",
+  "admin.registrations.selectBox": "Select planter box...",
 
   "admin.notification.title": "Notification",
   "admin.notification.send": "Send notification",

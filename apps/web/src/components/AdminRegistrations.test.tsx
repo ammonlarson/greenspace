@@ -344,6 +344,30 @@ describe("AdminRegistrations", () => {
       expect(screen.getByText("validation.emailInvalid")).toBeDefined();
     });
 
+    it("renders box dropdown with standardized labels in add dialog", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.registrations.addBoxId *") as HTMLSelectElement;
+      expect(boxSelect.tagName).toBe("SELECT");
+
+      const options = Array.from(boxSelect.options);
+      expect(options[0].textContent).toBe("admin.registrations.selectBox");
+      expect(options[0].value).toBe("");
+      expect(options[1].textContent).toBe("Kronen 1 - Linaria");
+      expect(options[1].value).toBe("1");
+      expect(options[15].textContent).toBe("Søen 15 - Robin");
+      expect(options[15].value).toBe("15");
+      expect(options).toHaveLength(30);
+    });
+
     it("closes add dialog on cancel", async () => {
       vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
 
@@ -397,6 +421,25 @@ describe("AdminRegistrations", () => {
       expect(moveBody.registrationId).toBe("r1");
       expect(moveBody.newBoxId).toBe(3);
       expect(screen.getByText("admin.registrations.moved")).toBeDefined();
+    });
+
+    it("renders box dropdown with standardized labels in move dialog", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.move"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.registrations.newBoxId") as HTMLSelectElement;
+      expect(boxSelect.tagName).toBe("SELECT");
+
+      const options = Array.from(boxSelect.options);
+      expect(options[0].textContent).toBe("admin.registrations.selectBox");
+      expect(options[15].textContent).toBe("Søen 15 - Robin");
     });
 
     it("shows error on move failure", async () => {
