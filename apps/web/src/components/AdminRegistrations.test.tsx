@@ -298,6 +298,52 @@ describe("AdminRegistrations", () => {
       expect(screen.getByRole("alert").textContent).toBe("Box is already occupied");
     });
 
+    it("resets floor/door when house number changes", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "170" } });
+      expect(screen.getByLabelText("admin.registrations.addFloor *")).toBeDefined();
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addFloor *"), { target: { value: "2" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addDoor"), { target: { value: "tv" } });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "130" } });
+      expect(screen.queryByLabelText("admin.registrations.addFloor *")).toBeNull();
+      expect(screen.queryByLabelText("admin.registrations.addDoor")).toBeNull();
+    });
+
+    it("shows invalid email error for malformed email", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      fireEvent.change(screen.getByLabelText("admin.registrations.addName *"), { target: { value: "Carol" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addEmail *"), { target: { value: "notanemail" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addHouseNumber *"), { target: { value: "130" } });
+      fireEvent.change(screen.getByLabelText("admin.registrations.addBoxId *"), { target: { value: "10" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("common.confirm"));
+      });
+
+      expect(screen.getByRole("alert")).toBeDefined();
+      expect(screen.getByText("validation.emailInvalid")).toBeDefined();
+    });
+
     it("closes add dialog on cancel", async () => {
       vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
 
