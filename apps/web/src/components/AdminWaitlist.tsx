@@ -104,8 +104,8 @@ export function AdminWaitlist() {
         await fetchWaitlist();
       } else {
         const body = await res.json();
-        if (body.code === "DUPLICATE_ADDRESS_WARNING") {
-          setAssignDuplicateWarning(body.existingRegistrations);
+        if (body.code === "DUPLICATE_ADDRESS_WARNING" || body.code === "APARTMENT_HAS_REGISTRATION") {
+          setAssignDuplicateWarning(body.existingRegistrations ?? []);
         } else {
           setMessage({ type: "error", text: body.error ?? t("common.error") });
         }
@@ -196,7 +196,7 @@ export function AdminWaitlist() {
             />
           )}
 
-          {assignDuplicateWarning && (
+          {assignDuplicateWarning !== null && (
             <div
               role="alert"
               style={{
@@ -210,13 +210,15 @@ export function AdminWaitlist() {
               <p style={{ margin: "0 0 0.5rem", fontWeight: 600, color: "#d35400", fontSize: "0.85rem" }}>
                 {t("admin.waitlist.duplicateWarning")}
               </p>
-              <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
-                {assignDuplicateWarning.map((r) => (
-                  <li key={r.id}>
-                    {r.name} ({r.email}) — {t("admin.waitlist.box")} #{r.boxId}
-                  </li>
-                ))}
-              </ul>
+              {assignDuplicateWarning.length > 0 && (
+                <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
+                  {assignDuplicateWarning.map((r) => (
+                    <li key={r.id}>
+                      {r.name} ({r.email}) — {t("admin.waitlist.box")} #{r.boxId}
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#555" }}>
                 {t("admin.waitlist.duplicateConfirmHint")}
               </p>
@@ -224,7 +226,7 @@ export function AdminWaitlist() {
           )}
 
           <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            {assignDuplicateWarning ? (
+            {assignDuplicateWarning !== null ? (
               <button
                 type="button"
                 onClick={() => handleAssign(true)}

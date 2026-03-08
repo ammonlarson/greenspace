@@ -216,8 +216,8 @@ export function AdminRegistrations() {
         await fetchRegistrations();
       } else {
         const body = await res.json();
-        if (body.code === "DUPLICATE_ADDRESS_WARNING") {
-          setAddDuplicateWarning(body.existingRegistrations);
+        if (body.code === "DUPLICATE_ADDRESS_WARNING" || body.code === "APARTMENT_HAS_REGISTRATION") {
+          setAddDuplicateWarning(body.existingRegistrations ?? []);
         } else {
           setMessage({ type: "error", text: body.error ?? t("common.error") });
         }
@@ -447,7 +447,7 @@ export function AdminRegistrations() {
             />
           )}
 
-          {addDuplicateWarning && (
+          {addDuplicateWarning !== null && (
             <div
               role="alert"
               style={{
@@ -461,13 +461,15 @@ export function AdminRegistrations() {
               <p style={{ margin: "0 0 0.5rem", fontWeight: 600, color: "#d35400", fontSize: "0.85rem" }}>
                 {t("admin.registrations.duplicateWarning")}
               </p>
-              <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
-                {addDuplicateWarning.map((r) => (
-                  <li key={r.id}>
-                    {r.name} ({r.email}) — {t("admin.registrations.box")} #{r.boxId}
-                  </li>
-                ))}
-              </ul>
+              {addDuplicateWarning.length > 0 && (
+                <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
+                  {addDuplicateWarning.map((r) => (
+                    <li key={r.id}>
+                      {r.name} ({r.email}) — {t("admin.registrations.box")} #{r.boxId}
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#555" }}>
                 {t("admin.registrations.duplicateConfirmHint")}
               </p>
@@ -475,7 +477,7 @@ export function AdminRegistrations() {
           )}
 
           <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            {addDuplicateWarning ? (
+            {addDuplicateWarning !== null ? (
               <button
                 type="button"
                 onClick={() => handleAdd(true)}
