@@ -28,6 +28,7 @@ export default function Home() {
   const [view, setView] = useHistoryState<View>("home.view", "public");
   const [selectedGreenhouse, setSelectedGreenhouse] = useHistoryState<Greenhouse | null>("home.greenhouse", null);
   const [status, setStatus] = useState<PublicStatus | null>(null);
+  const [statusResolved, setStatusResolved] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchStatus = useCallback(async () => {
@@ -38,6 +39,8 @@ export default function Home() {
       }
     } catch {
       /* API unreachable — safe default is pre-open (deny early access) */
+    } finally {
+      setStatusResolved(true);
     }
   }, []);
 
@@ -91,7 +94,7 @@ export default function Home() {
     );
   }
 
-  if (!ready) {
+  if (!ready || !statusResolved) {
     return <LoadingSplash />;
   }
 

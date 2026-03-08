@@ -16,13 +16,12 @@ export interface SystemSettings {
   updatedAt: string;
 }
 
-/** Greenhouse summary (public-safe) */
+/** Greenhouse summary (public-safe — reserved boxes are counted as occupied) */
 export interface GreenhouseSummary {
   name: Greenhouse;
   totalBoxes: number;
   availableBoxes: number;
   occupiedBoxes: number;
-  reservedBoxes: number;
 }
 
 /** Planter box (public-safe view) */
