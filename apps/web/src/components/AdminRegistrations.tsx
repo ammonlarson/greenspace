@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  BOX_CATALOG,
   ELIGIBLE_STREET,
   HOUSE_NUMBER_MIN,
   HOUSE_NUMBER_MAX,
@@ -11,6 +10,7 @@ import {
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
+import { colors, fonts, shadows, alertError, alertWarning } from "@/styles/theme";
 import { NotificationComposer, type NotificationValue } from "./NotificationComposer";
 
 interface Registration {
@@ -28,13 +28,6 @@ interface Registration {
   created_at: string;
 }
 
-interface DuplicateExisting {
-  id: string;
-  boxId: number;
-  name: string;
-  email: string;
-}
-
 type ActiveDialog =
   | { type: "add" }
   | { type: "move"; registration: Registration }
@@ -44,10 +37,10 @@ type ActiveDialog =
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.4rem",
-  border: "1px solid #ccc",
+  border: `1px solid ${colors.borderTan}`,
   borderRadius: 4,
   fontSize: "0.85rem",
-  fontFamily: "inherit",
+  fontFamily: fonts.body,
   boxSizing: "border-box",
 };
 
@@ -56,24 +49,22 @@ const labelStyle: React.CSSProperties = {
   fontSize: "0.8rem",
   fontWeight: 600,
   marginBottom: "0.25rem",
+  color: colors.warmBrown,
+  fontFamily: fonts.body,
 };
 
 const requiredLabelStyle: React.CSSProperties = {
   ...labelStyle,
-  color: "#333",
+  color: colors.warmBrown,
 };
 
-function formatBoxLabel(box: { id: number; name: string; greenhouse: string }): string {
-  return `${box.greenhouse} ${box.id} - ${box.name}`;
-}
-
 const dialogStyle: React.CSSProperties = {
-  border: "1px solid #e0e0e0",
+  border: `1px solid ${colors.borderTan}`,
   borderRadius: 8,
   padding: "1.25rem",
   marginBottom: "1.5rem",
-  background: "#fff",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+  background: colors.white,
+  boxShadow: shadows.card,
 };
 
 export function AdminRegistrations() {
@@ -91,13 +82,12 @@ export function AdminRegistrations() {
   const [addDoor, setAddDoor] = useState("");
   const [addBoxId, setAddBoxId] = useState("");
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
-  const [addNotification, setAddNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
   const [addErrors, setAddErrors] = useState<string[]>([]);
-  const [addDuplicateWarning, setAddDuplicateWarning] = useState<DuplicateExisting[] | null>(null);
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
-  const [moveNotification, setMoveNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
-  const [removeNotification, setRemoveNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+  const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -126,23 +116,22 @@ export function AdminRegistrations() {
     setAddDoor("");
     setAddBoxId("");
     setAddLanguage("da");
-    setAddNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+    setAddNotification({ sendEmail: true, subject: "", bodyHtml: "" });
     setAddErrors([]);
-    setAddDuplicateWarning(null);
     setMessage(null);
     setActiveDialog({ type: "add" });
   }
 
   function openMoveDialog(reg: Registration) {
     setMoveNewBoxId("");
-    setMoveNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+    setMoveNotification({ sendEmail: true, subject: "", bodyHtml: "" });
     setMessage(null);
     setActiveDialog({ type: "move", registration: reg });
   }
 
   function openRemoveDialog(reg: Registration) {
     setRemoveMakePublic(true);
-    setRemoveNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+    setRemoveNotification({ sendEmail: true, subject: "", bodyHtml: "" });
     setMessage(null);
     setActiveDialog({ type: "remove", registration: reg });
   }
@@ -154,7 +143,7 @@ export function AdminRegistrations() {
   const parsedAddHouseNumber = parseInt(addHouseNumber, 10);
   const addNeedsUnitFields = !isNaN(parsedAddHouseNumber) && isFloorDoorRequired(parsedAddHouseNumber);
 
-  async function handleAdd(confirmDuplicate = false) {
+  async function handleAdd() {
     setAddErrors([]);
 
     const input = {
@@ -200,7 +189,6 @@ export function AdminRegistrations() {
           floor: input.floor,
           door: input.door,
           language: input.language,
-          confirmDuplicate,
           notification: {
             sendEmail: addNotification.sendEmail,
             subject: addNotification.subject || undefined,
@@ -210,17 +198,12 @@ export function AdminRegistrations() {
       });
 
       if (res.ok) {
-        setAddDuplicateWarning(null);
         setMessage({ type: "success", text: t("admin.registrations.added") });
         setActiveDialog(null);
         await fetchRegistrations();
       } else {
         const body = await res.json();
-        if (body.code === "DUPLICATE_ADDRESS_WARNING" || body.code === "APARTMENT_HAS_REGISTRATION") {
-          setAddDuplicateWarning(body.existingRegistrations ?? []);
-        } else {
-          setMessage({ type: "error", text: body.error ?? t("common.error") });
-        }
+        setMessage({ type: "error", text: body.error ?? t("common.error") });
       }
     } catch {
       setMessage({ type: "error", text: t("common.error") });
@@ -315,20 +298,20 @@ export function AdminRegistrations() {
   return (
     <section>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h2 style={{ margin: 0 }}>{t("admin.registrations.title")}</h2>
+        <h2 style={{ margin: 0, fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.registrations.title")}</h2>
         <button
           type="button"
           onClick={openAddDialog}
           disabled={activeDialog !== null}
           style={{
             padding: "0.4rem 1rem",
-            border: "1px solid #2d7a3a",
+            border: `1px solid ${colors.sage}`,
             borderRadius: 4,
-            background: "#2d7a3a",
-            color: "#fff",
+            background: colors.sage,
+            color: colors.white,
             cursor: activeDialog !== null ? "not-allowed" : "pointer",
             fontSize: "0.85rem",
-            fontFamily: "inherit",
+            fontFamily: fonts.body,
           }}
         >
           {t("admin.registrations.add")}
@@ -339,7 +322,7 @@ export function AdminRegistrations() {
         <p
           role={message.type === "error" ? "alert" : "status"}
           style={{
-            color: message.type === "error" ? "#c62828" : "#2d7a3a",
+            color: message.type === "error" ? colors.dustyRose : colors.sage,
             fontSize: "0.85rem",
             marginBottom: "1rem",
           }}
@@ -351,7 +334,7 @@ export function AdminRegistrations() {
       {/* Add Dialog */}
       {activeDialog?.type === "add" && (
         <div role="dialog" aria-labelledby="add-dialog-title" style={dialogStyle}>
-          <h3 id="add-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem" }}>{t("admin.registrations.add")}</h3>
+          <h3 id="add-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.registrations.add")}</h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
             <div>
               <label htmlFor="add-name" style={requiredLabelStyle}>{t("admin.registrations.addName")} *</label>
@@ -363,7 +346,7 @@ export function AdminRegistrations() {
             </div>
             <div>
               <label htmlFor="add-street" style={labelStyle}>{t("admin.registrations.addStreet")}</label>
-              <input id="add-street" type="text" value={ELIGIBLE_STREET} disabled style={{ ...inputStyle, background: "#f0f0f0", color: "#888" }} />
+              <input id="add-street" type="text" value={ELIGIBLE_STREET} disabled style={{ ...inputStyle, background: colors.parchmentDark, color: colors.warmBrown }} />
             </div>
             <div>
               <label htmlFor="add-house-number" style={requiredLabelStyle}>{t("admin.registrations.addHouseNumber")} *</label>
@@ -392,14 +375,7 @@ export function AdminRegistrations() {
             )}
             <div>
               <label htmlFor="add-box-id" style={requiredLabelStyle}>{t("admin.registrations.addBoxId")} *</label>
-              <select id="add-box-id" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle}>
-                <option value="">{t("admin.registrations.selectBox")}</option>
-                {BOX_CATALOG.map((box) => (
-                  <option key={box.id} value={String(box.id)}>
-                    {formatBoxLabel(box)}
-                  </option>
-                ))}
-              </select>
+              <input id="add-box-id" type="number" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle} />
             </div>
             <div>
               <label htmlFor="add-language" style={requiredLabelStyle}>{t("admin.registrations.addLanguage")} *</label>
@@ -411,7 +387,7 @@ export function AdminRegistrations() {
           </div>
 
           {addNeedsUnitFields && (
-            <p style={{ fontSize: "0.8rem", color: "#666", margin: "0.5rem 0 0" }}>
+            <p style={{ fontSize: "0.8rem", color: colors.warmBrown, margin: "0.5rem 0 0" }}>
               {t("address.floorDoorHint")}
             </p>
           )}
@@ -420,13 +396,8 @@ export function AdminRegistrations() {
             <div
               role="alert"
               style={{
-                background: "#fef0f0",
-                border: "1px solid #e74c3c",
-                borderRadius: 6,
-                padding: "0.75rem",
+                ...alertError,
                 marginTop: "0.75rem",
-                fontSize: "0.85rem",
-                color: "#c0392b",
               }}
             >
               {addErrors.map((err) => (
@@ -447,86 +418,36 @@ export function AdminRegistrations() {
             />
           )}
 
-          {addDuplicateWarning !== null && (
-            <div
-              role="alert"
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={submitting}
               style={{
-                background: "#fff3e0",
-                border: "1px solid #e67e22",
-                borderRadius: 6,
-                padding: "0.75rem",
-                marginTop: "0.75rem",
+                padding: "0.4rem 1rem",
+                border: "none",
+                borderRadius: 4,
+                background: colors.sage,
+                color: colors.white,
+                cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "0.85rem",
+                fontFamily: fonts.body,
               }}
             >
-              <p style={{ margin: "0 0 0.5rem", fontWeight: 600, color: "#d35400", fontSize: "0.85rem" }}>
-                {t("admin.registrations.duplicateWarning")}
-              </p>
-              {addDuplicateWarning.length > 0 && (
-                <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
-                  {addDuplicateWarning.map((r) => (
-                    <li key={r.id}>
-                      {r.name} ({r.email}) — {t("admin.registrations.box")} #{r.boxId}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p style={{ margin: 0, fontSize: "0.8rem", color: "#555" }}>
-                {t("admin.registrations.duplicateConfirmHint")}
-              </p>
-            </div>
-          )}
-
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            {addDuplicateWarning !== null ? (
-              <button
-                type="button"
-                onClick={() => handleAdd(true)}
-                disabled={submitting || (addNotification.sendEmail && !addNotification.valid)}
-                style={{
-                  padding: "0.4rem 1rem",
-                  border: "none",
-                  borderRadius: 4,
-                  background: "#e67e22",
-                  color: "#fff",
-                  cursor: submitting || (addNotification.sendEmail && !addNotification.valid) ? "not-allowed" : "pointer",
-                  fontSize: "0.85rem",
-                  fontFamily: "inherit",
-                  fontWeight: 600,
-                }}
-              >
-                {t("admin.registrations.confirmDuplicate")}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleAdd()}
-                disabled={submitting || (addNotification.sendEmail && !addNotification.valid)}
-                style={{
-                  padding: "0.4rem 1rem",
-                  border: "none",
-                  borderRadius: 4,
-                  background: "#2d7a3a",
-                  color: "#fff",
-                  cursor: submitting || (addNotification.sendEmail && !addNotification.valid) ? "not-allowed" : "pointer",
-                  fontSize: "0.85rem",
-                  fontFamily: "inherit",
-                }}
-              >
-                {t("common.confirm")}
-              </button>
-            )}
+              {t("common.confirm")}
+            </button>
             <button
               type="button"
               onClick={closeDialog}
               disabled={submitting}
               style={{
                 padding: "0.4rem 1rem",
-                border: "1px solid #ccc",
+                border: `1px solid ${colors.borderTan}`,
                 borderRadius: 4,
-                background: "#fff",
+                background: colors.white,
                 cursor: submitting ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
               }}
             >
               {t("common.cancel")}
@@ -538,24 +459,18 @@ export function AdminRegistrations() {
       {/* Move Dialog */}
       {activeDialog?.type === "move" && (
         <div role="dialog" aria-labelledby="move-dialog-title" style={dialogStyle}>
-          <h3 id="move-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+          <h3 id="move-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.registrations.move")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
           </h3>
           <div style={{ marginBottom: "0.75rem" }}>
             <label htmlFor="move-new-box-id" style={labelStyle}>{t("admin.registrations.newBoxId")}</label>
-            <select
+            <input
               id="move-new-box-id"
+              type="number"
               value={moveNewBoxId}
               onChange={(e) => setMoveNewBoxId(e.target.value)}
-              style={{ ...inputStyle, maxWidth: 300 }}
-            >
-              <option value="">{t("admin.registrations.selectBox")}</option>
-              {BOX_CATALOG.map((box) => (
-                <option key={box.id} value={String(box.id)}>
-                  {formatBoxLabel(box)}
-                </option>
-              ))}
-            </select>
+              style={{ ...inputStyle, maxWidth: 200 }}
+            />
           </div>
 
           {moveNewBoxId && Number(moveNewBoxId) > 0 && (
@@ -575,16 +490,16 @@ export function AdminRegistrations() {
             <button
               type="button"
               onClick={handleMove}
-              disabled={submitting || (moveNotification.sendEmail && !moveNotification.valid)}
+              disabled={submitting}
               style={{
                 padding: "0.4rem 1rem",
                 border: "none",
                 borderRadius: 4,
-                background: "#1565c0",
-                color: "#fff",
-                cursor: submitting || (moveNotification.sendEmail && !moveNotification.valid) ? "not-allowed" : "pointer",
+                background: colors.sage,
+                color: colors.white,
+                cursor: submitting ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
               }}
             >
               {t("common.confirm")}
@@ -595,12 +510,12 @@ export function AdminRegistrations() {
               disabled={submitting}
               style={{
                 padding: "0.4rem 1rem",
-                border: "1px solid #ccc",
+                border: `1px solid ${colors.borderTan}`,
                 borderRadius: 4,
-                background: "#fff",
+                background: colors.white,
                 cursor: submitting ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
               }}
             >
               {t("common.cancel")}
@@ -612,7 +527,7 @@ export function AdminRegistrations() {
       {/* Remove Dialog */}
       {activeDialog?.type === "remove" && (
         <div role="dialog" aria-labelledby="remove-dialog-title" style={dialogStyle}>
-          <h3 id="remove-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+          <h3 id="remove-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.registrations.confirmRemove")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
           </h3>
 
@@ -654,16 +569,16 @@ export function AdminRegistrations() {
             <button
               type="button"
               onClick={handleRemove}
-              disabled={submitting || (removeNotification.sendEmail && !removeNotification.valid)}
+              disabled={submitting}
               style={{
                 padding: "0.4rem 1rem",
                 border: "none",
                 borderRadius: 4,
-                background: "#c62828",
-                color: "#fff",
-                cursor: submitting || (removeNotification.sendEmail && !removeNotification.valid) ? "not-allowed" : "pointer",
+                background: colors.dustyRose,
+                color: colors.white,
+                cursor: submitting ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
               }}
             >
               {t("common.confirm")}
@@ -674,12 +589,12 @@ export function AdminRegistrations() {
               disabled={submitting}
               style={{
                 padding: "0.4rem 1rem",
-                border: "1px solid #ccc",
+                border: `1px solid ${colors.borderTan}`,
                 borderRadius: 4,
-                background: "#fff",
+                background: colors.white,
                 cursor: submitting ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
-                fontFamily: "inherit",
+                fontFamily: fonts.body,
               }}
             >
               {t("common.cancel")}
@@ -689,7 +604,7 @@ export function AdminRegistrations() {
       )}
 
       {registrations.length === 0 ? (
-        <p style={{ color: "#888", fontStyle: "italic" }}>
+        <p style={{ color: colors.warmBrown, fontStyle: "italic" }}>
           {t("admin.registrations.noRegistrations")}
         </p>
       ) : (
@@ -702,7 +617,7 @@ export function AdminRegistrations() {
             }}
           >
             <thead>
-              <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
+              <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
                 <th style={{ padding: "0.5rem" }}>{t("admin.registrations.name")}</th>
                 <th style={{ padding: "0.5rem" }}>{t("admin.registrations.email")}</th>
                 <th style={{ padding: "0.5rem" }}>{t("admin.registrations.box")}</th>
@@ -714,7 +629,7 @@ export function AdminRegistrations() {
             </thead>
             <tbody>
               {registrations.map((reg) => (
-                <tr key={reg.id} style={{ borderBottom: "1px solid #eee" }}>
+                <tr key={reg.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem" }}>{reg.name}</td>
                   <td style={{ padding: "0.5rem" }}>{reg.email}</td>
                   <td style={{ padding: "0.5rem" }}>#{reg.box_id}</td>
@@ -727,8 +642,8 @@ export function AdminRegistrations() {
                         borderRadius: 12,
                         fontSize: "0.75rem",
                         fontWeight: 600,
-                        background: reg.status === "active" ? "#e8f5e9" : "#f5f5f5",
-                        color: reg.status === "active" ? "#2d7a3a" : "#888",
+                        background: reg.status === "active" ? colors.lightSage : colors.parchment,
+                        color: reg.status === "active" ? colors.sage : colors.warmBrown,
                       }}
                     >
                       {reg.status}
@@ -746,13 +661,13 @@ export function AdminRegistrations() {
                           disabled={activeDialog !== null}
                           style={{
                             padding: "0.25rem 0.75rem",
-                            border: "1px solid #1565c0",
+                            border: `1px solid ${colors.sage}`,
                             borderRadius: 4,
-                            background: "#fff",
-                            color: "#1565c0",
+                            background: colors.white,
+                            color: colors.sage,
                             cursor: activeDialog !== null ? "not-allowed" : "pointer",
                             fontSize: "0.8rem",
-                            fontFamily: "inherit",
+                            fontFamily: fonts.body,
                           }}
                         >
                           {t("admin.registrations.move")}
@@ -763,13 +678,13 @@ export function AdminRegistrations() {
                           disabled={activeDialog !== null}
                           style={{
                             padding: "0.25rem 0.75rem",
-                            border: "1px solid #c62828",
+                            border: `1px solid ${colors.dustyRose}`,
                             borderRadius: 4,
-                            background: "#fff",
-                            color: "#c62828",
+                            background: colors.white,
+                            color: colors.dustyRose,
                             cursor: activeDialog !== null ? "not-allowed" : "pointer",
                             fontSize: "0.8rem",
-                            fontFamily: "inherit",
+                            fontFamily: fonts.body,
                           }}
                         >
                           {t("admin.registrations.remove")}
