@@ -3,6 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
+type Tab = "preview" | "source";
+
+export interface NotificationValue {
+  sendEmail: boolean;
+  subject: string;
+  bodyHtml: string;
+  valid: boolean;
+}
+
 interface NotificationComposerProps {
   action: "add" | "move" | "remove" | "waitlist_assign";
   recipientName: string;
@@ -10,8 +19,12 @@ interface NotificationComposerProps {
   recipientLanguage: string;
   boxId: number;
   oldBoxId?: number;
-  value: { sendEmail: boolean; subject: string; bodyHtml: string };
-  onChange: (value: { sendEmail: boolean; subject: string; bodyHtml: string }) => void;
+  value: NotificationValue;
+  onChange: (value: NotificationValue) => void;
+}
+
+function isHtmlValid(html: string): boolean {
+  return html.trim().length > 0;
 }
 
 export function NotificationComposer({
@@ -25,6 +38,7 @@ export function NotificationComposer({
   onChange,
 }: NotificationComposerProps) {
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<Tab>("preview");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const [defaultSubject, setDefaultSubject] = useState("");
@@ -59,7 +73,12 @@ export function NotificationComposer({
         const preview = await res.json();
         setDefaultSubject(preview.subject);
         setDefaultBodyHtml(preview.bodyHtml);
-        onChangeRef.current({ sendEmail: sendEmailRef.current, subject: preview.subject, bodyHtml: preview.bodyHtml });
+        onChangeRef.current({
+          sendEmail: sendEmailRef.current,
+          subject: preview.subject,
+          bodyHtml: preview.bodyHtml,
+          valid: isHtmlValid(preview.bodyHtml),
+        });
       } else {
         setPreviewError(true);
       }
@@ -75,8 +94,29 @@ export function NotificationComposer({
   }, [fetchPreview]);
 
   function handleReset() {
-    onChange({ sendEmail: value.sendEmail, subject: defaultSubject, bodyHtml: defaultBodyHtml });
+    onChange({
+      sendEmail: value.sendEmail,
+      subject: defaultSubject,
+      bodyHtml: defaultBodyHtml,
+      valid: isHtmlValid(defaultBodyHtml),
+    });
   }
+
+  function handleBodyChange(bodyHtml: string) {
+    onChange({ ...value, bodyHtml, valid: isHtmlValid(bodyHtml) });
+  }
+
+  const tabStyle = (tab: Tab): React.CSSProperties => ({
+    padding: "0.4rem 1rem",
+    border: "none",
+    borderBottom: activeTab === tab ? "2px solid #1565c0" : "2px solid transparent",
+    background: "none",
+    cursor: "pointer",
+    fontSize: "0.8rem",
+    fontFamily: "inherit",
+    fontWeight: activeTab === tab ? 600 : 400,
+    color: activeTab === tab ? "#1565c0" : "#555",
+  });
 
   return (
     <div
@@ -139,30 +179,87 @@ export function NotificationComposer({
                 />
               </div>
 
-              <div style={{ marginBottom: "0.5rem" }}>
-                <label
-                  htmlFor="notification-body"
-                  style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.25rem" }}
+              <div
+                role="tablist"
+                style={{
+                  display: "flex",
+                  borderBottom: "1px solid #e0e0e0",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "preview"}
+                  aria-controls="notification-tab-preview"
+                  onClick={() => setActiveTab("preview")}
+                  style={tabStyle("preview")}
                 >
-                  {t("admin.notification.body")}
-                </label>
-                <textarea
-                  id="notification-body"
-                  value={value.bodyHtml}
-                  onChange={(e) => onChange({ ...value, bodyHtml: e.target.value })}
-                  rows={8}
-                  style={{
-                    width: "100%",
-                    padding: "0.4rem",
-                    border: "1px solid #ccc",
-                    borderRadius: 4,
-                    fontSize: "0.8rem",
-                    fontFamily: "monospace",
-                    resize: "vertical",
-                    boxSizing: "border-box",
-                  }}
-                />
+                  {t("admin.notification.preview")}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "source"}
+                  aria-controls="notification-tab-source"
+                  onClick={() => setActiveTab("source")}
+                  style={tabStyle("source")}
+                >
+                  {t("admin.notification.source")}
+                </button>
               </div>
+
+              {activeTab === "preview" && (
+                <div
+                  id="notification-tab-preview"
+                  role="tabpanel"
+                  style={{ marginBottom: "0.5rem" }}
+                >
+                  <iframe
+                    title={t("admin.notification.preview")}
+                    srcDoc={value.bodyHtml}
+                    sandbox=""
+                    style={{
+                      width: "100%",
+                      height: 300,
+                      border: "1px solid #ccc",
+                      borderRadius: 4,
+                      background: "#fff",
+                    }}
+                  />
+                </div>
+              )}
+
+              {activeTab === "source" && (
+                <div
+                  id="notification-tab-source"
+                  role="tabpanel"
+                  style={{ marginBottom: "0.5rem" }}
+                >
+                  <textarea
+                    id="notification-body"
+                    aria-label={t("admin.notification.body")}
+                    value={value.bodyHtml}
+                    onChange={(e) => handleBodyChange(e.target.value)}
+                    rows={12}
+                    style={{
+                      width: "100%",
+                      padding: "0.4rem",
+                      border: `1px solid ${!value.valid ? "#c62828" : "#ccc"}`,
+                      borderRadius: 4,
+                      fontSize: "0.8rem",
+                      fontFamily: "monospace",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  {!value.valid && (
+                    <p role="alert" style={{ fontSize: "0.8rem", color: "#c62828", margin: "0.25rem 0 0 0" }}>
+                      {t("admin.notification.sourceError")}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <button
                 type="button"

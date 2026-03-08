@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
-import { NotificationComposer } from "./NotificationComposer";
+import { NotificationComposer, type NotificationValue } from "./NotificationComposer";
 
 interface WaitlistEntry {
   id: string;
@@ -27,7 +27,7 @@ export function AdminWaitlist() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [assigningEntry, setAssigningEntry] = useState<WaitlistEntry | null>(null);
   const [assignBoxId, setAssignBoxId] = useState("");
-  const [assignNotification, setAssignNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "" });
+  const [assignNotification, setAssignNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
 
   const fetchWaitlist = useCallback(async () => {
     try {
@@ -50,7 +50,7 @@ export function AdminWaitlist() {
 
   function openAssignDialog(entry: WaitlistEntry) {
     setAssignBoxId("");
-    setAssignNotification({ sendEmail: true, subject: "", bodyHtml: "" });
+    setAssignNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setMessage(null);
     setAssigningEntry(entry);
   }
@@ -185,14 +185,14 @@ export function AdminWaitlist() {
             <button
               type="button"
               onClick={handleAssign}
-              disabled={submitting}
+              disabled={submitting || (assignNotification.sendEmail && !assignNotification.valid)}
               style={{
                 padding: "0.4rem 1rem",
                 border: "none",
                 borderRadius: 4,
                 background: "#1565c0",
                 color: "#fff",
-                cursor: submitting ? "not-allowed" : "pointer",
+                cursor: submitting || (assignNotification.sendEmail && !assignNotification.valid) ? "not-allowed" : "pointer",
                 fontSize: "0.85rem",
                 fontFamily: "inherit",
               }}

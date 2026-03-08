@@ -12,7 +12,7 @@ vi.mock("@/utils/formatDate", () => ({
 }));
 
 vi.mock("./NotificationComposer", () => ({
-  NotificationComposer: ({ value, onChange }: { value: { sendEmail: boolean; subject: string; bodyHtml: string }; onChange: (v: { sendEmail: boolean; subject: string; bodyHtml: string }) => void }) => (
+  NotificationComposer: ({ value, onChange }: { value: { sendEmail: boolean; subject: string; bodyHtml: string; valid: boolean }; onChange: (v: { sendEmail: boolean; subject: string; bodyHtml: string; valid: boolean }) => void }) => (
     <div data-testid="notification-composer">
       <label>
         <input
