@@ -173,8 +173,10 @@ const da = {
   "admin.notification.subject": "Emne",
   "admin.notification.body": "Brødtekst (HTML)",
   "admin.notification.preview": "Forhåndsvis",
+  "admin.notification.source": "Kilde",
   "admin.notification.previewLoading": "Indlæser forhåndsvisning...",
   "admin.notification.previewError": "Kunne ikke indlæse forhåndsvisning",
+  "admin.notification.sourceError": "Ugyldig HTML — ret fejlen før afsendelse",
   "admin.notification.reset": "Nulstil til standard",
 
   "admin.waitlist.title": "Venteliste",
@@ -397,8 +399,10 @@ const en: Record<TranslationKey, string> = {
   "admin.notification.subject": "Subject",
   "admin.notification.body": "Body (HTML)",
   "admin.notification.preview": "Preview",
+  "admin.notification.source": "Source",
   "admin.notification.previewLoading": "Loading preview...",
   "admin.notification.previewError": "Could not load preview",
+  "admin.notification.sourceError": "Invalid HTML — fix the error before sending",
   "admin.notification.reset": "Reset to default",
 
   "admin.waitlist.title": "Waitlist",
