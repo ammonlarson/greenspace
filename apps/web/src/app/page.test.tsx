@@ -442,4 +442,17 @@ describe("Home page render gating", () => {
     expect(screen.getByTestId("pre-open-page")).toBeDefined();
     expect(screen.queryByTestId("landing-page")).toBeNull();
   });
+
+  it("falls back to pre-open page when API fetch fails (no infinite spinner)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    expect(screen.getByTestId("pre-open-page")).toBeDefined();
+    expect(screen.queryByTestId("loading-splash")).toBeNull();
+  });
 });
