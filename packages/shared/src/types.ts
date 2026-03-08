@@ -5,6 +5,7 @@ import type {
   BoxState,
   EmailStatus,
   Language,
+  PublicBoxState,
   RegistrationStatus,
   WaitlistEntryStatus,
 } from "./enums.js";
@@ -29,11 +30,12 @@ export interface PlanterBoxPublic {
   id: number;
   name: string;
   greenhouse: Greenhouse;
-  state: BoxState;
+  state: PublicBoxState;
 }
 
 /** Planter box (full admin view) */
-export interface PlanterBox extends PlanterBoxPublic {
+export interface PlanterBox extends Omit<PlanterBoxPublic, "state"> {
+  state: BoxState;
   reservedLabel: string | null;
   createdAt: string;
   updatedAt: string;

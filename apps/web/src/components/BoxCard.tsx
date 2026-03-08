@@ -1,13 +1,13 @@
 "use client";
 
-import type { BoxState } from "@greenspace/shared";
+import type { PublicBoxState } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BOX_STATE_COLORS } from "./boxStateColors";
 
 interface BoxCardProps {
   id: number;
   name: string;
-  state: BoxState;
+  state: PublicBoxState;
   onClick?: () => void;
 }
 

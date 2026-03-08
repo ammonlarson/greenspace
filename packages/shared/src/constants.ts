@@ -1,4 +1,4 @@
-import type { BoxState, Language } from "./enums.js";
+import type { Language } from "./enums.js";
 
 export const GREENHOUSES = ["Kronen", "Søen"] as const;
 export type Greenhouse = (typeof GREENHOUSES)[number];
@@ -98,8 +98,3 @@ export const SEED_ADMIN_EMAILS = [
   "ammonl@hotmail.com",
 ] as const;
 
-/** Box states visible to public users. Reserved boxes are shown as occupied. */
-export const PUBLIC_BOX_STATES: readonly BoxState[] = [
-  "available",
-  "occupied",
-];

@@ -1,5 +1,6 @@
 export {
   BOX_STATES,
+  PUBLIC_BOX_STATES,
   REGISTRATION_STATUSES,
   WAITLIST_ENTRY_STATUSES,
   ACTOR_TYPES,
@@ -10,6 +11,7 @@ export {
 
 export type {
   BoxState,
+  PublicBoxState,
   RegistrationStatus,
   WaitlistEntryStatus,
   ActorType,
@@ -37,7 +39,6 @@ export {
   DEFAULT_LANGUAGE,
   RESERVED_LABEL_DEFAULT,
   SEED_ADMIN_EMAILS,
-  PUBLIC_BOX_STATES,
 } from "./constants.js";
 
 export type { Greenhouse, BoxCatalogEntry } from "./constants.js";
