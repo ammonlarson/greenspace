@@ -15,6 +15,9 @@ vi.mock("./AdminWaitlist", () => ({
 vi.mock("./AdminBoxes", () => ({
   AdminBoxes: () => <div data-testid="boxes">Boxes</div>,
 }));
+vi.mock("./AdminMessaging", () => ({
+  AdminMessaging: () => <div data-testid="messaging">Messaging</div>,
+}));
 vi.mock("./AdminSettings", () => ({
   AdminSettings: () => <div data-testid="settings">Settings</div>,
 }));
@@ -38,6 +41,7 @@ describe("AdminDashboard", () => {
     expect(screen.getByText("admin.tab.registrations")).toBeDefined();
     expect(screen.getByText("admin.tab.waitlist")).toBeDefined();
     expect(screen.getByText("admin.tab.boxes")).toBeDefined();
+    expect(screen.getByText("admin.tab.messaging")).toBeDefined();
     expect(screen.getByText("admin.tab.settings")).toBeDefined();
     expect(screen.getByText("admin.tab.audit")).toBeDefined();
     expect(screen.getByText("admin.tab.account")).toBeDefined();
