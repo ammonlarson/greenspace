@@ -17,12 +17,14 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      DB_HOST       = aws_db_instance.main.address
-      DB_PORT       = tostring(aws_db_instance.main.port)
-      DB_NAME       = var.db_name
-      DB_USER       = var.db_master_username
-      DB_SECRET_ARN = aws_secretsmanager_secret.db_credentials.arn
-      DB_SSL        = "true"
+      DB_HOST        = aws_db_instance.main.address
+      DB_PORT        = tostring(aws_db_instance.main.port)
+      DB_NAME        = var.db_name
+      DB_USER        = var.db_master_username
+      DB_SECRET_ARN  = aws_secretsmanager_secret.db_credentials.arn
+      DB_SSL         = "true"
+      EMAIL_FROM     = coalesce(var.ses_sender_email, "greenspace@${var.ses_sender_domain}")
+      EMAIL_REPLY_TO = var.ses_reply_to_email
     }
   }
 

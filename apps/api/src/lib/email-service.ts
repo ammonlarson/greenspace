@@ -1,9 +1,12 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import type { Kysely, Transaction } from "kysely";
-import { EMAIL_FROM, EMAIL_REPLY_TO } from "@greenspace/shared";
+import { EMAIL_FROM as DEFAULT_EMAIL_FROM, EMAIL_REPLY_TO as DEFAULT_EMAIL_REPLY_TO } from "@greenspace/shared";
 import type { Database } from "../db/types.js";
 import { logAuditEvent } from "./audit.js";
 import { logger } from "./logger.js";
+
+const emailFrom = process.env.EMAIL_FROM ?? DEFAULT_EMAIL_FROM;
+const emailReplyTo = process.env.EMAIL_REPLY_TO ?? DEFAULT_EMAIL_REPLY_TO;
 
 let sesClient: SESClient | null = null;
 
@@ -99,8 +102,8 @@ async function sendViaSes(input: QueueEmailInput): Promise<void> {
   const client = getSesClient();
 
   const command = new SendEmailCommand({
-    Source: EMAIL_FROM,
-    ReplyToAddresses: [EMAIL_REPLY_TO],
+    Source: emailFrom,
+    ReplyToAddresses: [emailReplyTo],
     Destination: {
       ToAddresses: [input.recipientEmail],
     },
