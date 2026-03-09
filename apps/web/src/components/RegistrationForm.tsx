@@ -258,7 +258,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
           <label htmlFor="reg-house" style={labelStyle}>
             {t("registration.houseNumberLabel")} *
           </label>
-          <input id="reg-house" type="number" required min={HOUSE_NUMBER_MIN} max={HOUSE_NUMBER_MAX} value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} placeholder="184" style={inputStyle} />
+          <input id="reg-house" type="number" required min={HOUSE_NUMBER_MIN} max={HOUSE_NUMBER_MAX} value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} placeholder="168" style={inputStyle} />
         </div>
 
         {needsUnitFields && (
