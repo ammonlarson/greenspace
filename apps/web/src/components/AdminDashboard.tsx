@@ -9,15 +9,17 @@ import { AdminBoxes } from "./AdminBoxes";
 import { AdminSettings } from "./AdminSettings";
 import { AdminAuditLog } from "./AdminAuditLog";
 import { AdminAccount } from "./AdminAccount";
+import { AdminMessaging } from "./AdminMessaging";
 
-type Tab = "registrations" | "waitlist" | "boxes" | "settings" | "audit" | "account";
+type Tab = "registrations" | "waitlist" | "boxes" | "messaging" | "settings" | "audit" | "account";
 
-const TABS: Tab[] = ["registrations", "waitlist", "boxes", "settings", "audit", "account"];
+const TABS: Tab[] = ["registrations", "waitlist", "boxes", "messaging", "settings", "audit", "account"];
 
-const TAB_KEYS: Record<Tab, "admin.tab.registrations" | "admin.tab.waitlist" | "admin.tab.boxes" | "admin.tab.settings" | "admin.tab.audit" | "admin.tab.account"> = {
+const TAB_KEYS: Record<Tab, "admin.tab.registrations" | "admin.tab.waitlist" | "admin.tab.boxes" | "admin.tab.messaging" | "admin.tab.settings" | "admin.tab.audit" | "admin.tab.account"> = {
   registrations: "admin.tab.registrations",
   waitlist: "admin.tab.waitlist",
   boxes: "admin.tab.boxes",
+  messaging: "admin.tab.messaging",
   settings: "admin.tab.settings",
   audit: "admin.tab.audit",
   account: "admin.tab.account",
@@ -119,6 +121,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {activeTab === "registrations" && <AdminRegistrations />}
         {activeTab === "waitlist" && <AdminWaitlist />}
         {activeTab === "boxes" && <AdminBoxes />}
+        {activeTab === "messaging" && <AdminMessaging />}
         {activeTab === "settings" && <AdminSettings />}
         {activeTab === "audit" && <AdminAuditLog />}
         {activeTab === "account" && <AdminAccount />}
