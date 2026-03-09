@@ -103,18 +103,37 @@ export default function Home() {
     <main style={{ fontFamily: fonts.body, color: colors.inkBrown }}>
       <header
         style={{
-          display: "flex",
-          justifyContent: "space-between",
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
           padding: "1rem",
           background: colors.parchment,
           borderBottom: `1px solid ${colors.borderTan}`,
         }}
       >
-        <h1 style={{ fontSize: "1.25rem", margin: 0, fontFamily: fonts.heading, color: colors.warmBrown }}>
-          {t("common.appName")}
-        </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div />
+        <button
+          type="button"
+          onClick={() => {
+            setView("public");
+            setSelectedGreenhouse(null);
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            margin: 0,
+            fontSize: "1.25rem",
+            fontFamily: fonts.heading,
+            color: colors.warmBrown,
+          }}
+        >
+          <h1 style={{ fontSize: "inherit", margin: 0, fontFamily: "inherit", color: "inherit" }}>
+            {t("common.appName")}
+          </h1>
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", justifyContent: "flex-end" }}>
           {view === "public" && (
             <button
               type="button"
