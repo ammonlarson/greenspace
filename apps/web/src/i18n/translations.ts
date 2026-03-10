@@ -133,6 +133,11 @@ const da = {
   "admin.save": "Gem",
   "admin.settingsSaved": "Indstilling gemt",
 
+  "admin.notifications.title": "E-mailnotifikationer",
+  "admin.notifications.description": "Vælg hvilke begivenheder du vil modtage e-mailnotifikationer om.",
+  "admin.notifications.userRegistration": "Bruger registrerer sig eller skifter plantekasse",
+  "admin.notifications.adminBoxAction": "Anden administrator udfører kassehandlinger",
+
   "admin.tab.registrations": "Tilmeldinger",
   "admin.tab.waitlist": "Venteliste",
   "admin.tab.boxes": "Plantekasser",
@@ -407,6 +412,11 @@ const en: Record<TranslationKey, string> = {
   "admin.newOpeningTime": "New opening time",
   "admin.save": "Save",
   "admin.settingsSaved": "Setting saved",
+
+  "admin.notifications.title": "Email notifications",
+  "admin.notifications.description": "Choose which events you want to receive email notifications about.",
+  "admin.notifications.userRegistration": "User registers or switches planter box",
+  "admin.notifications.adminBoxAction": "Another admin takes box actions",
 
   "admin.tab.registrations": "Registrations",
   "admin.tab.waitlist": "Waitlist",
