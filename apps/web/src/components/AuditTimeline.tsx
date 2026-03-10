@@ -2,6 +2,7 @@
 
 import { AUDIT_ACTIONS } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import type { TranslationKey } from "@/i18n/translations";
 import { colors, fonts } from "@/styles/theme";
 
 interface AuditEvent {
@@ -78,7 +79,7 @@ export function AuditTimeline({
             <option value="">{t("audit.allActions")}</option>
             {AUDIT_ACTIONS.map((a) => (
               <option key={a} value={a}>
-                {a}
+                {t(`audit.action.${a}` as TranslationKey)}
               </option>
             ))}
           </select>
@@ -127,7 +128,7 @@ export function AuditTimeline({
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     <code style={{ fontSize: "0.8rem", background: colors.parchment, color: colors.inkBrown, padding: "0.1rem 0.3rem", borderRadius: 3 }}>
-                      {evt.action}
+                      {t(`audit.action.${evt.action}` as TranslationKey)}
                     </code>
                   </td>
                   <td style={{ padding: "0.5rem" }}>
