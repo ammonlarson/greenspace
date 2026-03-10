@@ -18,7 +18,7 @@ const da = {
     "Beboere på UN17 Village kan tilmelde sig. Én plantekasse pr. lejlighed.",
   "status.contactInfo": "Kontakt",
 
-  "greenhouse.title": "Drivhuse",
+  "greenhouse.title": "Drivhuse - 2026 Tilmelding",
   "greenhouse.totalBoxes": "Plantekasser i alt",
   "greenhouse.available": "Ledige",
   "greenhouse.occupied": "Optaget",
@@ -356,7 +356,7 @@ const en: Record<TranslationKey, string> = {
     "Residents of UN17 Village are eligible. One planter box per apartment.",
   "status.contactInfo": "Contact",
 
-  "greenhouse.title": "Greenhouses",
+  "greenhouse.title": "Greenhouses - 2026 Registration",
   "greenhouse.totalBoxes": "Total boxes",
   "greenhouse.available": "Available",
   "greenhouse.occupied": "Occupied",
