@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BoxState } from "@greenspace/shared";
 import {
   ELIGIBLE_STREET,
@@ -22,6 +22,9 @@ import {
   tableRowStyle,
   tableCellStyle,
 } from "@/styles/theme";
+import { useTableControls } from "@/hooks/useTableControls";
+import { TableControls } from "./TableControls";
+import { SortableHeader } from "./SortableHeader";
 import { BOX_STATE_COLORS } from "./boxStateColors";
 import { NotificationComposer, type NotificationValue } from "./NotificationComposer";
 
@@ -86,6 +89,50 @@ export function AdminBoxes() {
   const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
   const [addNotification, setAddNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [addErrors, setAddErrors] = useState<string[]>([]);
+
+  const stateOptions = useMemo(() => {
+    const states = [...new Set(boxes.map((b) => b.state))];
+    return [
+      { label: t("admin.table.allStates"), value: "__all__" },
+      ...states.map((s) => ({ label: t(`map.state.${s}`), value: s })),
+    ];
+  }, [boxes, t]);
+
+  const greenhouseOptions = useMemo(() => {
+    const ghs = [...new Set(boxes.map((b) => b.greenhouse))];
+    return [
+      { label: t("admin.table.allGreenhouses"), value: "__all__" },
+      ...ghs.map((g) => ({ label: g, value: g })),
+    ];
+  }, [boxes, t]);
+
+  const boxesWithSearchField = useMemo(
+    () => boxes.map((b) => ({
+      ...b,
+      _searchText: [b.name, b.registration?.name, b.registration?.email].filter(Boolean).join(" "),
+    })),
+    [boxes]
+  );
+
+  const {
+    sort,
+    toggleSort,
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilter,
+    clearAll,
+    hasActiveControls,
+    processedData: filteredBoxes,
+  } = useTableControls({
+    data: boxesWithSearchField,
+    defaultSort: { key: "id", direction: "asc" },
+    searchableFields: ["name", "_searchText"],
+    filterConfigs: [
+      { key: "state", allValue: "__all__" },
+      { key: "greenhouse", allValue: "__all__" },
+    ],
+  });
 
   const fetchBoxes = useCallback(async () => {
     try {
@@ -585,11 +632,39 @@ export function AdminBoxes() {
         </div>
       )}
 
-      {greenhouses.map((gh) => {
-        const ghBoxes = boxes.filter((b) => b.greenhouse === gh);
-        const available = ghBoxes.filter((b) => b.state === "available").length;
-        const occupied = ghBoxes.filter((b) => b.state === "occupied").length;
-        const reserved = ghBoxes.filter((b) => b.state === "reserved").length;
+      <TableControls
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        filters={[
+          {
+            key: "state",
+            label: t("admin.boxes.state"),
+            options: stateOptions,
+            value: filters["state"],
+            onChange: (v) => setFilter("state", v),
+          },
+          {
+            key: "greenhouse",
+            label: t("admin.boxes.greenhouse"),
+            options: greenhouseOptions,
+            value: filters["greenhouse"],
+            onChange: (v) => setFilter("greenhouse", v),
+          },
+        ]}
+        hasActiveControls={hasActiveControls}
+        onClearAll={clearAll}
+        resultCount={filteredBoxes.length}
+        totalCount={boxes.length}
+      />
+
+      {greenhouses
+        .filter((gh) => filteredBoxes.some((b) => b.greenhouse === gh))
+        .map((gh) => {
+        const ghBoxes = filteredBoxes.filter((b) => b.greenhouse === gh);
+        const allGhBoxes = boxes.filter((b) => b.greenhouse === gh);
+        const available = allGhBoxes.filter((b) => b.state === "available").length;
+        const occupied = allGhBoxes.filter((b) => b.state === "occupied").length;
+        const reserved = allGhBoxes.filter((b) => b.state === "reserved").length;
 
         return (
           <div key={gh} style={{ marginBottom: "2rem" }}>
@@ -603,9 +678,9 @@ export function AdminBoxes() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem" }}>
                 <thead>
                   <tr>
-                    <th style={tableHeaderStyle}>{t("admin.boxes.id")}</th>
-                    <th style={tableHeaderStyle}>{t("admin.boxes.name")}</th>
-                    <th style={tableHeaderStyle}>{t("admin.boxes.state")}</th>
+                    <SortableHeader label={t("admin.boxes.id")} sortKey="id" sort={sort} onToggle={toggleSort} style={{ padding: "0.5rem 0.75rem" }} />
+                    <SortableHeader label={t("admin.boxes.name")} sortKey="name" sort={sort} onToggle={toggleSort} style={{ padding: "0.5rem 0.75rem" }} />
+                    <SortableHeader label={t("admin.boxes.state")} sortKey="state" sort={sort} onToggle={toggleSort} style={{ padding: "0.5rem 0.75rem" }} />
                     <th style={tableHeaderStyle}>{t("admin.boxes.actions")}</th>
                   </tr>
                 </thead>

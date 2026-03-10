@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ELIGIBLE_STREET,
   HOUSE_NUMBER_MIN,
@@ -11,6 +11,9 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
 import { colors, fonts, shadows, alertError } from "@/styles/theme";
+import { useTableControls } from "@/hooks/useTableControls";
+import { TableControls } from "./TableControls";
+import { SortableHeader } from "./SortableHeader";
 import { NotificationComposer } from "./NotificationComposer";
 
 interface Registration {
@@ -139,6 +142,31 @@ export function AdminRegistrations() {
   function closeDialog() {
     setActiveDialog(null);
   }
+
+  const statusOptions = useMemo(() => {
+    const statuses = [...new Set(registrations.map((r) => r.status))];
+    return [
+      { label: t("admin.table.allStatuses"), value: "__all__" },
+      ...statuses.map((s) => ({ label: s, value: s })),
+    ];
+  }, [registrations, t]);
+
+  const {
+    sort,
+    toggleSort,
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilter,
+    clearAll,
+    hasActiveControls,
+    processedData: filteredRegistrations,
+  } = useTableControls({
+    data: registrations,
+    defaultSort: { key: "created_at", direction: "desc" },
+    searchableFields: ["name", "email", "apartment_key"],
+    filterConfigs: [{ key: "status", allValue: "__all__" }],
+  });
 
   const parsedAddHouseNumber = parseInt(addHouseNumber, 10);
   const addNeedsUnitFields = !isNaN(parsedAddHouseNumber) && isFloorDoorRequired(parsedAddHouseNumber);
@@ -608,6 +636,24 @@ export function AdminRegistrations() {
           {t("admin.registrations.noRegistrations")}
         </p>
       ) : (
+        <>
+        <TableControls
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={[
+            {
+              key: "status",
+              label: t("admin.registrations.status"),
+              options: statusOptions,
+              value: filters["status"],
+              onChange: (v) => setFilter("status", v),
+            },
+          ]}
+          hasActiveControls={hasActiveControls}
+          onClearAll={clearAll}
+          resultCount={filteredRegistrations.length}
+          totalCount={registrations.length}
+        />
         <div style={{ overflowX: "auto" }}>
           <table
             style={{
@@ -617,18 +663,18 @@ export function AdminRegistrations() {
             }}
           >
             <thead>
-              <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.name")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.email")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.box")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.apartment")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.status")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.date")}</th>
-                <th style={{ padding: "0.5rem" }}>{t("admin.registrations.actions")}</th>
+              <tr style={{ textAlign: "left" }}>
+                <SortableHeader label={t("admin.registrations.name")} sortKey="name" sort={sort} onToggle={toggleSort} />
+                <SortableHeader label={t("admin.registrations.email")} sortKey="email" sort={sort} onToggle={toggleSort} />
+                <SortableHeader label={t("admin.registrations.box")} sortKey="box_id" sort={sort} onToggle={toggleSort} />
+                <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}` }}>{t("admin.registrations.apartment")}</th>
+                <SortableHeader label={t("admin.registrations.status")} sortKey="status" sort={sort} onToggle={toggleSort} />
+                <SortableHeader label={t("admin.registrations.date")} sortKey="created_at" sort={sort} onToggle={toggleSort} />
+                <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}` }}>{t("admin.registrations.actions")}</th>
               </tr>
             </thead>
             <tbody>
-              {registrations.map((reg) => (
+              {filteredRegistrations.map((reg) => (
                 <tr key={reg.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem" }}>{reg.name}</td>
                   <td style={{ padding: "0.5rem" }}>{reg.email}</td>
@@ -697,6 +743,7 @@ export function AdminRegistrations() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </section>
   );
