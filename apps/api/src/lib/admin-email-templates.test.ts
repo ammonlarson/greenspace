@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAdminNotification } from "./admin-email-templates.js";
+import { buildAdminNotification, buildBulkEmailTemplate, wrapEmailHtml } from "./admin-email-templates.js";
 import type { NotificationPreviewInput } from "./admin-email-templates.js";
 
 const baseInput: NotificationPreviewInput = {
@@ -179,5 +179,72 @@ describe("buildAdminNotification — unknown box", () => {
     const result = buildAdminNotification({ ...baseInput, boxId: 999 });
     expect(result.bodyHtml).toContain("#999");
     expect(result.bodyHtml).toContain("Unknown");
+  });
+});
+
+describe("buildBulkEmailTemplate", () => {
+  it("returns Danish template", () => {
+    const result = buildBulkEmailTemplate("da");
+    expect(result).toContain("Kære beboer,");
+    expect(result).toContain("Skriv dit budskab her...");
+    expect(result).toContain("Med venlig hilsen,");
+    expect(result).toContain("UN17 Village Taghaver-teamet");
+  });
+
+  it("returns English template", () => {
+    const result = buildBulkEmailTemplate("en");
+    expect(result).toContain("Dear resident,");
+    expect(result).toContain("Write your message here...");
+    expect(result).toContain("Best regards,");
+    expect(result).toContain("The UN17 Village Rooftop Gardens Team");
+  });
+
+  it("returns valid HTML with paragraph tags", () => {
+    const result = buildBulkEmailTemplate("da");
+    expect(result).toContain("<p");
+    expect(result).toContain("</p>");
+  });
+});
+
+describe("wrapEmailHtml", () => {
+  it("wraps content with DOCTYPE and html structure", () => {
+    const result = wrapEmailHtml("da", "Test Subject", "<p>Hello</p>");
+    expect(result).toContain("<!DOCTYPE html>");
+    expect(result).toContain("</html>");
+  });
+
+  it("sets correct lang attribute", () => {
+    const da = wrapEmailHtml("da", "Emne", "<p>Hej</p>");
+    expect(da).toContain('lang="da"');
+
+    const en = wrapEmailHtml("en", "Subject", "<p>Hi</p>");
+    expect(en).toContain('lang="en"');
+  });
+
+  it("includes green header with project name", () => {
+    const result = wrapEmailHtml("en", "Test", "<p>Body</p>");
+    expect(result).toContain("UN17 Village Rooftop Gardens");
+    expect(result).toContain("#2e7d32");
+  });
+
+  it("includes footer", () => {
+    const result = wrapEmailHtml("en", "Test", "<p>Body</p>");
+    expect(result).toContain("UN17 Hub");
+  });
+
+  it("includes the content html in the body", () => {
+    const result = wrapEmailHtml("en", "Test", "<p>Custom content here</p>");
+    expect(result).toContain("<p>Custom content here</p>");
+  });
+
+  it("escapes subject in title tag", () => {
+    const result = wrapEmailHtml("en", '<script>alert("xss")</script>', "<p>Body</p>");
+    expect(result).not.toContain("<script>alert");
+    expect(result).toContain("&lt;script&gt;");
+  });
+
+  it("includes subject in the title element", () => {
+    const result = wrapEmailHtml("en", "My Newsletter", "<p>Body</p>");
+    expect(result).toContain("<title>My Newsletter</title>");
   });
 });

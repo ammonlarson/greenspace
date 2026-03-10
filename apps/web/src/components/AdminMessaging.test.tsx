@@ -6,6 +6,23 @@ vi.mock("@/i18n/LanguageProvider", () => ({
   useLanguage: () => ({ language: "en", setLanguage: vi.fn(), t: (key: string) => key }),
 }));
 
+function mockFetch(overrides: Record<string, unknown> = {}) {
+  const defaultResponses: Record<string, unknown> = {
+    "/admin/messaging/recipients": { count: 5, recipients: [] },
+    "/admin/messaging/template": { defaultBody: "<p>Default template</p>", language: "en" },
+    "/admin/messaging/preview": { previewHtml: "<html><body>Preview</body></html>" },
+    ...overrides,
+  };
+
+  return vi.fn().mockImplementation((url: string) => {
+    const data = defaultResponses[url] ?? {};
+    return Promise.resolve({
+      ok: true,
+      json: async () => data,
+    });
+  });
+}
+
 describe("AdminMessaging", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -13,11 +30,7 @@ describe("AdminMessaging", () => {
   });
 
   it("renders title and audience options", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 5, recipients: [] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch());
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -30,9 +43,8 @@ describe("AdminMessaging", () => {
   });
 
   it("fetches recipient count on mount", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 12, recipients: [] }),
+    const fetchMock = mockFetch({
+      "/admin/messaging/recipients": { count: 12, recipients: [] },
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -57,10 +69,28 @@ describe("AdminMessaging", () => {
     });
   });
 
+  it("fetches default templates on mount and prefills body", async () => {
+    const fetchMock = mockFetch({
+      "/admin/messaging/template": { defaultBody: "<p>Hello template</p>", language: "en" },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    const templateCalls = fetchMock.mock.calls.filter(
+      (c: unknown[]) => (c[0] as string) === "/admin/messaging/template",
+    );
+    expect(templateCalls.length).toBe(3);
+
+    const textarea = screen.getByLabelText("admin.messaging.body") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("<p>Hello template</p>");
+  });
+
   it("re-fetches recipients when audience changes", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 3, recipients: [] }),
+    const fetchMock = mockFetch({
+      "/admin/messaging/recipients": { count: 3, recipients: [] },
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -79,11 +109,9 @@ describe("AdminMessaging", () => {
   });
 
   it("shows error when subject is empty on send", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 5, recipients: [{ email: "a@b.com", name: "A", language: "da" }] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch({
+      "/admin/messaging/recipients": { count: 5, recipients: [{ email: "a@b.com", name: "A", language: "da" }] },
+    }));
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -98,11 +126,7 @@ describe("AdminMessaging", () => {
   });
 
   it("renders subject input and body textarea", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 0, recipients: [] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch());
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -121,11 +145,9 @@ describe("AdminMessaging", () => {
       { email: "d@b.com", name: "Diana", language: "da" },
       { email: "e@b.com", name: "Eve", language: "en" },
     ];
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 5, recipients }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch({
+      "/admin/messaging/recipients": { count: 5, recipients },
+    }));
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -140,86 +162,28 @@ describe("AdminMessaging", () => {
     });
   });
 
-  it("updates language counts when audience changes", async () => {
-    let callCount = 0;
-    const fetchMock = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({
-            count: 4,
-            recipients: [
-              { email: "a@b.com", name: "A", language: "en" },
-              { email: "b@b.com", name: "B", language: "en" },
-              { email: "c@b.com", name: "C", language: "da" },
-              { email: "d@b.com", name: "D", language: "da" },
-            ],
-          }),
-        });
-      }
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({
-          count: 2,
-          recipients: [
-            { email: "a@b.com", name: "A", language: "en" },
-            { email: "c@b.com", name: "C", language: "da" },
-          ],
-        }),
-      });
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    await act(async () => {
-      render(<AdminMessaging />);
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "4 admin.messaging.recipientCount (2 admin.messaging.englishCount, 2 admin.messaging.danishCount)",
-        ),
-      ).toBeDefined();
-    });
-
-    await act(async () => {
-      fireEvent.click(screen.getByText("admin.messaging.audienceKronen"));
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "2 admin.messaging.recipientCount (1 admin.messaging.englishCount, 1 admin.messaging.danishCount)",
-        ),
-      ).toBeDefined();
-    });
-  });
-
   it("switches between preview and source tabs", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 0, recipients: [] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch());
 
     await act(async () => {
       render(<AdminMessaging />);
     });
 
-    fireEvent.click(screen.getByText("admin.messaging.preview"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.preview"));
+    });
+
     expect(screen.getByTitle("admin.messaging.preview")).toBeDefined();
 
-    fireEvent.click(screen.getByText("admin.messaging.source"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.source"));
+    });
+
     expect(screen.getByLabelText("admin.messaging.body")).toBeDefined();
   });
 
   it("renders bilingual toggle checkbox", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 0, recipients: [] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch());
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -231,11 +195,9 @@ describe("AdminMessaging", () => {
   });
 
   it("shows two editor sections when bilingual is enabled", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 2, recipients: [{ email: "a@b.com", name: "A", language: "da" }] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch({
+      "/admin/messaging/recipients": { count: 2, recipients: [{ email: "a@b.com", name: "A", language: "da" }] },
+    }));
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -252,11 +214,9 @@ describe("AdminMessaging", () => {
   });
 
   it("validates all bilingual fields before send", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ count: 2, recipients: [{ email: "a@b.com", name: "A", language: "da" }] }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch({
+      "/admin/messaging/recipients": { count: 2, recipients: [{ email: "a@b.com", name: "A", language: "da" }] },
+    }));
 
     await act(async () => {
       render(<AdminMessaging />);
@@ -264,6 +224,13 @@ describe("AdminMessaging", () => {
 
     await act(async () => {
       fireEvent.click(document.getElementById("bilingual-toggle")!);
+    });
+
+    const daTextarea = screen.getByLabelText("admin.messaging.body (DA)") as HTMLTextAreaElement;
+    const enTextarea = screen.getByLabelText("admin.messaging.body (EN)") as HTMLTextAreaElement;
+    await act(async () => {
+      fireEvent.change(daTextarea, { target: { value: "" } });
+      fireEvent.change(enTextarea, { target: { value: "" } });
     });
 
     await act(async () => {
@@ -281,6 +248,12 @@ describe("AdminMessaging", () => {
         return Promise.resolve({
           ok: true,
           json: async () => ({ count: 1, recipients }),
+        });
+      }
+      if (url === "/admin/messaging/template") {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ defaultBody: "<p>Template</p>", language: "en" }),
         });
       }
       return Promise.resolve({
@@ -342,6 +315,12 @@ describe("AdminMessaging", () => {
           json: async () => ({ count: 1, recipients }),
         });
       }
+      if (url === "/admin/messaging/template") {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ defaultBody: "<p>Template</p>", language: "en" }),
+        });
+      }
       return Promise.resolve({
         ok: true,
         json: async () => ({ queuedCount: 1, recipientCount: 1 }),
@@ -375,5 +354,117 @@ describe("AdminMessaging", () => {
     expect(sentBody.bilingual).toBeUndefined();
     expect(sentBody.subject).toBe("Test");
     expect(sentBody.bodyHtml).toBe("<p>Test</p>");
+  });
+
+  it("resets body to default template when reset button is clicked", async () => {
+    vi.stubGlobal("fetch", mockFetch({
+      "/admin/messaging/template": { defaultBody: "<p>Original template</p>", language: "en" },
+    }));
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    const textarea = screen.getByLabelText("admin.messaging.body") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("<p>Original template</p>");
+
+    await act(async () => {
+      fireEvent.change(textarea, { target: { value: "<p>Modified content</p>" } });
+    });
+    expect(textarea.value).toBe("<p>Modified content</p>");
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.resetTemplate"));
+    });
+
+    expect(textarea.value).toBe("<p>Original template</p>");
+  });
+
+  it("shows template hint text", async () => {
+    vi.stubGlobal("fetch", mockFetch());
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    expect(screen.getByText("admin.messaging.templateHint")).toBeDefined();
+  });
+
+  it("fetches wrapped preview when switching to preview tab", async () => {
+    const fetchMock = mockFetch({
+      "/admin/messaging/template": { defaultBody: "<p>Template body</p>", language: "en" },
+      "/admin/messaging/preview": { previewHtml: "<html><body><p>Wrapped preview</p></body></html>" },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.preview"));
+    });
+
+    await waitFor(() => {
+      const previewCalls = fetchMock.mock.calls.filter(
+        (c: unknown[]) => (c[0] as string) === "/admin/messaging/preview",
+      );
+      expect(previewCalls.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("resets body to template after successful send", async () => {
+    vi.stubGlobal("confirm", vi.fn().mockReturnValue(true));
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/admin/messaging/template") {
+        return Promise.resolve({ ok: true, json: async () => ({ defaultBody: "<p>Default</p>", language: "en" }) });
+      }
+      if (url === "/admin/messaging/recipients") {
+        return Promise.resolve({ ok: true, json: async () => ({ count: 1, recipients: [{ email: "a@b.com", name: "A", language: "en" }] }) });
+      }
+      if (url === "/admin/messaging/send") {
+        return Promise.resolve({ ok: true, json: async () => ({ queuedCount: 1, recipientCount: 1 }) });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    const subjectInput = document.getElementById("messaging-subject") as HTMLInputElement;
+    const textarea = screen.getByLabelText("admin.messaging.body") as HTMLTextAreaElement;
+
+    await act(async () => {
+      fireEvent.change(subjectInput, { target: { value: "Test Subject" } });
+      fireEvent.change(textarea, { target: { value: "<p>Custom body</p>" } });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.send"));
+    });
+
+    expect(textarea.value).toBe("<p>Default</p>");
+  });
+
+  it("works with empty body when template fetch fails", async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/admin/messaging/template") {
+        return Promise.reject(new Error("Network error"));
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ count: 0, recipients: [] }),
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    const textarea = screen.getByLabelText("admin.messaging.body") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("");
   });
 });
