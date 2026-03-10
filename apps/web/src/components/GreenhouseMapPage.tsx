@@ -185,7 +185,7 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
             >
               {t("waitlist.joinButton")}
             </button>
-            {otherHasAvailable && onSelectGreenhouse && (
+            {otherHasAvailable && onSelectGreenhouse && otherGreenhouse && (
               <div
                 style={{
                   marginTop: "1rem",
@@ -194,11 +194,11 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
                 }}
               >
                 <p style={{ margin: "0 0 0.5rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
-                  {t("waitlist.otherAvailable").replace("{greenhouse}", otherGreenhouse!.name)}
+                  {t("waitlist.otherAvailable").replace("{greenhouse}", otherGreenhouse.name)}
                 </p>
                 <button
                   type="button"
-                  onClick={() => onSelectGreenhouse(otherGreenhouse!.name)}
+                  onClick={() => onSelectGreenhouse(otherGreenhouse.name)}
                   style={{
                     padding: "0.5rem 1rem",
                     background: colors.sage,
@@ -211,7 +211,7 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
                     fontWeight: 600,
                   }}
                 >
-                  {t("waitlist.goToOther").replace("{greenhouse}", otherGreenhouse!.name)}
+                  {t("waitlist.goToOther").replace("{greenhouse}", otherGreenhouse.name)}
                 </button>
               </div>
             )}
