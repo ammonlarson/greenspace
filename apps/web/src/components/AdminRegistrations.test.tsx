@@ -114,6 +114,17 @@ describe("AdminRegistrations", () => {
       expect(screen.getByText("admin.registrations.noRegistrations")).toBeDefined();
     });
 
+    it("shows greenhouse column with correct values from BOX_CATALOG", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      expect(screen.getByText("admin.registrations.greenhouse")).toBeDefined();
+      expect(screen.getByText("Kronen")).toBeDefined();
+    });
+
     it("shows move and remove buttons for active registrations only", async () => {
       vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
 
