@@ -19,7 +19,12 @@ import {
   handleNotificationPreview,
   handleRemoveRegistration,
 } from "./routes/admin/registrations.js";
-import { handleGetRecipients, handleSendBulkEmail } from "./routes/admin/messaging.js";
+import {
+  handleGetBulkEmailTemplate,
+  handleBulkEmailPreview,
+  handleGetRecipients,
+  handleSendBulkEmail,
+} from "./routes/admin/messaging.js";
 import {
   handleGetOpeningTime,
   handleUpdateOpeningTime,
@@ -80,6 +85,8 @@ export function createRouter(): Router {
   router.get("/admin/waitlist", requireAdmin(handleListWaitlist));
   router.post("/admin/waitlist/assign", requireAdmin(handleAssignWaitlist));
   router.post("/admin/notifications/preview", requireAdmin(handleNotificationPreview));
+  router.post("/admin/messaging/template", requireAdmin(handleGetBulkEmailTemplate));
+  router.post("/admin/messaging/preview", requireAdmin(handleBulkEmailPreview));
   router.post("/admin/messaging/recipients", requireAdmin(handleGetRecipients));
   router.post("/admin/messaging/send", requireAdmin(handleSendBulkEmail));
   router.post("/admin/audit-events", requireAdmin(handleListAuditEvents));
