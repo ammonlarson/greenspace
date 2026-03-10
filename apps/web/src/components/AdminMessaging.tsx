@@ -36,7 +36,7 @@ export function AdminMessaging() {
     let da = 0;
     for (const r of recipientInfo.recipients) {
       if (r.language === "en") en++;
-      else da++;
+      else if (r.language === "da") da++;
     }
     return { en, da };
   }, [recipientInfo]);
