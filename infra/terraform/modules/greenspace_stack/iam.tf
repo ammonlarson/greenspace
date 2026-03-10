@@ -151,15 +151,6 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
   }
 
   statement {
-    sid    = "CloudFrontInvalidation"
-    effect = "Allow"
-    actions = [
-      "cloudfront:CreateInvalidation",
-    ]
-    resources = var.cloudfront_distribution_arns
-  }
-
-  statement {
     sid    = "AmplifyDeploy"
     effect = "Allow"
     actions = [
