@@ -60,9 +60,6 @@ module "greenspace_stack" {
 
   alarm_email = "ammonl@hotmail.com"
 
-  # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
-  cloudfront_distribution_arns = ["arn:aws:cloudfront::222222222222:distribution/PROD_DIST_ID"]
-
   amplify_github_access_token     = var.amplify_github_access_token
   amplify_branch_name             = "main"
   amplify_enable_auto_build       = false
