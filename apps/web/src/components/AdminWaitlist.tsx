@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BOX_CATALOG } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate } from "@/utils/formatDate";
+import { formatDateTime } from "@/utils/formatDate";
 import { colors, fonts, shadows, alertWarning } from "@/styles/theme";
 import { useTableControls } from "@/hooks/useTableControls";
 import { TableControls } from "./TableControls";
@@ -29,6 +29,10 @@ interface DuplicateExisting {
   boxId: number;
   name: string;
   email: string;
+}
+
+function formatBoxLabel(box: { id: number; name: string; greenhouse: string }): string {
+  return `${box.greenhouse} - ${box.name}`;
 }
 
 export function AdminWaitlist() {
@@ -196,14 +200,13 @@ export function AdminWaitlist() {
             >
               {t("admin.waitlist.assignBoxId")}
             </label>
-            <input
+            <select
               id="assign-box-id"
-              type="number"
               value={assignBoxId}
               onChange={(e) => setAssignBoxId(e.target.value)}
               style={{
                 width: "100%",
-                maxWidth: 200,
+                maxWidth: 300,
                 padding: "0.4rem",
                 border: `1px solid ${colors.borderTan}`,
                 borderRadius: 4,
@@ -212,7 +215,14 @@ export function AdminWaitlist() {
                 color: colors.inkBrown,
                 boxSizing: "border-box",
               }}
-            />
+            >
+              <option value="">{t("admin.waitlist.selectBox")}</option>
+              {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
+                <option key={box.id} value={String(box.id)}>
+                  {formatBoxLabel(box)}
+                </option>
+              ))}
+            </select>
           </div>
 
           {assignBoxId && Number(assignBoxId) > 0 && (
@@ -378,7 +388,7 @@ export function AdminWaitlist() {
                     </span>
                   </td>
                   <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>
-                    {formatDate(entry.created_at, language)}
+                    {formatDateTime(entry.created_at, language)}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {entry.status === "waiting" && (

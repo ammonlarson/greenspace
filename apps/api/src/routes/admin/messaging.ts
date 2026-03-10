@@ -98,6 +98,23 @@ interface SendBulkEmailBody {
   audience?: string;
   subject?: string;
   bodyHtml?: string;
+  bilingual?: boolean;
+  subjectDa?: string;
+  bodyHtmlDa?: string;
+  subjectEn?: string;
+  bodyHtmlEn?: string;
+}
+
+function resolveEmailContent(
+  body: SendBulkEmailBody,
+  recipientLanguage: "da" | "en",
+): { subject: string; bodyHtml: string } {
+  if (body.bilingual) {
+    return recipientLanguage === "en"
+      ? { subject: body.subjectEn!, bodyHtml: body.bodyHtmlEn! }
+      : { subject: body.subjectDa!, bodyHtml: body.bodyHtmlDa! };
+  }
+  return { subject: body.subject!, bodyHtml: body.bodyHtml! };
 }
 
 export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteResponse> {
@@ -107,18 +124,32 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
   }
 
   const body = (ctx.body ?? {}) as SendBulkEmailBody;
-  const { audience, subject, bodyHtml } = body;
+  const { audience } = body;
 
   if (!audience || !VALID_AUDIENCES.has(audience)) {
     throw badRequest("audience must be one of: all, kronen, søen");
   }
 
-  if (!subject || subject.trim().length === 0) {
-    throw badRequest("subject is required");
-  }
-
-  if (!bodyHtml || bodyHtml.trim().length === 0) {
-    throw badRequest("bodyHtml is required");
+  if (body.bilingual) {
+    if (!body.subjectDa || body.subjectDa.trim().length === 0) {
+      throw badRequest("subjectDa is required in bilingual mode");
+    }
+    if (!body.bodyHtmlDa || body.bodyHtmlDa.trim().length === 0) {
+      throw badRequest("bodyHtmlDa is required in bilingual mode");
+    }
+    if (!body.subjectEn || body.subjectEn.trim().length === 0) {
+      throw badRequest("subjectEn is required in bilingual mode");
+    }
+    if (!body.bodyHtmlEn || body.bodyHtmlEn.trim().length === 0) {
+      throw badRequest("bodyHtmlEn is required in bilingual mode");
+    }
+  } else {
+    if (!body.subject || body.subject.trim().length === 0) {
+      throw badRequest("subject is required");
+    }
+    if (!body.bodyHtml || body.bodyHtml.trim().length === 0) {
+      throw badRequest("bodyHtml is required");
+    }
   }
 
   const recipients = await queryRecipients(ctx, audience as Audience);
@@ -131,11 +162,14 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
   let queueFailedCount = 0;
 
   for (const recipient of recipients) {
+    const lang = recipient.language as "da" | "en";
+    const content = resolveEmailContent(body, lang);
+
     const emailId = await queueAndSendEmail(ctx.db, {
       recipientEmail: recipient.email,
-      language: recipient.language as "da" | "en",
-      subject,
-      bodyHtml,
+      language: lang,
+      subject: content.subject,
+      bodyHtml: content.bodyHtml,
     });
 
     if (emailId) {
@@ -145,6 +179,10 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
     }
   }
 
+  const auditSubject = body.bilingual
+    ? `[DA] ${body.subjectDa} / [EN] ${body.subjectEn}`
+    : body.subject;
+
   await logAuditEvent(ctx.db, {
     actor_type: "admin",
     actor_id: adminId,
@@ -153,14 +191,15 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
     entity_id: `bulk-${Date.now()}`,
     after: {
       audience,
+      bilingual: body.bilingual ?? false,
       recipient_count: recipients.length,
       queued_count: queuedCount,
       queue_failed_count: queueFailedCount,
-      subject,
+      subject: auditSubject,
     },
   });
 
-  logger.info(`Bulk email sent: audience=${audience}, queued=${queuedCount}, queue_failed=${queueFailedCount}`);
+  logger.info(`Bulk email sent: audience=${audience}, bilingual=${body.bilingual ?? false}, queued=${queuedCount}, queue_failed=${queueFailedCount}`);
 
   return {
     statusCode: 200,

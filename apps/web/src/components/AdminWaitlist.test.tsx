@@ -9,6 +9,7 @@ vi.mock("@/i18n/LanguageProvider", () => ({
 
 vi.mock("@/utils/formatDate", () => ({
   formatDate: (iso: string) => iso,
+  formatDateTime: (iso: string) => iso,
 }));
 
 vi.mock("./NotificationComposer", () => ({

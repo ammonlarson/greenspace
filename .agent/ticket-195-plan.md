@@ -1,29 +1,25 @@
-# Ticket 195: Hide contact email addresses, keep names clickable
+# Ticket #195 - Restore PR #179 changes overwritten by PR #191
 
 ## Analysis
 
-**Current state**: Contact sections across the app display organizer names alongside their raw email addresses (e.g., "Elise Larson – elise7284@gmail.com" or "Elise Larson (elise7284@gmail.com)"). The email text is visible in both the web UI and HTML email templates.
+PR #179 converted box ID inputs from `<input type="number">` to `<select>` dropdowns using `BOX_CATALOG` in the admin add-registration and move-registration flows. PR #191 (visual redesign) inadvertently reverted these changes back to plain number inputs.
 
-**Target state**: Contact names remain clickable (via `mailto:` links) but raw email addresses are no longer visibly displayed. Users can still initiate contact by clicking the name.
-
-**Approach**: In every location where `ORGANIZER_CONTACTS` is rendered, change the display to show only the contact name as a clickable `mailto:` link, removing the visible email text.
+**Current state**: Box ID fields are `<input type="number">` in both add and move dialogs.
+**Target state**: Box ID fields are `<select>` dropdowns populated from `BOX_CATALOG` with standardized labels.
 
 ## Task Checklist
 
-- [ ] Update `PreOpenPage.tsx` – remove email text, keep name as mailto link
-- [ ] Update `RegistrationForm.tsx` – remove email text from consent section
-- [ ] Update `WaitlistForm.tsx` – remove email text from consent section
-- [ ] Update `email-templates.ts` – remove email text from confirmation emails
-- [ ] Update `admin-email-templates.ts` – remove email text from admin notification emails
-- [ ] Run tests, lint, and build
+- [x] Add `BOX_CATALOG` import to AdminRegistrations.tsx
+- [x] Add `formatBoxLabel` helper function
+- [x] Replace add-box-id `<input>` with `<select>` dropdown
+- [x] Replace move-new-box-id `<input>` with `<select>` dropdown
+- [x] Add missing dropdown tests to AdminRegistrations.test.tsx
+- [x] Run tests, lint, build
 
 ## Implementation Summary
 
 **Files to modify:**
-1. `apps/web/src/components/PreOpenPage.tsx` (lines 88-93)
-2. `apps/web/src/components/RegistrationForm.tsx` (lines 295-300)
-3. `apps/web/src/components/WaitlistForm.tsx` (lines 197-202)
-4. `apps/api/src/lib/email-templates.ts` (lines 172-175)
-5. `apps/api/src/lib/admin-email-templates.ts` (lines 114-117)
+- `apps/web/src/components/AdminRegistrations.tsx` - Restore dropdown UI
+- `apps/web/src/components/AdminRegistrations.test.tsx` - Restore dropdown tests
 
-**Estimated impact**: Minimal – cosmetic change to contact display. No logic, validation, or data model changes.
+**Estimated impact**: Low - UI-only change, no backend changes needed.

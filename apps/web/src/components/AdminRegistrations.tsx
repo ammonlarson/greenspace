@@ -62,6 +62,10 @@ const requiredLabelStyle: React.CSSProperties = {
   color: colors.warmBrown,
 };
 
+function formatBoxLabel(box: { id: number; name: string; greenhouse: string }): string {
+  return `${box.greenhouse} - ${box.name}`;
+}
+
 const dialogStyle: React.CSSProperties = {
   border: `1px solid ${colors.borderTan}`,
   borderRadius: 8,
@@ -404,7 +408,14 @@ export function AdminRegistrations() {
             )}
             <div>
               <label htmlFor="add-box-id" style={requiredLabelStyle}>{t("admin.registrations.addBoxId")} *</label>
-              <input id="add-box-id" type="number" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle} />
+              <select id="add-box-id" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle}>
+                <option value="">{t("admin.registrations.selectBox")}</option>
+                {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
+                  <option key={box.id} value={String(box.id)}>
+                    {formatBoxLabel(box)}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label htmlFor="add-language" style={requiredLabelStyle}>{t("admin.registrations.addLanguage")} *</label>
@@ -493,13 +504,19 @@ export function AdminRegistrations() {
           </h3>
           <div style={{ marginBottom: "0.75rem" }}>
             <label htmlFor="move-new-box-id" style={labelStyle}>{t("admin.registrations.newBoxId")}</label>
-            <input
+            <select
               id="move-new-box-id"
-              type="number"
               value={moveNewBoxId}
               onChange={(e) => setMoveNewBoxId(e.target.value)}
-              style={{ ...inputStyle, maxWidth: 200 }}
-            />
+              style={{ ...inputStyle, maxWidth: 300 }}
+            >
+              <option value="">{t("admin.registrations.selectBox")}</option>
+              {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
+                <option key={box.id} value={String(box.id)}>
+                  {formatBoxLabel(box)}
+                </option>
+              ))}
+            </select>
           </div>
 
           {moveNewBoxId && Number(moveNewBoxId) > 0 && (
