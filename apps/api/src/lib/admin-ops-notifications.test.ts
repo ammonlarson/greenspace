@@ -148,16 +148,21 @@ describe("buildOpsNotificationEmail", () => {
 });
 
 describe("notifyAdmins", () => {
-  function makeMockDb(admins: { id: string; email: string }[], preferences: { admin_id: string; notify_user_registration: boolean; notify_admin_box_action: boolean }[] = []) {
-    const adminExecuteFn = vi.fn().mockResolvedValue(admins);
-    const adminSelectFn = vi.fn().mockReturnValue({ execute: adminExecuteFn });
+  function makeMockDb(
+    admins: { id: string; email: string }[],
+    preferences: { admin_id: string; notify_user_registration: boolean; notify_admin_box_action: boolean }[] = [],
+    prefColumn: "notify_user_registration" | "notify_admin_box_action" = "notify_user_registration",
+  ) {
+    const prefMap = new Map(preferences.map((p) => [p.admin_id, p]));
+    const joinedRows = admins.map((a) => {
+      const pref = prefMap.get(a.id);
+      return { id: a.id, email: a.email, pref: pref ? pref[prefColumn] : null };
+    });
 
-    const prefExecuteFn = vi.fn().mockResolvedValue(preferences);
-    const prefSelectFn = vi.fn().mockReturnValue({ execute: prefExecuteFn });
-
-    const selectFromFn = vi.fn()
-      .mockReturnValueOnce({ select: adminSelectFn })
-      .mockReturnValueOnce({ select: prefSelectFn });
+    const executeFn = vi.fn().mockResolvedValue(joinedRows);
+    const selectFn = vi.fn().mockReturnValue({ execute: executeFn });
+    const leftJoinFn = vi.fn().mockReturnValue({ select: selectFn });
+    const selectFromFn = vi.fn().mockReturnValue({ leftJoin: leftJoinFn });
 
     return { selectFrom: selectFromFn } as unknown as Kysely<Database>;
   }
@@ -224,7 +229,7 @@ describe("notifyAdmins", () => {
     const db = makeMockDb([
       { id: "admin-1", email: "admin1@test.com" },
       { id: "admin-2", email: "admin2@test.com" },
-    ]);
+    ], [], "notify_admin_box_action");
 
     await notifyAdmins(db, {
       type: "admin_box_reserve",
@@ -251,6 +256,7 @@ describe("notifyAdmins", () => {
       [
         { admin_id: "admin-2", notify_user_registration: true, notify_admin_box_action: false },
       ],
+      "notify_admin_box_action",
     );
 
     await notifyAdmins(db, {

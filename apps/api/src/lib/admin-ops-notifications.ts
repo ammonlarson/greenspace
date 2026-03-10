@@ -111,22 +111,24 @@ export async function notifyAdmins(
       ? "notify_user_registration" as const
       : "notify_admin_box_action" as const;
 
-    const admins = await db
+    const adminsWithPrefs = await db
       .selectFrom("admins")
-      .select(["id", "email"])
+      .leftJoin(
+        "admin_notification_preferences",
+        "admins.id",
+        "admin_notification_preferences.admin_id",
+      )
+      .select([
+        "admins.id",
+        "admins.email",
+        `admin_notification_preferences.${preferenceColumn} as pref`,
+      ])
       .execute();
-
-    const preferences = await db
-      .selectFrom("admin_notification_preferences")
-      .select(["admin_id", preferenceColumn])
-      .execute();
-
-    const prefMap = new Map(preferences.map((p) => [p.admin_id, p[preferenceColumn]]));
 
     // Look up the acting admin's email for the notification body
     let actingAdminEmail = "";
     if (!isUserEvent(event) && "actingAdminId" in event) {
-      const acting = admins.find((a) => a.id === event.actingAdminId);
+      const acting = adminsWithPrefs.find((a) => a.id === event.actingAdminId);
       actingAdminEmail = acting?.email ?? "";
     }
 
@@ -134,21 +136,25 @@ export async function notifyAdmins(
       actingAdminEmail ? { actingAdminEmail, event } : { event },
     );
 
-    for (const admin of admins) {
-      const optedIn = prefMap.get(admin.id) ?? true;
-      if (!optedIn) continue;
-
+    const recipients = adminsWithPrefs.filter((admin) => {
+      const optedIn = admin.pref ?? true;
+      if (!optedIn) return false;
       if (!isUserEvent(event) && "actingAdminId" in event && event.actingAdminId === admin.id) {
-        continue;
+        return false;
       }
+      return true;
+    });
 
-      await queueAndSendEmail(db, {
-        recipientEmail: admin.email,
-        language: "en",
-        subject,
-        bodyHtml,
-      });
-    }
+    await Promise.allSettled(
+      recipients.map((admin) =>
+        queueAndSendEmail(db, {
+          recipientEmail: admin.email,
+          language: "en",
+          subject,
+          bodyHtml,
+        }),
+      ),
+    );
   } catch (err) {
     logger.error("Failed to send admin ops notifications", err);
   }
