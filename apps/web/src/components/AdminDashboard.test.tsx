@@ -47,11 +47,11 @@ describe("AdminDashboard", () => {
     expect(screen.getByText("admin.tab.account")).toBeDefined();
   });
 
-  it("shows registrations tab by default", () => {
+  it("shows boxes tab by default", () => {
     const onLogout = vi.fn();
     render(<AdminDashboard onLogout={onLogout} />);
 
-    expect(screen.getByTestId("registrations")).toBeDefined();
+    expect(screen.getByTestId("boxes")).toBeDefined();
   });
 
   it("switches to account tab on click", () => {
