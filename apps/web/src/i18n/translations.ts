@@ -276,6 +276,13 @@ const da = {
   "admin.account.changePasswordButton": "Skift adgangskode",
   "admin.account.passwordChanged": "Adgangskode ændret",
   "admin.account.passwordMinLength": "Adgangskoden skal være mindst 8 tegn",
+
+  "admin.table.searchPlaceholder": "Søg...",
+  "admin.table.clearFilters": "Ryd filtre",
+  "admin.table.showing": "Viser",
+  "admin.table.allStatuses": "Alle statusser",
+  "admin.table.allStates": "Alle tilstande",
+  "admin.table.allGreenhouses": "Alle drivhuse",
 };
 
 export type TranslationKey = keyof typeof da;
@@ -556,6 +563,13 @@ const en: Record<TranslationKey, string> = {
   "admin.account.changePasswordButton": "Change password",
   "admin.account.passwordChanged": "Password changed",
   "admin.account.passwordMinLength": "Password must be at least 8 characters",
+
+  "admin.table.searchPlaceholder": "Search...",
+  "admin.table.clearFilters": "Clear filters",
+  "admin.table.showing": "Showing",
+  "admin.table.allStatuses": "All statuses",
+  "admin.table.allStates": "All states",
+  "admin.table.allGreenhouses": "All greenhouses",
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
