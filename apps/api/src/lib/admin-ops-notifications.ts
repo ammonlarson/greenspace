@@ -17,7 +17,7 @@ export type AdminOpsEvent =
 function boxLabel(boxId: number): string {
   const box = BOX_CATALOG.find((b) => b.id === boxId);
   if (box) return `${box.name} (${box.greenhouse})`;
-  return String(boxId);
+  return `Box ${boxId}`;
 }
 
 function escapeHtml(text: string): string {

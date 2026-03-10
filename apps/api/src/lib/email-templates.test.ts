@@ -110,7 +110,7 @@ describe("buildConfirmationEmail", () => {
 
   it("handles unknown box ID gracefully", () => {
     const result = buildConfirmationEmail({ ...baseData, boxId: 999 });
-    expect(result.bodyHtml).toContain("999");
+    expect(result.bodyHtml).toContain("Box 999");
     expect(result.bodyHtml).toContain("Unknown");
   });
 

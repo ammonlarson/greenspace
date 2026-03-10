@@ -242,7 +242,7 @@ export function AdminWaitlist() {
                 <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
                   {assignDuplicateWarning.map((r) => (
                     <li key={r.id}>
-                      {r.name} ({r.email}) — {t("admin.waitlist.box")} {BOX_CATALOG.find((b) => b.id === r.boxId)?.name ?? String(r.boxId)}
+                      {r.name} ({r.email}) — {t("admin.waitlist.box")} {BOX_CATALOG.find((b) => b.id === r.boxId)?.name ?? `Box ${r.boxId}`}
                     </li>
                   ))}
                 </ul>

@@ -679,7 +679,7 @@ export function AdminRegistrations() {
                 <tr key={reg.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem" }}>{reg.name}</td>
                   <td style={{ padding: "0.5rem" }}>{reg.email}</td>
-                  <td style={{ padding: "0.5rem" }}>{BOX_CATALOG.find((b) => b.id === reg.box_id)?.name ?? String(reg.box_id)}</td>
+                  <td style={{ padding: "0.5rem" }}>{BOX_CATALOG.find((b) => b.id === reg.box_id)?.name ?? `Box ${reg.box_id}`}</td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>{reg.apartment_key}</td>
                   <td style={{ padding: "0.5rem" }}>
                     <span

@@ -111,7 +111,7 @@ function escapeHtml(text: string): string {
 }
 
 function getBoxName(id: number): string {
-  return BOX_CATALOG.find((b) => b.id === id)?.name ?? String(id);
+  return BOX_CATALOG.find((b) => b.id === id)?.name ?? `Box ${id}`;
 }
 
 function buildGreenhouseMap(greenhouse: string, boxId: number): string {
@@ -150,7 +150,7 @@ function buildGreenhouseMap(greenhouse: string, boxId: number): string {
 export function buildConfirmationEmail(data: ConfirmationEmailData): EmailContent {
   const t = translations[data.language];
   const box = BOX_CATALOG.find((b) => b.id === data.boxId);
-  const boxName = box?.name ?? String(data.boxId);
+  const boxName = box?.name ?? `Box ${data.boxId}`;
   const greenhouse = box?.greenhouse ?? "Unknown";
 
   const switchedBox = data.switchedFromBoxId

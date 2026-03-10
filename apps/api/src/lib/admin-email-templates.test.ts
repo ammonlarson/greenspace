@@ -176,7 +176,7 @@ describe("buildAdminNotification — remove", () => {
 describe("buildAdminNotification — unknown box", () => {
   it("handles unknown box ID gracefully", () => {
     const result = buildAdminNotification({ ...baseInput, boxId: 999 });
-    expect(result.bodyHtml).toContain("999");
+    expect(result.bodyHtml).toContain("Box 999");
     expect(result.bodyHtml).toContain("Unknown");
   });
 });
