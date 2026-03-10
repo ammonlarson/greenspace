@@ -19,9 +19,10 @@ interface RegistrationFormProps {
   boxId: number;
   onCancel: () => void;
   onBoxUnavailable?: () => void;
+  onSuccess?: () => void;
 }
 
-export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: RegistrationFormProps) {
+export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess }: RegistrationFormProps) {
   const { language, t } = useLanguage();
   const box = BOX_CATALOG.find((b) => b.id === boxId);
 
@@ -171,7 +172,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable }: Registra
         </p>
         <button
           type="button"
-          onClick={onCancel}
+          onClick={onSuccess ?? onCancel}
           style={{
             marginTop: "1.5rem",
             padding: "0.5rem 1.25rem",

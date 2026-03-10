@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   type Greenhouse,
   type PlanterBoxPublic,
@@ -27,24 +27,23 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   const [pageView, setPageView] = useHistoryState<PageView>("greenhouse.pageView", "map");
   const [selectedBoxId, setSelectedBoxId] = useHistoryState<number | null>("greenhouse.boxId", null);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/public/boxes");
-        if (res.ok && !cancelled) {
-          const all: PlanterBoxPublic[] = await res.json();
-          setBoxes(all.filter((b) => b.greenhouse === greenhouse));
-        }
-      } catch {
-        /* API unreachable — map will show empty */
-      } finally {
-        if (!cancelled) setLoading(false);
+  const fetchBoxes = useCallback(async () => {
+    try {
+      const res = await fetch("/public/boxes");
+      if (res.ok) {
+        const all: PlanterBoxPublic[] = await res.json();
+        setBoxes(all.filter((b) => b.greenhouse === greenhouse));
       }
+    } catch {
+      /* API unreachable — map will show empty */
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => { cancelled = true; };
   }, [greenhouse]);
+
+  useEffect(() => {
+    fetchBoxes();
+  }, [fetchBoxes]);
 
   const total = boxes.length;
   const available = boxes.filter((b) => b.state === "available").length;
@@ -57,6 +56,10 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
         boxId={selectedBoxId}
         onCancel={() => setPageView("map")}
         onBoxUnavailable={() => setPageView("waitlist")}
+        onSuccess={() => {
+          fetchBoxes();
+          setPageView("map");
+        }}
       />
     );
   }
