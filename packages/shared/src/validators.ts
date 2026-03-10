@@ -129,6 +129,31 @@ export function normalizeApartmentKey(
   return base;
 }
 
+/**
+ * Format an address for user-facing display.
+ *
+ * Format: "Else Alfelts Vej [house_number] [floor]. [apartment]"
+ * Missing apartment omits the trailing door value.
+ * Missing floor and apartment shows only street and house number.
+ */
+export function formatAddress(
+  street: string,
+  houseNumber: number,
+  floor: string | null | undefined,
+  door: string | null | undefined,
+): string {
+  let result = `${street} ${houseNumber}`;
+  const floorPart = floor?.trim();
+  const doorPart = door?.trim();
+  if (floorPart) {
+    result += ` ${floorPart}.`;
+    if (doorPart) {
+      result += ` ${doorPart}`;
+    }
+  }
+  return result;
+}
+
 /** Validate registrant name */
 export function validateName(name: string): ValidationResult {
   if (!name || typeof name !== "string") {

@@ -76,7 +76,7 @@ export function SwitchConfirmationDialog({
             {t("registration.switchCurrentBox")}
           </div>
           <div style={{ fontWeight: 600 }}>
-            #{switchDetails.existingBoxId} {switchDetails.existingBoxName}
+            {switchDetails.existingBoxName}
           </div>
           <div style={{ fontSize: "0.85rem", color: colors.warmBrown }}>
             {switchDetails.existingGreenhouse}
@@ -97,7 +97,7 @@ export function SwitchConfirmationDialog({
             {t("registration.switchNewBox")}
           </div>
           <div style={{ fontWeight: 600 }}>
-            #{switchDetails.newBoxId} {switchDetails.newBoxName}
+            {switchDetails.newBoxName}
           </div>
           <div style={{ fontSize: "0.85rem", color: colors.warmBrown }}>
             {switchDetails.newGreenhouse}

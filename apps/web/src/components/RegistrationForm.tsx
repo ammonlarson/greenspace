@@ -214,7 +214,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
       <h2 style={{ margin: "0 0 0.25rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("registration.formTitle")}</h2>
       {box && (
         <p style={{ color: colors.warmBrown, margin: "0 0 1.5rem" }}>
-          {t("registration.boxLabel")}: <strong>#{box.id} {box.name}</strong> ({box.greenhouse})
+          {t("registration.boxLabel")}: <strong>{box.name}</strong> ({box.greenhouse})
         </p>
       )}
 

@@ -125,7 +125,7 @@ describe("SwitchConfirmationDialog", () => {
     }
   });
 
-  it("shows box IDs in the display", () => {
+  it("shows box names in the display", () => {
     render(
       <SwitchConfirmationDialog
         switchDetails={defaultSwitchDetails}
@@ -134,7 +134,7 @@ describe("SwitchConfirmationDialog", () => {
       />,
     );
 
-    expect(screen.getByText(/#5/)).toBeDefined();
-    expect(screen.getByText(/#20/)).toBeDefined();
+    expect(screen.getByText("Bed 5")).toBeDefined();
+    expect(screen.getByText("Bed 20")).toBeDefined();
   });
 });

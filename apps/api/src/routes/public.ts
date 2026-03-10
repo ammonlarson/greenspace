@@ -229,10 +229,10 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
       return {
         type: "switch_required" as const,
         existingBoxId: oldest.box_id,
-        existingBoxName: existingBox?.name ?? `#${oldest.box_id}`,
+        existingBoxName: existingBox?.name ?? `Box ${oldest.box_id}`,
         existingGreenhouse: existingBox?.greenhouse ?? "Unknown",
         newBoxId: body.boxId,
-        newBoxName: newBox?.name ?? `#${body.boxId}`,
+        newBoxName: newBox?.name ?? `Box ${body.boxId}`,
         newGreenhouse: newBox?.greenhouse ?? "Unknown",
         totalExistingRegistrations: existingRegs.length,
       };

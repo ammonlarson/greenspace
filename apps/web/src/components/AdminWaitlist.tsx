@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BOX_CATALOG } from "@greenspace/shared";
+import { BOX_CATALOG, formatAddress } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDateTime } from "@/utils/formatDate";
 import { colors, fonts, shadows, alertWarning } from "@/styles/theme";
@@ -190,7 +190,7 @@ export function AdminWaitlist() {
             {t("admin.waitlist.confirmAssign")} – {assigningEntry.name}
           </h3>
           <p style={{ fontSize: "0.85rem", color: colors.warmBrown, margin: "0 0 0.75rem 0" }}>
-            {assigningEntry.email} · {assigningEntry.apartment_key}
+            {assigningEntry.email} · {formatAddress(assigningEntry.street, assigningEntry.house_number, assigningEntry.floor, assigningEntry.door)}
           </p>
 
           <div style={{ marginBottom: "0.75rem" }}>
@@ -252,7 +252,7 @@ export function AdminWaitlist() {
                 <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
                   {assignDuplicateWarning.map((r) => (
                     <li key={r.id}>
-                      {r.name} ({r.email}) — {t("admin.waitlist.box")} #{r.boxId}
+                      {r.name} ({r.email}) — {t("admin.waitlist.box")} {BOX_CATALOG.find((b) => b.id === r.boxId)?.name ?? `Box ${r.boxId}`}
                     </li>
                   ))}
                 </ul>
@@ -370,7 +370,7 @@ export function AdminWaitlist() {
                   <td style={{ padding: "0.5rem" }}>{entry.name}</td>
                   <td style={{ padding: "0.5rem" }}>{entry.email}</td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>
-                    {entry.apartment_key}
+                    {formatAddress(entry.street, entry.house_number, entry.floor, entry.door)}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     <span
