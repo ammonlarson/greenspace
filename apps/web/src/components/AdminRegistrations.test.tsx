@@ -136,6 +136,21 @@ describe("AdminRegistrations", () => {
   });
 
   describe("add flow", () => {
+    it("defaults language to English when add dialog opens", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      const languageSelect = screen.getByLabelText("admin.registrations.addLanguage *") as HTMLSelectElement;
+      expect(languageSelect.value).toBe("en");
+    });
+
     it("opens add dialog and submits successfully with floor-required house number", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },

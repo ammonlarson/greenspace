@@ -81,7 +81,7 @@ export function AdminRegistrations() {
   const [addFloor, setAddFloor] = useState("");
   const [addDoor, setAddDoor] = useState("");
   const [addBoxId, setAddBoxId] = useState("");
-  const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
+  const [addLanguage, setAddLanguage] = useState<"da" | "en">("en");
   const [addNotification, setAddNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [addErrors, setAddErrors] = useState<string[]>([]);
   const [moveNewBoxId, setMoveNewBoxId] = useState("");
@@ -115,7 +115,7 @@ export function AdminRegistrations() {
     setAddFloor("");
     setAddDoor("");
     setAddBoxId("");
-    setAddLanguage("da");
+    setAddLanguage("en");
     setAddNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setAddErrors([]);
     setMessage(null);
