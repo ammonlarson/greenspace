@@ -59,9 +59,6 @@ module "greenspace_stack" {
   alarm_email                     = "ammonl@hotmail.com"
   alarm_rds_connections_threshold = 50
 
-  # TODO: replace placeholder ARN with actual value once CloudFront distribution is provisioned
-  cloudfront_distribution_arns = ["arn:aws:cloudfront::111111111111:distribution/STAGING_DIST_ID"]
-
   amplify_github_access_token     = var.amplify_github_access_token
   amplify_branch_name             = "main"
   amplify_enable_auto_build       = false
