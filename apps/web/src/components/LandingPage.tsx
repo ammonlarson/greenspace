@@ -9,15 +9,16 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseCard } from "./GreenhouseCard";
 import { WaitlistBanner } from "./WaitlistBanner";
+import { LoadingSplash } from "./LoadingSplash";
 import { containerStyle, headingStyle } from "@/styles/theme";
 
 interface LandingPageProps {
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
   hasAvailableBoxes?: boolean;
+  onJoinWaitlist?: () => void;
   refreshKey?: number;
 }
-
-export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, refreshKey = 0 }: LandingPageProps) {
+export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist, refreshKey = 0 }: LandingPageProps) {
   const { t } = useLanguage();
   const [greenhouses, setGreenhouses] = useState<GreenhouseSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,10 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, refr
     return () => { cancelled = true; };
   }, [refreshKey]);
 
+  if (loading) {
+    return <LoadingSplash />;
+  }
+
   const displayGreenhouses = greenhouses.length > 0
     ? greenhouses
     : GREENHOUSES.map((name) => ({ name, totalBoxes: 0, availableBoxes: 0, occupiedBoxes: 0 }));
@@ -59,7 +64,7 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, refr
           />
         ))}
       </div>
-      {!loading && !hasAvailableBoxes && <WaitlistBanner />}
+      {!hasAvailableBoxes && <WaitlistBanner onJoinWaitlist={onJoinWaitlist} />}
     </section>
   );
 }

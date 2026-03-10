@@ -8,6 +8,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { PreOpenPage } from "@/components/PreOpenPage";
 import { LandingPage } from "@/components/LandingPage";
 import { GreenhouseMapPage } from "@/components/GreenhouseMapPage";
+import { WaitlistForm } from "@/components/WaitlistForm";
 import { AdminPage } from "@/components/AdminPage";
 import { LoadingSplash } from "@/components/LoadingSplash";
 import { colors, fonts } from "@/styles/theme";
@@ -28,6 +29,7 @@ export default function Home() {
   const { t, ready } = useLanguage();
   const [view, setView] = useHistoryState<View>("home.view", "public");
   const [selectedGreenhouse, setSelectedGreenhouse] = useHistoryState<Greenhouse | null>("home.greenhouse", null);
+  const [showWaitlistForm, setShowWaitlistForm] = useHistoryState<boolean>("home.waitlistForm", false);
   const [status, setStatus] = useState<PublicStatus | null>(null);
   const [statusResolved, setStatusResolved] = useState(false);
   const [landingRefreshKey, setLandingRefreshKey] = useState(0);
@@ -92,10 +94,18 @@ export default function Home() {
         />
       );
     }
+    if (showWaitlistForm) {
+      return (
+        <WaitlistForm
+          onCancel={() => setShowWaitlistForm(false)}
+        />
+      );
+    }
     return (
       <LandingPage
         onSelectGreenhouse={setSelectedGreenhouse}
         hasAvailableBoxes={status?.hasAvailableBoxes ?? true}
+        onJoinWaitlist={() => setShowWaitlistForm(true)}
         refreshKey={landingRefreshKey}
       />
     );
@@ -123,6 +133,7 @@ export default function Home() {
           onClick={() => {
             setView("public");
             setSelectedGreenhouse(null);
+            setShowWaitlistForm(false);
           }}
           style={{
             background: "none",
