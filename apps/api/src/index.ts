@@ -85,8 +85,10 @@ export function createRouter(): Router {
   router.get("/admin/settings/opening-time", requireAdmin(handleGetOpeningTime));
   router.patch("/admin/settings/opening-time", requireAdmin(handleUpdateOpeningTime));
 
-  router.post("/admin/staging/fill-boxes", requireAdmin(handleFillBoxes));
-  router.post("/admin/staging/clear-registrations", requireAdmin(handleClearRegistrations));
+  if (process.env["ENVIRONMENT"] === "staging") {
+    router.post("/admin/staging/fill-boxes", requireAdmin(handleFillBoxes));
+    router.post("/admin/staging/clear-registrations", requireAdmin(handleClearRegistrations));
+  }
 
   return router;
 }

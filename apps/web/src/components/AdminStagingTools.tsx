@@ -24,8 +24,14 @@ export function AdminStagingTools() {
       });
 
       if (!res.ok) {
-        const body = await res.json();
-        setMessage({ type: "error", text: body.error ?? t("common.error") });
+        let errorText: string;
+        try {
+          const body = await res.json();
+          errorText = body.error ?? t("common.error");
+        } catch {
+          errorText = `${t("common.error")} (HTTP ${res.status})`;
+        }
+        setMessage({ type: "error", text: errorText });
         return;
       }
 
@@ -34,7 +40,8 @@ export function AdminStagingTools() {
         type: "success",
         text: `${body.filledCount} ${t("admin.staging.fillBoxesSuccess")}`,
       });
-    } catch {
+    } catch (err) {
+      console.error("Failed to fill boxes:", err);
       setMessage({ type: "error", text: t("common.error") });
     } finally {
       setFilling(false);
@@ -55,8 +62,14 @@ export function AdminStagingTools() {
       });
 
       if (!res.ok) {
-        const body = await res.json();
-        setMessage({ type: "error", text: body.error ?? t("common.error") });
+        let errorText: string;
+        try {
+          const body = await res.json();
+          errorText = body.error ?? t("common.error");
+        } catch {
+          errorText = `${t("common.error")} (HTTP ${res.status})`;
+        }
+        setMessage({ type: "error", text: errorText });
         return;
       }
 
@@ -65,7 +78,8 @@ export function AdminStagingTools() {
         type: "success",
         text: `${body.clearedCount} ${t("admin.staging.clearRegistrationsSuccess")}`,
       });
-    } catch {
+    } catch (err) {
+      console.error("Failed to clear registrations:", err);
       setMessage({ type: "error", text: t("common.error") });
     } finally {
       setClearing(false);
