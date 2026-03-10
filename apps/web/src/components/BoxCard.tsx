@@ -6,13 +6,12 @@ import { BOX_STATE_COLORS } from "./boxStateColors";
 import { colors as themeColors, fonts } from "@/styles/theme";
 
 interface BoxCardProps {
-  id: number;
   name: string;
   state: PublicBoxState;
   onClick?: () => void;
 }
 
-export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
+export function BoxCard({ name, state, onClick }: BoxCardProps) {
   const { t } = useLanguage();
   const colors = BOX_STATE_COLORS[state];
   const isClickable = state === "available" && onClick;
@@ -22,7 +21,7 @@ export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
       type="button"
       onClick={isClickable ? onClick : undefined}
       disabled={!isClickable}
-      aria-label={`${id}. ${name} – ${t(`map.state.${state}`)}`}
+      aria-label={`${name} – ${t(`map.state.${state}`)}`}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -52,8 +51,7 @@ export function BoxCard({ id, name, state, onClick }: BoxCardProps) {
       >
         {t(`map.state.${state}`)}
       </span>
-      <span style={{ fontSize: "1.25rem", fontWeight: 700, color: themeColors.inkBrown }}>#{id}</span>
-      <span style={{ fontSize: "0.85rem", color: themeColors.warmBrown }}>{name}</span>
+      <span style={{ fontSize: "1.25rem", fontWeight: 700, color: themeColors.inkBrown }}>{name}</span>
     </button>
   );
 }

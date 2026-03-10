@@ -30,7 +30,6 @@ describe("buildAdminNotification — add", () => {
 
   it("includes box details", () => {
     const result = buildAdminNotification(baseInput);
-    expect(result.bodyHtml).toContain("#3");
     expect(result.bodyHtml).toContain("Stellaria");
     expect(result.bodyHtml).toContain("Kronen");
   });
@@ -116,7 +115,7 @@ describe("buildAdminNotification — move", () => {
 
   it("includes new box details table", () => {
     const result = buildAdminNotification(moveInput);
-    expect(result.bodyHtml).toContain("#20");
+    expect(result.bodyHtml).toContain("Great tit");
   });
 
   it("includes contact info", () => {
@@ -177,7 +176,7 @@ describe("buildAdminNotification — remove", () => {
 describe("buildAdminNotification — unknown box", () => {
   it("handles unknown box ID gracefully", () => {
     const result = buildAdminNotification({ ...baseInput, boxId: 999 });
-    expect(result.bodyHtml).toContain("#999");
+    expect(result.bodyHtml).toContain("999");
     expect(result.bodyHtml).toContain("Unknown");
   });
 });

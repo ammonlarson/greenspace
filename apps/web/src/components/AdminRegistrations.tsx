@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  BOX_CATALOG,
   ELIGIBLE_STREET,
   HOUSE_NUMBER_MIN,
   HOUSE_NUMBER_MAX,
@@ -488,7 +489,7 @@ export function AdminRegistrations() {
       {activeDialog?.type === "move" && (
         <div role="dialog" aria-labelledby="move-dialog-title" style={dialogStyle}>
           <h3 id="move-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-            {t("admin.registrations.move")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
+            {t("admin.registrations.move")} – {activeDialog.registration.name}
           </h3>
           <div style={{ marginBottom: "0.75rem" }}>
             <label htmlFor="move-new-box-id" style={labelStyle}>{t("admin.registrations.newBoxId")}</label>
@@ -556,7 +557,7 @@ export function AdminRegistrations() {
       {activeDialog?.type === "remove" && (
         <div role="dialog" aria-labelledby="remove-dialog-title" style={dialogStyle}>
           <h3 id="remove-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-            {t("admin.registrations.confirmRemove")} – {activeDialog.registration.name} (#{activeDialog.registration.box_id})
+            {t("admin.registrations.confirmRemove")} – {activeDialog.registration.name}
           </h3>
 
           <fieldset style={{ border: "none", padding: 0, margin: "0 0 0.75rem 0" }}>
@@ -678,7 +679,7 @@ export function AdminRegistrations() {
                 <tr key={reg.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem" }}>{reg.name}</td>
                   <td style={{ padding: "0.5rem" }}>{reg.email}</td>
-                  <td style={{ padding: "0.5rem" }}>#{reg.box_id}</td>
+                  <td style={{ padding: "0.5rem" }}>{BOX_CATALOG.find((b) => b.id === reg.box_id)?.name ?? String(reg.box_id)}</td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>{reg.apartment_key}</td>
                   <td style={{ padding: "0.5rem" }}>
                     <span

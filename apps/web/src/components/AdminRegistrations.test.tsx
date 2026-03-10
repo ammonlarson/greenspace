@@ -87,8 +87,8 @@ describe("AdminRegistrations", () => {
 
       expect(screen.getByText("Alice")).toBeDefined();
       expect(screen.getByText("Bob")).toBeDefined();
-      expect(screen.getByText("#1")).toBeDefined();
-      expect(screen.getByText("#5")).toBeDefined();
+      expect(screen.getByText("Linaria")).toBeDefined();
+      expect(screen.getByText("Daisy")).toBeDefined();
     });
 
     it("shows empty state when no registrations", async () => {

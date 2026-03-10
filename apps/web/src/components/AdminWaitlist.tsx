@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BOX_CATALOG } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
 import { colors, fonts, shadows, alertWarning } from "@/styles/theme";
@@ -241,7 +242,7 @@ export function AdminWaitlist() {
                 <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
                   {assignDuplicateWarning.map((r) => (
                     <li key={r.id}>
-                      {r.name} ({r.email}) — {t("admin.waitlist.box")} #{r.boxId}
+                      {r.name} ({r.email}) — {t("admin.waitlist.box")} {BOX_CATALOG.find((b) => b.id === r.boxId)?.name ?? String(r.boxId)}
                     </li>
                   ))}
                 </ul>

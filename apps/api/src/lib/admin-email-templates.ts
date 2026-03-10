@@ -87,7 +87,7 @@ function buildBoxDetailsHtml(
   boxId: number,
 ): string {
   const box = BOX_CATALOG.find((b) => b.id === boxId);
-  const boxName = box?.name ?? `#${boxId}`;
+  const boxName = box?.name ?? String(boxId);
   const greenhouse = box?.greenhouse ?? "Unknown";
 
   return `
@@ -95,10 +95,6 @@ function buildBoxDetailsHtml(
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
         <tr>
           <td style="padding: 8px 12px; background: #f5f5f5; font-weight: bold; width: 40%;">${escapeHtml(t.boxLabel)}</td>
-          <td style="padding: 8px 12px;">#${boxId}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 12px; background: #f5f5f5; font-weight: bold;">${escapeHtml(t.boxNameLabel)}</td>
           <td style="padding: 8px 12px;">${escapeHtml(boxName)}</td>
         </tr>
         <tr>
@@ -175,10 +171,10 @@ function buildMoveNotification(data: NotificationPreviewInput): NotificationPrev
   const t = translations[data.language];
 
   const oldBox = data.oldBoxId ? BOX_CATALOG.find((b) => b.id === data.oldBoxId) : null;
-  const oldBoxName = oldBox?.name ?? `#${data.oldBoxId}`;
+  const oldBoxName = oldBox?.name ?? String(data.oldBoxId);
   const oldGreenhouse = oldBox?.greenhouse ?? "Unknown";
   const newBox = BOX_CATALOG.find((b) => b.id === data.boxId);
-  const newBoxName = newBox?.name ?? `#${data.boxId}`;
+  const newBoxName = newBox?.name ?? String(data.boxId);
   const newGreenhouse = newBox?.greenhouse ?? "Unknown";
 
   const boxDetailsHtml = buildBoxDetailsHtml(t, data.boxId);
@@ -207,7 +203,7 @@ function buildRemoveNotification(data: NotificationPreviewInput): NotificationPr
   const t = translations[data.language];
 
   const box = BOX_CATALOG.find((b) => b.id === data.boxId);
-  const boxName = box?.name ?? `#${data.boxId}`;
+  const boxName = box?.name ?? String(data.boxId);
   const greenhouse = box?.greenhouse ?? "Unknown";
 
   const contactHtml = buildContactHtml(t);
