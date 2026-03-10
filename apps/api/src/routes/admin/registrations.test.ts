@@ -16,6 +16,10 @@ vi.mock("../../lib/email-service.js", () => ({
   queueAndSendEmail: vi.fn().mockResolvedValue("email-mock-id"),
 }));
 
+vi.mock("../../lib/admin-ops-notifications.js", () => ({
+  notifyAdmins: vi.fn().mockResolvedValue(undefined),
+}));
+
 function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
   return {
     db: {} as Kysely<Database>,
@@ -180,6 +184,27 @@ describe("handleCreateRegistration (happy path)", () => {
       expect((err as AppError).statusCode).toBe(400);
       expect((err as AppError).message).toBe("language must be 'da' or 'en'");
     }
+  });
+
+  it("defaults language to English when not provided", async () => {
+    const mockDb = makeMockTrxDb({
+      boxResult: { id: 1, state: "available" },
+      existingReg: undefined,
+    });
+
+    const result = await handleCreateRegistration(
+      makeCtx({
+        db: mockDb,
+        body: {
+          boxId: 1,
+          name: "Alice",
+          email: "a@b.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+        },
+      }),
+    );
+    expect(result.statusCode).toBe(201);
   });
 
   it("sends notification email when notification.sendEmail is true", async () => {

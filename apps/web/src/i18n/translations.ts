@@ -62,6 +62,22 @@ const da = {
   "audit.filterByActor": "Filtrer efter aktørtype",
   "audit.allActions": "Alle handlinger",
   "audit.allActors": "Alle aktørtyper",
+  "audit.action.registration_create": "Tilmelding oprettet",
+  "audit.action.registration_switch": "Tilmelding skiftet",
+  "audit.action.registration_remove": "Tilmelding fjernet",
+  "audit.action.registration_move": "Tilmelding flyttet",
+  "audit.action.waitlist_add": "Tilføjet til venteliste",
+  "audit.action.waitlist_remove": "Fjernet fra venteliste",
+  "audit.action.waitlist_assign": "Venteliste tildelt",
+  "audit.action.waitlist_reorder_preserve": "Venteliste genordnet",
+  "audit.action.box_state_change": "Kassestatus ændret",
+  "audit.action.opening_datetime_change": "Åbningstidspunkt ændret",
+  "audit.action.admin_create": "Administrator oprettet",
+  "audit.action.admin_delete": "Administrator slettet",
+  "audit.action.admin_password_change": "Adgangskode ændret",
+  "audit.action.email_sent": "E-mail sendt",
+  "audit.action.notification_sent": "Notifikation sendt",
+  "audit.action.notification_skipped": "Notifikation sprunget over",
 
   "registration.formTitle": "Tilmeld plantekasse",
   "registration.nameLabel": "Navn",
@@ -132,6 +148,11 @@ const da = {
   "admin.newOpeningTime": "Nyt åbningstidspunkt",
   "admin.save": "Gem",
   "admin.settingsSaved": "Indstilling gemt",
+
+  "admin.notifications.title": "E-mailnotifikationer",
+  "admin.notifications.description": "Vælg hvilke begivenheder du vil modtage e-mailnotifikationer om.",
+  "admin.notifications.userRegistration": "Bruger registrerer sig eller skifter plantekasse",
+  "admin.notifications.adminBoxAction": "Anden administrator udfører kassehandlinger",
 
   "admin.tab.registrations": "Tilmeldinger",
   "admin.tab.waitlist": "Venteliste",
@@ -249,6 +270,24 @@ const da = {
   "admin.boxes.occupiedBy": "Optaget af",
   "admin.boxes.noRegistration": "Ingen tilmelding fundet",
 
+  "admin.tab.stagingTools": "Testværktøjer",
+
+  "admin.staging.title": "Testværktøjer (kun staging)",
+  "admin.staging.warning":
+    "Disse handlinger er kun tilgængelige i staging-miljøet og påvirker alle data.",
+  "admin.staging.fillBoxes": "Fyld alle kasser med testregistreringer",
+  "admin.staging.fillBoxesDescription":
+    "Opretter falske registreringer for alle ledige og reserverede kasser.",
+  "admin.staging.fillBoxesConfirm":
+    "Er du sikker på, at du vil fylde alle kasser med testregistreringer? Eksisterende registreringer påvirkes ikke.",
+  "admin.staging.fillBoxesSuccess": "kasser fyldt med testregistreringer",
+  "admin.staging.clearRegistrations": "Ryd alle registreringer",
+  "admin.staging.clearRegistrationsDescription":
+    "Fjerner alle aktive registreringer og frigiver alle kasser.",
+  "admin.staging.clearRegistrationsConfirm":
+    "Er du sikker på, at du vil fjerne ALLE registreringer? Denne handling kan ikke fortrydes.",
+  "admin.staging.clearRegistrationsSuccess": "registreringer fjernet",
+
   "admin.tab.account": "Konto",
   "admin.logout": "Log ud",
   "admin.logoutConfirm": "Er du sikker på, at du vil logge ud?",
@@ -346,6 +385,22 @@ const en: Record<TranslationKey, string> = {
   "audit.filterByActor": "Filter by actor type",
   "audit.allActions": "All actions",
   "audit.allActors": "All actor types",
+  "audit.action.registration_create": "Registration Created",
+  "audit.action.registration_switch": "Registration Switched",
+  "audit.action.registration_remove": "Registration Removed",
+  "audit.action.registration_move": "Registration Moved",
+  "audit.action.waitlist_add": "Joined Waitlist",
+  "audit.action.waitlist_remove": "Removed from Waitlist",
+  "audit.action.waitlist_assign": "Waitlist Assigned",
+  "audit.action.waitlist_reorder_preserve": "Waitlist Reordered",
+  "audit.action.box_state_change": "Box State Changed",
+  "audit.action.opening_datetime_change": "Opening Time Changed",
+  "audit.action.admin_create": "Admin Created",
+  "audit.action.admin_delete": "Admin Deleted",
+  "audit.action.admin_password_change": "Password Changed",
+  "audit.action.email_sent": "Email Sent",
+  "audit.action.notification_sent": "Notification Sent",
+  "audit.action.notification_skipped": "Notification Skipped",
 
   "registration.formTitle": "Register for a planter box",
   "registration.nameLabel": "Name",
@@ -416,6 +471,11 @@ const en: Record<TranslationKey, string> = {
   "admin.newOpeningTime": "New opening time",
   "admin.save": "Save",
   "admin.settingsSaved": "Setting saved",
+
+  "admin.notifications.title": "Email notifications",
+  "admin.notifications.description": "Choose which events you want to receive email notifications about.",
+  "admin.notifications.userRegistration": "User registers or switches planter box",
+  "admin.notifications.adminBoxAction": "Another admin takes box actions",
 
   "admin.tab.registrations": "Registrations",
   "admin.tab.waitlist": "Waitlist",
@@ -532,6 +592,24 @@ const en: Record<TranslationKey, string> = {
   "admin.boxes.releaseReserved": "Keep as reserved",
   "admin.boxes.occupiedBy": "Occupied by",
   "admin.boxes.noRegistration": "No registration found",
+
+  "admin.tab.stagingTools": "Test Tools",
+
+  "admin.staging.title": "Test Tools (staging only)",
+  "admin.staging.warning":
+    "These actions are only available in the staging environment and affect all data.",
+  "admin.staging.fillBoxes": "Fill all boxes with test registrations",
+  "admin.staging.fillBoxesDescription":
+    "Creates fake registrations for all available and reserved boxes.",
+  "admin.staging.fillBoxesConfirm":
+    "Are you sure you want to fill all boxes with test registrations? Existing registrations will not be affected.",
+  "admin.staging.fillBoxesSuccess": "boxes filled with test registrations",
+  "admin.staging.clearRegistrations": "Clear all registrations",
+  "admin.staging.clearRegistrationsDescription":
+    "Removes all active registrations and releases all boxes.",
+  "admin.staging.clearRegistrationsConfirm":
+    "Are you sure you want to remove ALL registrations? This action cannot be undone.",
+  "admin.staging.clearRegistrationsSuccess": "registrations cleared",
 
   "admin.tab.account": "Account",
   "admin.logout": "Log out",

@@ -90,6 +90,9 @@ export const FLOOR_DOOR_REQUIRED_NUMBERS: readonly number[] = [
 /** Default language */
 export const DEFAULT_LANGUAGE: Language = "da";
 
+/** Default language for admin-created registrations */
+export const ADMIN_DEFAULT_LANGUAGE: Language = "en";
+
 /** Default box state for reserved label */
 export const RESERVED_LABEL_DEFAULT = "Admin Hold" as const;
 
