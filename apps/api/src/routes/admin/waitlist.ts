@@ -18,6 +18,7 @@ export async function handleListWaitlist(ctx: RequestContext): Promise<RouteResp
       "door",
       "apartment_key",
       "language",
+      "greenhouse_preference",
       "status",
       "created_at",
       "updated_at",
