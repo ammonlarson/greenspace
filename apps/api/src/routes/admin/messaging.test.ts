@@ -207,4 +207,91 @@ describe("handleSendBulkEmail", () => {
     expect(body.queuedCount).toBe(2);
     expect(body.queueFailedCount).toBe(0);
   });
+
+  it("throws 400 when bilingual subjectDa is missing", async () => {
+    try {
+      await handleSendBulkEmail(
+        makeCtx({
+          body: {
+            audience: "all",
+            bilingual: true,
+            bodyHtmlDa: "<p>Da</p>",
+            subjectEn: "En",
+            bodyHtmlEn: "<p>En</p>",
+          },
+        }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+    }
+  });
+
+  it("throws 400 when bilingual bodyHtmlEn is missing", async () => {
+    try {
+      await handleSendBulkEmail(
+        makeCtx({
+          body: {
+            audience: "all",
+            bilingual: true,
+            subjectDa: "Da",
+            bodyHtmlDa: "<p>Da</p>",
+            subjectEn: "En",
+          },
+        }),
+      );
+      expect.fail("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AppError);
+      expect((err as AppError).statusCode).toBe(400);
+    }
+  });
+
+  it("sends language-specific content in bilingual mode", async () => {
+    const { queueAndSendEmail } = await import("../../lib/email-service.js");
+    const mockQueueFn = vi.mocked(queueAndSendEmail);
+    mockQueueFn.mockClear();
+
+    const mockRows = [
+      { email: "alice@test.com", name: "Alice", language: "da" },
+      { email: "bob@test.com", name: "Bob", language: "en" },
+    ];
+    const mockDb = buildQueryMock(mockRows);
+
+    const result = await handleSendBulkEmail(
+      makeCtx({
+        db: mockDb,
+        body: {
+          audience: "all",
+          bilingual: true,
+          subjectDa: "Dansk emne",
+          bodyHtmlDa: "<p>Dansk</p>",
+          subjectEn: "English subject",
+          bodyHtmlEn: "<p>English</p>",
+        },
+      }),
+    );
+
+    expect(result.statusCode).toBe(200);
+    const body = result.body as { recipientCount: number; queuedCount: number };
+    expect(body.recipientCount).toBe(2);
+    expect(body.queuedCount).toBe(2);
+
+    const aliceCall = mockQueueFn.mock.calls.find(
+      (c) => c[1].recipientEmail === "alice@test.com",
+    );
+    expect(aliceCall).toBeDefined();
+    expect(aliceCall![1].subject).toBe("Dansk emne");
+    expect(aliceCall![1].bodyHtml).toBe("<p>Dansk</p>");
+    expect(aliceCall![1].language).toBe("da");
+
+    const bobCall = mockQueueFn.mock.calls.find(
+      (c) => c[1].recipientEmail === "bob@test.com",
+    );
+    expect(bobCall).toBeDefined();
+    expect(bobCall![1].subject).toBe("English subject");
+    expect(bobCall![1].bodyHtml).toBe("<p>English</p>");
+    expect(bobCall![1].language).toBe("en");
+  });
 });
