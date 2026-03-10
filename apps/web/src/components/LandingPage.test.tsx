@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { render, screen, act, cleanup } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import { LandingPage } from "./LandingPage";
 
 vi.mock("@/i18n/LanguageProvider", () => ({
@@ -22,59 +22,47 @@ vi.mock("./WaitlistBanner", () => ({
   ),
 }));
 
-vi.mock("./LoadingSplash", () => ({
-  LoadingSplash: () => <div data-testid="loading-splash" />,
-}));
-
 describe("LandingPage", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
   });
 
-  it("shows loading splash while greenhouses are being fetched", () => {
-    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+  it("renders greenhouse cards from passed data", () => {
+    const greenhouses = [
+      { name: "Kronen" as const, totalBoxes: 14, availableBoxes: 5, occupiedBoxes: 9 },
+      { name: "Søen" as const, totalBoxes: 15, availableBoxes: 3, occupiedBoxes: 12 },
+    ];
 
-    render(<LandingPage />);
+    render(<LandingPage greenhouses={greenhouses} />);
 
-    expect(screen.getByTestId("loading-splash")).toBeDefined();
-    expect(screen.queryByText("greenhouse.title")).toBeNull();
+    expect(screen.getByTestId("card-Kronen")).toBeDefined();
+    expect(screen.getByTestId("card-Søen")).toBeDefined();
   });
 
-  it("does not show waitlist banner when hasAvailableBoxes is true", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
-      new Response(JSON.stringify([]), { status: 200 }),
-    ));
+  it("renders fallback cards when greenhouses is empty", () => {
+    render(<LandingPage greenhouses={[]} />);
 
-    await act(async () => {
-      render(<LandingPage hasAvailableBoxes />);
-    });
+    expect(screen.getByTestId("card-Kronen")).toBeDefined();
+    expect(screen.getByTestId("card-Søen")).toBeDefined();
+  });
+
+  it("does not show waitlist banner when hasAvailableBoxes is true", () => {
+    render(<LandingPage hasAvailableBoxes />);
 
     expect(screen.queryByTestId("waitlist-banner")).toBeNull();
   });
 
-  it("shows waitlist banner with join button when hasAvailableBoxes is false", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
-      new Response(JSON.stringify([]), { status: 200 }),
-    ));
-
+  it("shows waitlist banner with join button when hasAvailableBoxes is false", () => {
     const handler = vi.fn();
-    await act(async () => {
-      render(<LandingPage hasAvailableBoxes={false} onJoinWaitlist={handler} />);
-    });
+    render(<LandingPage hasAvailableBoxes={false} onJoinWaitlist={handler} />);
 
     expect(screen.getByTestId("waitlist-banner")).toBeDefined();
     expect(screen.getByTestId("join-waitlist-btn")).toBeDefined();
   });
 
-  it("does not show join button when onJoinWaitlist is not provided", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
-      new Response(JSON.stringify([]), { status: 200 }),
-    ));
-
-    await act(async () => {
-      render(<LandingPage hasAvailableBoxes={false} />);
-    });
+  it("does not show join button when onJoinWaitlist is not provided", () => {
+    render(<LandingPage hasAvailableBoxes={false} />);
 
     expect(screen.getByTestId("waitlist-banner")).toBeDefined();
     expect(screen.queryByTestId("join-waitlist-btn")).toBeNull();

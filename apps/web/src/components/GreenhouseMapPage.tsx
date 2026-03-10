@@ -7,6 +7,7 @@ import {
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHistoryState } from "@/hooks/useHistoryState";
+import { LoadingSplash } from "./LoadingSplash";
 import { GreenhouseMap } from "./GreenhouseMap";
 import { BoxStateLegend } from "./BoxStateLegend";
 import { RegistrationForm } from "./RegistrationForm";
@@ -49,6 +50,10 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   const available = boxes.filter((b) => b.state === "available").length;
   const occupied = boxes.filter((b) => b.state === "occupied").length;
   const hasAvailable = available > 0;
+
+  if (loading) {
+    return <LoadingSplash />;
+  }
 
   if (pageView === "register" && selectedBoxId !== null) {
     return (
@@ -119,17 +124,13 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
       <BoxStateLegend />
 
       <div style={{ marginTop: "1.25rem" }}>
-        {loading ? (
-          <p style={{ color: colors.warmBrown }}>{t("common.loading")}</p>
-        ) : (
-          <GreenhouseMap
-            boxes={boxes}
-            onSelectBox={(id) => {
-              setSelectedBoxId(id);
-              setPageView("register");
-            }}
-          />
-        )}
+        <GreenhouseMap
+          boxes={boxes}
+          onSelectBox={(id) => {
+            setSelectedBoxId(id);
+            setPageView("register");
+          }}
+        />
       </div>
 
       {!hasAvailable && (
