@@ -40,7 +40,6 @@ const translations = {
     boxDetailsTitle: "Din plantekasse",
     boxLabel: "Kasse",
     greenhouseLabel: "Drivhus",
-    boxNameLabel: "Navn",
 
     contactTitle: "Kontakt",
     contactText: "Hvis du har spørgsmål, er du velkommen til at kontakte os:",
@@ -64,7 +63,6 @@ const translations = {
     boxDetailsTitle: "Your planter box",
     boxLabel: "Box",
     greenhouseLabel: "Greenhouse",
-    boxNameLabel: "Name",
 
     contactTitle: "Contact",
     contactText: "If you have any questions, feel free to reach out to us:",

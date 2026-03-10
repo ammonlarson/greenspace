@@ -33,7 +33,6 @@ const translations = {
     boxDetailsTitle: "Din plantekasse",
     boxLabel: "Kasse",
     greenhouseLabel: "Drivhus",
-    boxNameLabel: "Navn",
     locationTitle: "Placering",
     kronenLocation:
       "Kronen-drivhuset ligger på taget af Else Alfelts Vej bygning, ved den nordlige indgang.",
@@ -72,7 +71,6 @@ const translations = {
     boxDetailsTitle: "Your planter box",
     boxLabel: "Box",
     greenhouseLabel: "Greenhouse",
-    boxNameLabel: "Name",
     locationTitle: "Location",
     kronenLocation:
       "The Kronen greenhouse is located on the rooftop of the Else Alfelts Vej building, at the northern entrance.",
