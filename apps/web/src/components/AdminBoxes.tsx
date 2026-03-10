@@ -126,7 +126,7 @@ export function AdminBoxes() {
     processedData: filteredBoxes,
   } = useTableControls({
     data: boxesWithSearchField,
-    defaultSort: { key: "id", direction: "asc" },
+    defaultSort: { key: "name", direction: "asc" },
     searchableFields: ["name", "_searchText"],
     filterConfigs: [
       { key: "state", allValue: "__all__" },

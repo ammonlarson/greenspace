@@ -37,6 +37,7 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
         textAlign: "center",
         fontFamily: fonts.body,
         fontSize: "inherit",
+        overflow: "hidden",
         transition: "box-shadow 0.15s",
       }}
     >
@@ -51,7 +52,19 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
       >
         {t(`map.state.${state}`)}
       </span>
-      <span style={{ fontSize: "1.25rem", fontWeight: 700, color: themeColors.inkBrown }}>{name}</span>
+      <span
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: 700,
+          color: themeColors.inkBrown,
+          maxWidth: "100%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {name}
+      </span>
     </button>
   );
 }
