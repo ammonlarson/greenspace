@@ -33,7 +33,7 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
         background: colors.background,
         cursor: isClickable ? "pointer" : "default",
         opacity: state !== "available" ? 0.7 : 1,
-        minWidth: 100,
+        minWidth: 140,
         textAlign: "center",
         fontFamily: fonts.body,
         fontSize: "inherit",
