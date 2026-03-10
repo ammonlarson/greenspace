@@ -8,6 +8,7 @@ import {
   HOUSE_NUMBER_MAX,
   isFloorDoorRequired,
   validateRegistrationInput,
+  formatAddress,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
@@ -697,7 +698,7 @@ export function AdminRegistrations() {
                   <td style={{ padding: "0.5rem" }}>{reg.name}</td>
                   <td style={{ padding: "0.5rem" }}>{reg.email}</td>
                   <td style={{ padding: "0.5rem" }}>{BOX_CATALOG.find((b) => b.id === reg.box_id)?.name ?? `Box ${reg.box_id}`}</td>
-                  <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>{reg.apartment_key}</td>
+                  <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>{formatAddress(reg.street, reg.house_number, reg.floor, reg.door)}</td>
                   <td style={{ padding: "0.5rem" }}>
                     <span
                       style={{
