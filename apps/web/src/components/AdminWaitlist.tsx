@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BOX_CATALOG } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate } from "@/utils/formatDate";
+import { formatDateTime } from "@/utils/formatDate";
 import { colors, fonts, shadows, alertWarning } from "@/styles/theme";
 import { useTableControls } from "@/hooks/useTableControls";
 import { TableControls } from "./TableControls";
@@ -388,7 +388,7 @@ export function AdminWaitlist() {
                     </span>
                   </td>
                   <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>
-                    {formatDate(entry.created_at, language)}
+                    {formatDateTime(entry.created_at, language)}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {entry.status === "waiting" && (
