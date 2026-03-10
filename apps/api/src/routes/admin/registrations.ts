@@ -1,4 +1,4 @@
-import { normalizeApartmentKey } from "@greenspace/shared";
+import { normalizeApartmentKey, ADMIN_DEFAULT_LANGUAGE } from "@greenspace/shared";
 import type { Language } from "@greenspace/shared";
 import type { Kysely, Transaction } from "kysely";
 import { logAuditEvent } from "../../lib/audit.js";
@@ -146,10 +146,11 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
   }
 
   const body = (ctx.body ?? {}) as CreateRegistrationBody;
-  const { boxId, name, email, street, houseNumber, language } = body;
+  const { boxId, name, email, street, houseNumber } = body;
+  const language = body.language || ADMIN_DEFAULT_LANGUAGE;
 
-  if (!boxId || !name || !email || !street || houseNumber == null || !language) {
-    throw badRequest("boxId, name, email, street, houseNumber, and language are required");
+  if (!boxId || !name || !email || !street || houseNumber == null) {
+    throw badRequest("boxId, name, email, street, and houseNumber are required");
   }
 
   if (language !== "da" && language !== "en") {
