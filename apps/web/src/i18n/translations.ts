@@ -330,6 +330,11 @@ const da = {
   "admin.table.allStatuses": "Alle statusser",
   "admin.table.allStates": "Alle tilstande",
   "admin.table.allGreenhouses": "Alle drivhuse",
+
+  "about.title": "Om projektet",
+  "about.description":
+    "UN17 Village Taghaver er et fællesskabsprojekt for beboere på Else Alfelts Vej 122–202. Vi driver plantekasser i to tagdrivhuse for at skabe grønne rum og styrke nabofællesskabet.",
+  "about.contact": "Spørgsmål? Kontakt os:",
 };
 
 export type TranslationKey = keyof typeof da;
@@ -664,6 +669,11 @@ const en: Record<TranslationKey, string> = {
   "admin.table.allStatuses": "All statuses",
   "admin.table.allStates": "All states",
   "admin.table.allGreenhouses": "All greenhouses",
+
+  "about.title": "About the project",
+  "about.description":
+    "UN17 Village Rooftop Gardens is a community project for residents of Else Alfelts Vej 122–202. We run planter boxes in two rooftop greenhouses to create green spaces and strengthen the neighborhood community.",
+  "about.contact": "Questions? Get in touch:",
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {

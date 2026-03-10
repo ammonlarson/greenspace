@@ -96,6 +96,11 @@ export const I18N_KEYS = {
     switchNote: "email.switchNote",
     careGuidelines: "email.careGuidelines",
   },
+  about: {
+    title: "about.title",
+    description: "about.description",
+    contact: "about.contact",
+  },
   admin: {
     link: "admin.link",
     login: "admin.login",
