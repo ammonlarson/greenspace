@@ -235,6 +235,8 @@ const da = {
   "admin.messaging.subjectEnRequired": "Engelsk emne er påkrævet",
   "admin.messaging.bodyDaRequired": "Dansk brødtekst er påkrævet",
   "admin.messaging.bodyEnRequired": "Engelsk brødtekst er påkrævet",
+  "admin.messaging.resetTemplate": "Nulstil til skabelon",
+  "admin.messaging.templateHint": "Sidehoved og sidefod tilføjes automatisk, når e-mailen sendes.",
 
   "admin.waitlist.title": "Venteliste",
   "admin.waitlist.name": "Navn",
@@ -566,6 +568,8 @@ const en: Record<TranslationKey, string> = {
   "admin.messaging.subjectEnRequired": "English subject is required",
   "admin.messaging.bodyDaRequired": "Danish body is required",
   "admin.messaging.bodyEnRequired": "English body is required",
+  "admin.messaging.resetTemplate": "Reset to template",
+  "admin.messaging.templateHint": "Header and footer are automatically added when the email is sent.",
 
   "admin.waitlist.title": "Waitlist",
   "admin.waitlist.name": "Name",

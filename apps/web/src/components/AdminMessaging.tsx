@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { colors, fonts } from "@/styles/theme";
 
@@ -44,6 +44,10 @@ interface EditorSectionProps {
   onSubjectChange: (value: string) => void;
   onBodyChange: (value: string) => void;
   heading?: string;
+  previewLanguage: string;
+  defaultBody?: string;
+  resetLabel?: string;
+  onReset?: () => void;
 }
 
 function EditorSection({
@@ -57,8 +61,44 @@ function EditorSection({
   onSubjectChange,
   onBodyChange,
   heading,
+  previewLanguage,
+  defaultBody,
+  resetLabel,
+  onReset,
 }: EditorSectionProps) {
   const [activeTab, setActiveTab] = useState<Tab>("source");
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "preview" || !bodyHtml.trim()) return;
+
+    let cancelled = false;
+    setLoadingPreview(true);
+
+    fetch("/admin/messaging/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ bodyHtml, subject, language: previewLanguage }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) {
+          setPreviewHtml(data?.previewHtml ?? bodyHtml);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewHtml(bodyHtml);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPreview(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, bodyHtml, subject, previewLanguage]);
 
   return (
     <div
@@ -117,47 +157,74 @@ function EditorSection({
       </div>
 
       <div
-        role="tablist"
         style={{
           display: "flex",
+          alignItems: "center",
           borderBottom: `1px solid ${colors.borderTan}`,
           marginBottom: "0.5rem",
         }}
       >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === "preview"}
-          onClick={() => setActiveTab("preview")}
-          style={makeTabStyle("preview", activeTab)}
-        >
-          {previewLabel}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === "source"}
-          onClick={() => setActiveTab("source")}
-          style={makeTabStyle("source", activeTab)}
-        >
-          {sourceLabel}
-        </button>
+        <div role="tablist" style={{ display: "flex", flex: 1 }}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "preview"}
+            onClick={() => setActiveTab("preview")}
+            style={makeTabStyle("preview", activeTab)}
+          >
+            {previewLabel}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "source"}
+            onClick={() => setActiveTab("source")}
+            style={makeTabStyle("source", activeTab)}
+          >
+            {sourceLabel}
+          </button>
+        </div>
+        {defaultBody && onReset && resetLabel && (
+          <button
+            type="button"
+            onClick={onReset}
+            style={{
+              padding: "0.25rem 0.5rem",
+              border: `1px solid ${colors.borderTan}`,
+              borderRadius: 4,
+              background: "none",
+              cursor: "pointer",
+              fontSize: "0.75rem",
+              fontFamily: fonts.body,
+              color: colors.warmBrown,
+              marginBottom: "0.25rem",
+            }}
+          >
+            {resetLabel}
+          </button>
+        )}
       </div>
 
       {activeTab === "preview" && (
         <div role="tabpanel" style={{ marginBottom: "0.5rem" }}>
-          <iframe
-            title={previewLabel}
-            srcDoc={bodyHtml}
-            sandbox=""
-            style={{
-              width: "100%",
-              height: 300,
-              border: `1px solid ${colors.borderTan}`,
-              borderRadius: 4,
-              background: colors.white,
-            }}
-          />
+          {loadingPreview ? (
+            <div style={{ padding: "1rem", textAlign: "center", fontSize: "0.85rem", color: colors.warmBrown }}>
+              Loading...
+            </div>
+          ) : (
+            <iframe
+              title={previewLabel}
+              srcDoc={previewHtml || bodyHtml}
+              sandbox=""
+              style={{
+                width: "100%",
+                height: 300,
+                border: `1px solid ${colors.borderTan}`,
+                borderRadius: 4,
+                background: colors.white,
+              }}
+            />
+          )}
         </div>
       )}
 
@@ -188,7 +255,7 @@ function EditorSection({
 }
 
 export function AdminMessaging() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [audience, setAudience] = useState<Audience>("all");
   const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
@@ -202,6 +269,9 @@ export function AdminMessaging() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const defaultBodyRef = useRef("");
+  const defaultBodyDaRef = useRef("");
+  const defaultBodyEnRef = useRef("");
 
   const langCounts = useMemo(() => {
     if (!recipientInfo) return { en: 0, da: 0 };
@@ -241,19 +311,79 @@ export function AdminMessaging() {
     fetchRecipients(audience);
   }, [audience, fetchRecipients]);
 
+  const initialLanguage = useRef(language);
+
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const [singleRes, daRes, enRes] = await Promise.all([
+          fetch("/admin/messaging/template", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ language: initialLanguage.current }),
+          }),
+          fetch("/admin/messaging/template", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ language: "da" }),
+          }),
+          fetch("/admin/messaging/template", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ language: "en" }),
+          }),
+        ]);
+
+        if (singleRes.ok) {
+          const data = await singleRes.json();
+          defaultBodyRef.current = data.defaultBody;
+          setBodyHtml(data.defaultBody);
+        }
+        if (daRes.ok) {
+          const data = await daRes.json();
+          defaultBodyDaRef.current = data.defaultBody;
+          setBodyHtmlDa(data.defaultBody);
+        }
+        if (enRes.ok) {
+          const data = await enRes.json();
+          defaultBodyEnRef.current = data.defaultBody;
+          setBodyHtmlEn(data.defaultBody);
+        }
+      } catch {
+        // Templates are optional; the form works without them
+      }
+    }
+    loadTemplates();
+  }, []);
+
   function handleAudienceChange(aud: Audience) {
     setAudience(aud);
     setSuccess("");
     setError("");
   }
 
+  function resetToTemplate() {
+    setBodyHtml(defaultBodyRef.current);
+  }
+
+  function resetToTemplateDa() {
+    setBodyHtmlDa(defaultBodyDaRef.current);
+  }
+
+  function resetToTemplateEn() {
+    setBodyHtmlEn(defaultBodyEnRef.current);
+  }
+
   function clearForm() {
     setSubject("");
-    setBodyHtml("");
+    setBodyHtml(defaultBodyRef.current);
     setSubjectDa("");
-    setBodyHtmlDa("");
+    setBodyHtmlDa(defaultBodyDaRef.current);
     setSubjectEn("");
-    setBodyHtmlEn("");
+    setBodyHtmlEn(defaultBodyEnRef.current);
   }
 
   async function handleSend() {
@@ -325,6 +455,8 @@ export function AdminMessaging() {
       setSending(false);
     }
   }
+
+  const hasTemplates = defaultBodyRef.current || defaultBodyDaRef.current || defaultBodyEnRef.current;
 
   return (
     <div style={{ fontFamily: fonts.body, color: colors.inkBrown }}>
@@ -433,6 +565,10 @@ export function AdminMessaging() {
             bodyHtml={bodyHtmlDa}
             onSubjectChange={setSubjectDa}
             onBodyChange={setBodyHtmlDa}
+            previewLanguage="da"
+            defaultBody={defaultBodyDaRef.current}
+            resetLabel={t("admin.messaging.resetTemplate")}
+            onReset={resetToTemplateDa}
           />
           <EditorSection
             idPrefix="messaging-en"
@@ -445,6 +581,10 @@ export function AdminMessaging() {
             bodyHtml={bodyHtmlEn}
             onSubjectChange={setSubjectEn}
             onBodyChange={setBodyHtmlEn}
+            previewLanguage="en"
+            defaultBody={defaultBodyEnRef.current}
+            resetLabel={t("admin.messaging.resetTemplate")}
+            onReset={resetToTemplateEn}
           />
         </>
       ) : (
@@ -458,7 +598,24 @@ export function AdminMessaging() {
           bodyHtml={bodyHtml}
           onSubjectChange={setSubject}
           onBodyChange={setBodyHtml}
+          previewLanguage={language}
+          defaultBody={defaultBodyRef.current}
+          resetLabel={t("admin.messaging.resetTemplate")}
+          onReset={resetToTemplate}
         />
+      )}
+
+      {hasTemplates && (
+        <p
+          style={{
+            fontSize: "0.75rem",
+            color: colors.warmBrown,
+            margin: "-0.5rem 0 0.75rem",
+            fontStyle: "italic",
+          }}
+        >
+          {t("admin.messaging.templateHint")}
+        </p>
       )}
 
       {error && (
