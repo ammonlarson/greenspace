@@ -400,7 +400,12 @@ describe("Home page render gating", () => {
 
   it("shows loading splash while status is being fetched (not pre-open page)", async () => {
     let resolveStatus!: (value: Response) => void;
-    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise((r) => { resolveStatus = r; })));
+    vi.stubGlobal("fetch", vi.fn().mockImplementation((url: string) => {
+      if (url === "/public/greenhouses") {
+        return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
+      }
+      return new Promise((r) => { resolveStatus = r; });
+    }));
 
     const Home = (await import("./page")).default;
 
