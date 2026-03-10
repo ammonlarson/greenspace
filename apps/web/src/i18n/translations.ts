@@ -332,15 +332,9 @@ const da = {
 
   "guidelines.title": "Retningslinjer for drivhuset",
   "guidelines.plantingDeadline":
-    "Planter skal være plantet inden for én uge efter lejeperiodens start.",
-  "guidelines.rentalFlow":
-    "Dette sikrer, at den 2 måneders lejeperiode forløber smidigt og er fair over for dem, der venter.",
+    "Planter skal være plantet inden for én uge efter reservationens start. Dette sikrer, at den 2 måneders reservation forløber smidigt og er fair over for dem, der venter.",
   "guidelines.forfeit":
-    "Hvis planterne ikke er startet, mistes pladsen, og den går videre til næste person på ventelisten.",
-  "guidelines.participation":
-    "Deltagere kan tilmelde sig et plantebord og passe det i den tildelte periode.",
-  "guidelines.assignment":
-    "Hver husstand tildeles ét plantebord pr. vækstsæson.",
+    " Hvis planterne ikke er startet, mistes pladsen, og den går videre til næste person på ventelisten.",
   "guidelines.rulesTitle": "Regler og ansvar",
   "guidelines.ruleWatering": "Hold plantebordet ved at vande og luge regelmæssigt.",
   "guidelines.ruleOrganic": "Brug kun økologiske og miljøvenlige havebrugsmetoder.",
@@ -691,15 +685,9 @@ const en: Record<TranslationKey, string> = {
 
   "guidelines.title": "Greenhouse guidelines",
   "guidelines.plantingDeadline":
-    "Plants must be planted within one week of your rental start date.",
-  "guidelines.rentalFlow":
-    "This keeps the 2-month rental moving and ensures fairness for those waiting.",
+    "Plants must be planted within one week of your reservation start date. This keeps the 2-month reservations moving and ensures fairness for those waiting.",
   "guidelines.forfeit":
     "If plants are not started, the spot will be forfeited to the next person in line.",
-  "guidelines.participation":
-    "Participants can sign up for a garden bed and tend to it during their assigned period.",
-  "guidelines.assignment":
-    "Each household is assigned one raised garden bed per growing season.",
   "guidelines.rulesTitle": "Rules & responsibilities",
   "guidelines.ruleWatering": "Maintain the garden bed by watering and weeding regularly.",
   "guidelines.ruleOrganic": "Use only organic and eco-friendly gardening methods.",

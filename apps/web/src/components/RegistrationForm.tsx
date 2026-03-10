@@ -228,16 +228,10 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
           {t("guidelines.title")}
         </summary>
 
-        <ul style={{ margin: "0.75rem 0 0.5rem", paddingLeft: "1.25rem" }}>
-          <li>{t("guidelines.plantingDeadline")}</li>
-          <li>{t("guidelines.rentalFlow")}</li>
-          <li>{t("guidelines.forfeit")}</li>
-          <li>{t("guidelines.participation")}</li>
-          <li>{t("guidelines.assignment")}</li>
-        </ul>
-
         <p style={guidelinesSectionHeadingStyle}>{t("guidelines.rulesTitle")}</p>
         <ul style={guidelinesListStyle}>
+          <li>{t("guidelines.plantingDeadline")}</li>
+          <li>{t("guidelines.forfeit")}</li>
           <li>{t("guidelines.ruleWatering")}</li>
           <li>{t("guidelines.ruleOrganic")}</li>
           <li>{t("guidelines.ruleNoHarvest")}</li>
