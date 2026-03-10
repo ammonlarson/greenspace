@@ -1,9 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/utils/formatDate";
 import { colors, fonts, shadows, alertWarning } from "@/styles/theme";
+import { useTableControls } from "@/hooks/useTableControls";
+import { TableControls } from "./TableControls";
+import { SortableHeader } from "./SortableHeader";
 import { NotificationComposer, type NotificationValue } from "./NotificationComposer";
 
 interface WaitlistEntry {
@@ -37,6 +40,31 @@ export function AdminWaitlist() {
   const [assignBoxId, setAssignBoxId] = useState("");
   const [assignNotification, setAssignNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [assignDuplicateWarning, setAssignDuplicateWarning] = useState<DuplicateExisting[] | null>(null);
+
+  const statusOptions = useMemo(() => {
+    const statuses = [...new Set(entries.map((e) => e.status))];
+    return [
+      { label: t("admin.table.allStatuses"), value: "__all__" },
+      ...statuses.map((s) => ({ label: s, value: s })),
+    ];
+  }, [entries, t]);
+
+  const {
+    sort,
+    toggleSort,
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilter,
+    clearAll,
+    hasActiveControls,
+    processedData: filteredEntries,
+  } = useTableControls({
+    data: entries,
+    defaultSort: { key: "created_at", direction: "asc" },
+    searchableFields: ["name", "email", "apartment_key"],
+    filterConfigs: [{ key: "status", allValue: "__all__" }],
+  });
 
   const fetchWaitlist = useCallback(async () => {
     try {
@@ -289,7 +317,25 @@ export function AdminWaitlist() {
           {t("admin.waitlist.noEntries")}
         </p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
+        <>
+          <TableControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filters={[
+              {
+                key: "status",
+                label: t("admin.waitlist.status"),
+                options: statusOptions,
+                value: filters["status"],
+                onChange: (v) => setFilter("status", v),
+              },
+            ]}
+            hasActiveControls={hasActiveControls}
+            onClearAll={clearAll}
+            resultCount={filteredEntries.length}
+            totalCount={entries.length}
+          />
+          <div style={{ overflowX: "auto" }}>
           <table
             style={{
               width: "100%",
@@ -298,17 +344,17 @@ export function AdminWaitlist() {
             }}
           >
             <thead>
-              <tr style={{ borderBottom: `2px solid ${colors.borderTan}`, textAlign: "left" }}>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.name")}</th>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.email")}</th>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.apartment")}</th>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.status")}</th>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.date")}</th>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.actions")}</th>
+              <tr style={{ textAlign: "left" }}>
+                <SortableHeader label={t("admin.waitlist.name")} sortKey="name" sort={sort} onToggle={toggleSort} />
+                <SortableHeader label={t("admin.waitlist.email")} sortKey="email" sort={sort} onToggle={toggleSort} />
+                <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}`, color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.apartment")}</th>
+                <SortableHeader label={t("admin.waitlist.status")} sortKey="status" sort={sort} onToggle={toggleSort} />
+                <SortableHeader label={t("admin.waitlist.date")} sortKey="created_at" sort={sort} onToggle={toggleSort} />
+                <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}`, color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.actions")}</th>
               </tr>
             </thead>
             <tbody>
-              {entries.map((entry) => (
+              {filteredEntries.map((entry) => (
                 <tr key={entry.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
                   <td style={{ padding: "0.5rem" }}>{entry.name}</td>
                   <td style={{ padding: "0.5rem" }}>{entry.email}</td>
@@ -358,7 +404,8 @@ export function AdminWaitlist() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </section>
   );
