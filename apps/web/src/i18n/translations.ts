@@ -268,6 +268,24 @@ const da = {
   "admin.boxes.occupiedBy": "Optaget af",
   "admin.boxes.noRegistration": "Ingen tilmelding fundet",
 
+  "admin.tab.stagingTools": "Testværktøjer",
+
+  "admin.staging.title": "Testværktøjer (kun staging)",
+  "admin.staging.warning":
+    "Disse handlinger er kun tilgængelige i staging-miljøet og påvirker alle data.",
+  "admin.staging.fillBoxes": "Fyld alle kasser med testregistreringer",
+  "admin.staging.fillBoxesDescription":
+    "Opretter falske registreringer for alle ledige og reserverede kasser.",
+  "admin.staging.fillBoxesConfirm":
+    "Er du sikker på, at du vil fylde alle kasser med testregistreringer? Eksisterende registreringer påvirkes ikke.",
+  "admin.staging.fillBoxesSuccess": "kasser fyldt med testregistreringer",
+  "admin.staging.clearRegistrations": "Ryd alle registreringer",
+  "admin.staging.clearRegistrationsDescription":
+    "Fjerner alle aktive registreringer og frigiver alle kasser.",
+  "admin.staging.clearRegistrationsConfirm":
+    "Er du sikker på, at du vil fjerne ALLE registreringer? Denne handling kan ikke fortrydes.",
+  "admin.staging.clearRegistrationsSuccess": "registreringer fjernet",
+
   "admin.tab.account": "Konto",
   "admin.logout": "Log ud",
   "admin.logoutConfirm": "Er du sikker på, at du vil logge ud?",
@@ -570,6 +588,24 @@ const en: Record<TranslationKey, string> = {
   "admin.boxes.releaseReserved": "Keep as reserved",
   "admin.boxes.occupiedBy": "Occupied by",
   "admin.boxes.noRegistration": "No registration found",
+
+  "admin.tab.stagingTools": "Test Tools",
+
+  "admin.staging.title": "Test Tools (staging only)",
+  "admin.staging.warning":
+    "These actions are only available in the staging environment and affect all data.",
+  "admin.staging.fillBoxes": "Fill all boxes with test registrations",
+  "admin.staging.fillBoxesDescription":
+    "Creates fake registrations for all available and reserved boxes.",
+  "admin.staging.fillBoxesConfirm":
+    "Are you sure you want to fill all boxes with test registrations? Existing registrations will not be affected.",
+  "admin.staging.fillBoxesSuccess": "boxes filled with test registrations",
+  "admin.staging.clearRegistrations": "Clear all registrations",
+  "admin.staging.clearRegistrationsDescription":
+    "Removes all active registrations and releases all boxes.",
+  "admin.staging.clearRegistrationsConfirm":
+    "Are you sure you want to remove ALL registrations? This action cannot be undone.",
+  "admin.staging.clearRegistrationsSuccess": "registrations cleared",
 
   "admin.tab.account": "Account",
   "admin.logout": "Log out",
