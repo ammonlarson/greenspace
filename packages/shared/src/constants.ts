@@ -61,6 +61,10 @@ export const OPENING_TIMEZONE = "Europe/Copenhagen" as const;
 /** Email sender configuration */
 export const EMAIL_FROM = "greenspace@un17hub.com" as const;
 export const EMAIL_REPLY_TO = "elise7284@gmail.com" as const;
+export const EMAIL_FROM_NAMES: Record<"da" | "en", string> = {
+  da: "UN17 Village Taghaver",
+  en: "UN17 Village Rooftop Gardens",
+} as const;
 
 /** Organizer contacts */
 export const ORGANIZER_CONTACTS = [
