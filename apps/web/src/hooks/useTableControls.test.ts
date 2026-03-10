@@ -114,6 +114,36 @@ describe("useTableControls", () => {
     expect(result.current.processedData[3].id).toBe(1);
   });
 
+  it("uses defaultValue for initial filter state", () => {
+    const { result } = renderHook(() =>
+      useTableControls({
+        data: testData,
+        filterConfigs: [{ key: "status", allValue: "__all__", defaultValue: "active" }],
+      })
+    );
+
+    expect(result.current.filters["status"]).toBe("active");
+    expect(result.current.processedData).toHaveLength(2);
+    expect(result.current.processedData.every((d) => d.status === "active")).toBe(true);
+    expect(result.current.hasActiveControls).toBe(false);
+  });
+
+  it("clearAll resets to defaultValue not allValue", () => {
+    const { result } = renderHook(() =>
+      useTableControls({
+        data: testData,
+        filterConfigs: [{ key: "status", allValue: "__all__", defaultValue: "active" }],
+      })
+    );
+
+    act(() => result.current.setFilter("status", "waiting"));
+    expect(result.current.hasActiveControls).toBe(true);
+
+    act(() => result.current.clearAll());
+    expect(result.current.filters["status"]).toBe("active");
+    expect(result.current.processedData).toHaveLength(2);
+  });
+
   it("combines search and filter", () => {
     const { result } = renderHook(() =>
       useTableControls({
