@@ -478,6 +478,7 @@ export async function handleJoinWaitlist(ctx: RequestContext): Promise<RouteResp
           door: body.door ?? null,
           apartment_key: apartmentKey,
           language: body.language!,
+          greenhouse_preference: body.greenhousePreference!,
         })
         .returning("id")
         .executeTakeFirstOrThrow();

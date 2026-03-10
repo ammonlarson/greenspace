@@ -1,6 +1,7 @@
 import {
   ELIGIBLE_STREET,
   FLOOR_DOOR_REQUIRED_NUMBERS,
+  GREENHOUSE_PREFERENCES,
   HOUSE_NUMBER_MAX,
   HOUSE_NUMBER_MIN,
   TOTAL_BOX_COUNT,
@@ -262,6 +263,11 @@ export function validateWaitlistInput(
 
   const langResult = validateLanguage((input.language ?? "") as string);
   if (!langResult.valid) errors["language"] = langResult.error!;
+
+  const pref = input.greenhousePreference;
+  if (!pref || !GREENHOUSE_PREFERENCES.includes(pref as typeof GREENHOUSE_PREFERENCES[number])) {
+    errors["greenhousePreference"] = "Greenhouse preference must be one of: kronen, søen, any";
+  }
 
   return {
     valid: Object.keys(errors).length === 0,

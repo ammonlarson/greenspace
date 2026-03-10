@@ -500,6 +500,7 @@ describe("handleJoinWaitlist", () => {
     floor: null,
     door: null,
     language: "da",
+    greenhousePreference: "any",
   };
 
   it("throws badRequest when body is missing", async () => {
@@ -549,6 +550,7 @@ describe("handleJoinWaitlist (happy path)", () => {
     floor: null,
     door: null,
     language: "da",
+    greenhousePreference: "any",
   };
 
   it("creates a new waitlist entry when no boxes available and apartment not on waitlist", async () => {
@@ -939,6 +941,7 @@ describe("handleJoinWaitlist — FIFO ordering", () => {
           street: "Else Alfelts Vej",
           houseNumber: 130,
           language: "da",
+          greenhousePreference: "any",
         },
       }),
     );
@@ -1028,6 +1031,7 @@ describe("handleJoinWaitlist — FIFO ordering", () => {
           street: "Else Alfelts Vej",
           houseNumber: 130,
           language: "en",
+          greenhousePreference: "any",
         },
       }),
     );

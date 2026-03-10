@@ -298,6 +298,7 @@ describe("PII redaction — public endpoints never return personal data", () => 
             floor: null,
             door: null,
             language: "da",
+            greenhousePreference: "any",
           },
         }),
       );
@@ -327,6 +328,7 @@ describe("PII redaction — public endpoints never return personal data", () => 
             floor: null,
             door: null,
             language: "da",
+            greenhousePreference: "any",
           },
         }),
       );

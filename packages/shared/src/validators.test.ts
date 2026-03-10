@@ -349,6 +349,7 @@ describe("validateWaitlistInput", () => {
     floor: null,
     door: null,
     language: "da" as const,
+    greenhousePreference: "any" as const,
   };
 
   it("accepts a fully valid input", () => {
@@ -371,6 +372,7 @@ describe("validateWaitlistInput", () => {
     expect(result.errors["street"]).toBeDefined();
     expect(result.errors["houseNumber"]).toBeDefined();
     expect(result.errors["language"]).toBeDefined();
+    expect(result.errors["greenhousePreference"]).toBeDefined();
     expect(result.errors["boxId"]).toBeUndefined();
   });
 
@@ -393,5 +395,21 @@ describe("validateWaitlistInput", () => {
       door: "th",
     });
     expect(result.valid).toBe(true);
+  });
+
+  it("accepts all valid greenhouse preferences", () => {
+    for (const pref of ["kronen", "søen", "any"] as const) {
+      const result = validateWaitlistInput({ ...validInput, greenhousePreference: pref });
+      expect(result.valid).toBe(true);
+    }
+  });
+
+  it("rejects invalid greenhouse preference", () => {
+    const result = validateWaitlistInput({
+      ...validInput,
+      greenhousePreference: "invalid" as never,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors["greenhousePreference"]).toBeDefined();
   });
 });
