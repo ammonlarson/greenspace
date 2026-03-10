@@ -16,6 +16,10 @@ vi.mock("../../lib/email-service.js", () => ({
   queueAndSendEmail: vi.fn().mockResolvedValue("email-mock-id"),
 }));
 
+vi.mock("../../lib/admin-ops-notifications.js", () => ({
+  notifyAdmins: vi.fn().mockResolvedValue(undefined),
+}));
+
 function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
   return {
     db: {} as Kysely<Database>,

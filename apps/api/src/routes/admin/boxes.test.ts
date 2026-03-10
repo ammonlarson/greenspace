@@ -9,6 +9,10 @@ vi.mock("../../lib/audit.js", () => ({
   logAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../../lib/admin-ops-notifications.js", () => ({
+  notifyAdmins: vi.fn().mockResolvedValue(undefined),
+}));
+
 function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
   return {
     db: {} as Kysely<Database>,

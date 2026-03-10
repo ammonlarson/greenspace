@@ -7,6 +7,7 @@ import {
   type AdminNotificationAction,
   type NotificationPreviewInput,
 } from "../../lib/admin-email-templates.js";
+import { notifyAdmins } from "../../lib/admin-ops-notifications.js";
 import { queueAndSendEmail } from "../../lib/email-service.js";
 import { badRequest, conflict, notFound, unauthorized } from "../../lib/errors.js";
 import { logger } from "../../lib/logger.js";
@@ -315,6 +316,13 @@ export async function handleCreateRegistration(ctx: RequestContext): Promise<Rou
     result.id,
   );
 
+  await notifyAdmins(ctx.db, {
+    type: "admin_registration_create",
+    actingAdminId: adminId,
+    userName: name,
+    boxId,
+  });
+
   return {
     statusCode: 201,
     body: { id: result.id, boxId, apartmentKey },
@@ -457,6 +465,14 @@ export async function handleMoveRegistration(ctx: RequestContext): Promise<Route
     registrationId,
   );
 
+  await notifyAdmins(ctx.db, {
+    type: "admin_registration_move",
+    actingAdminId: adminId,
+    userName: moveResult.recipientName,
+    oldBoxId: moveResult.oldBoxId,
+    newBoxId,
+  });
+
   return {
     statusCode: 200,
     body: { registrationId, newBoxId },
@@ -559,6 +575,13 @@ export async function handleRemoveRegistration(ctx: RequestContext): Promise<Rou
     "registration",
     registrationId,
   );
+
+  await notifyAdmins(ctx.db, {
+    type: "admin_registration_remove",
+    actingAdminId: adminId,
+    userName: removeResult.recipientName,
+    boxId: removeResult.boxId,
+  });
 
   return {
     statusCode: 200,
@@ -784,6 +807,13 @@ export async function handleAssignWaitlist(ctx: RequestContext): Promise<RouteRe
     "registration",
     result.registrationId,
   );
+
+  await notifyAdmins(ctx.db, {
+    type: "admin_waitlist_assign",
+    actingAdminId: adminId,
+    userName: result.recipientName,
+    boxId,
+  });
 
   return {
     statusCode: 201,

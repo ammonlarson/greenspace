@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { OPENING_TIMEZONE } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { colors, fonts } from "@/styles/theme";
+import { AdminNotificationPreferences } from "./AdminNotificationPreferences";
 
 interface OpeningTimeData {
   openingDatetime: string;
@@ -76,6 +77,8 @@ export function AdminSettings() {
   }
 
   return (
+    <>
+    <AdminNotificationPreferences />
     <section style={{ maxWidth: 500, margin: "2rem auto", padding: "0 1rem" }}>
       <h2 style={{ fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.openingTimeTitle")}</h2>
       <p style={{ color: colors.warmBrown, fontSize: "0.9rem" }}>
@@ -143,6 +146,7 @@ export function AdminSettings() {
         </button>
       </form>
     </section>
+    </>
   );
 }
 

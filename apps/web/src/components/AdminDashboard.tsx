@@ -10,12 +10,16 @@ import { AdminSettings } from "./AdminSettings";
 import { AdminAuditLog } from "./AdminAuditLog";
 import { AdminAccount } from "./AdminAccount";
 import { AdminMessaging } from "./AdminMessaging";
+import { AdminStagingTools } from "./AdminStagingTools";
 
-type Tab = "registrations" | "waitlist" | "boxes" | "messaging" | "settings" | "audit" | "account";
+const isStaging = process.env.NEXT_PUBLIC_ENV === "staging";
 
-const TABS: Tab[] = ["registrations", "waitlist", "boxes", "messaging", "settings", "audit", "account"];
+type Tab = "registrations" | "waitlist" | "boxes" | "messaging" | "settings" | "audit" | "account" | "stagingTools";
 
-const TAB_KEYS: Record<Tab, "admin.tab.registrations" | "admin.tab.waitlist" | "admin.tab.boxes" | "admin.tab.messaging" | "admin.tab.settings" | "admin.tab.audit" | "admin.tab.account"> = {
+const BASE_TABS: Tab[] = ["registrations", "waitlist", "boxes", "messaging", "settings", "audit", "account"];
+const TABS: Tab[] = isStaging ? [...BASE_TABS, "stagingTools"] : BASE_TABS;
+
+const TAB_KEYS: Record<Tab, "admin.tab.registrations" | "admin.tab.waitlist" | "admin.tab.boxes" | "admin.tab.messaging" | "admin.tab.settings" | "admin.tab.audit" | "admin.tab.account" | "admin.tab.stagingTools"> = {
   registrations: "admin.tab.registrations",
   waitlist: "admin.tab.waitlist",
   boxes: "admin.tab.boxes",
@@ -23,6 +27,7 @@ const TAB_KEYS: Record<Tab, "admin.tab.registrations" | "admin.tab.waitlist" | "
   settings: "admin.tab.settings",
   audit: "admin.tab.audit",
   account: "admin.tab.account",
+  stagingTools: "admin.tab.stagingTools",
 };
 
 interface AdminDashboardProps {
@@ -125,6 +130,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {activeTab === "settings" && <AdminSettings />}
         {activeTab === "audit" && <AdminAuditLog />}
         {activeTab === "account" && <AdminAccount />}
+        {activeTab === "stagingTools" && <AdminStagingTools />}
       </div>
     </div>
   );
