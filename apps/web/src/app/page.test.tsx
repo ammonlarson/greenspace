@@ -377,6 +377,9 @@ vi.mock("@/components/LandingPage", () => ({
 vi.mock("@/components/GreenhouseMapPage", () => ({
   GreenhouseMapPage: () => <div data-testid="greenhouse-map-page" />,
 }));
+vi.mock("@/components/WaitlistForm", () => ({
+  WaitlistForm: () => <div data-testid="waitlist-form" />,
+}));
 vi.mock("@/components/AdminPage", () => ({
   AdminPage: () => <div data-testid="admin-page" />,
 }));

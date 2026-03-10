@@ -14,9 +14,10 @@ import { containerStyle, headingStyle } from "@/styles/theme";
 interface LandingPageProps {
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
   hasAvailableBoxes?: boolean;
+  onJoinWaitlist?: () => void;
 }
 
-export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: LandingPageProps) {
+export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist }: LandingPageProps) {
   const { t } = useLanguage();
   const [greenhouses, setGreenhouses] = useState<GreenhouseSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: La
           />
         ))}
       </div>
-      {!loading && !hasAvailableBoxes && <WaitlistBanner />}
+      {!loading && !hasAvailableBoxes && <WaitlistBanner onJoinWaitlist={onJoinWaitlist} />}
     </section>
   );
 }
