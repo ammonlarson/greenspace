@@ -9,6 +9,7 @@ import {
 } from "@greenspace/shared";
 import type { RegistrationInput, WaitlistInput } from "@greenspace/shared";
 import { logAuditEvent } from "../lib/audit.js";
+import { notifyAdmins } from "../lib/admin-ops-notifications.js";
 import { buildConfirmationEmail } from "../lib/email-templates.js";
 import { queueAndSendEmail } from "../lib/email-service.js";
 import { badRequest, conflict } from "../lib/errors.js";
@@ -363,6 +364,23 @@ export async function handlePublicRegister(ctx: RequestContext): Promise<RouteRe
     subject: emailContent.subject,
     bodyHtml: emailContent.bodyHtml,
   });
+
+  if (result.switchedFromBoxId != null) {
+    await notifyAdmins(ctx.db, {
+      type: "user_switch",
+      userName: body.name,
+      userEmail: body.email,
+      oldBoxId: result.switchedFromBoxId,
+      newBoxId: body.boxId,
+    });
+  } else {
+    await notifyAdmins(ctx.db, {
+      type: "user_registration",
+      userName: body.name,
+      userEmail: body.email,
+      boxId: body.boxId,
+    });
+  }
 
   return {
     statusCode: 200,
