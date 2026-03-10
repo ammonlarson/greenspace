@@ -30,6 +30,7 @@ export default function Home() {
   const [selectedGreenhouse, setSelectedGreenhouse] = useHistoryState<Greenhouse | null>("home.greenhouse", null);
   const [status, setStatus] = useState<PublicStatus | null>(null);
   const [statusResolved, setStatusResolved] = useState(false);
+  const [landingRefreshKey, setLandingRefreshKey] = useState(0);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchStatus = useCallback(async () => {
@@ -83,7 +84,11 @@ export default function Home() {
       return (
         <GreenhouseMapPage
           greenhouse={selectedGreenhouse}
-          onBack={() => setSelectedGreenhouse(null)}
+          onBack={() => {
+            setSelectedGreenhouse(null);
+            fetchStatus();
+            setLandingRefreshKey((k) => k + 1);
+          }}
         />
       );
     }
@@ -91,6 +96,7 @@ export default function Home() {
       <LandingPage
         onSelectGreenhouse={setSelectedGreenhouse}
         hasAvailableBoxes={status?.hasAvailableBoxes ?? true}
+        refreshKey={landingRefreshKey}
       />
     );
   }
