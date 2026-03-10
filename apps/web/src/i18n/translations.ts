@@ -330,6 +330,27 @@ const da = {
   "admin.table.allStates": "Alle tilstande",
   "admin.table.allGreenhouses": "Alle drivhuse",
 
+  "guidelines.title": "Retningslinjer for drivhuset",
+  "guidelines.plantingDeadline":
+    "Planter skal være plantet inden for én uge efter lejeperiodens start.",
+  "guidelines.rentalFlow":
+    "Dette sikrer, at den 2 måneders lejeperiode forløber smidigt og er fair over for dem, der venter.",
+  "guidelines.forfeit":
+    "Hvis planterne ikke er startet, mistes pladsen, og den går videre til næste person på ventelisten.",
+  "guidelines.participation":
+    "Deltagere kan tilmelde sig et plantebord og passe det i den tildelte periode.",
+  "guidelines.assignment":
+    "Hver husstand tildeles ét plantebord pr. vækstsæson.",
+  "guidelines.rulesTitle": "Regler og ansvar",
+  "guidelines.ruleWatering": "Hold plantebordet ved at vande og luge regelmæssigt.",
+  "guidelines.ruleOrganic": "Brug kun økologiske og miljøvenlige havebrugsmetoder.",
+  "guidelines.ruleNoHarvest": "Høst ikke fra andre planteborde uden tilladelse.",
+  "guidelines.supportTitle": "Hjælp og ressourcer",
+  "guidelines.supportTools": "Basale haveværktøjer og kompost er til rådighed til fælles brug.",
+  "guidelines.supportContact":
+    "Har du brug for hjælp eller har spørgsmål, kan du kontakte fællesskabskoordinatorerne.",
+  "guidelines.contactTitle": "Kontaktpersoner",
+
   "about.title": "Om projektet",
   "about.description":
     "UN17 Village Taghaver er et fællesskabsprojekt for beboere på UN17 Village. Vi driver plantekasser i to tagdrivhuse for at skabe grønne rum og styrke nabofællesskabet.",
@@ -667,6 +688,27 @@ const en: Record<TranslationKey, string> = {
   "admin.table.allStatuses": "All statuses",
   "admin.table.allStates": "All states",
   "admin.table.allGreenhouses": "All greenhouses",
+
+  "guidelines.title": "Greenhouse guidelines",
+  "guidelines.plantingDeadline":
+    "Plants must be planted within one week of your rental start date.",
+  "guidelines.rentalFlow":
+    "This keeps the 2-month rental moving and ensures fairness for those waiting.",
+  "guidelines.forfeit":
+    "If plants are not started, the spot will be forfeited to the next person in line.",
+  "guidelines.participation":
+    "Participants can sign up for a garden bed and tend to it during their assigned period.",
+  "guidelines.assignment":
+    "Each household is assigned one raised garden bed per growing season.",
+  "guidelines.rulesTitle": "Rules & responsibilities",
+  "guidelines.ruleWatering": "Maintain the garden bed by watering and weeding regularly.",
+  "guidelines.ruleOrganic": "Use only organic and eco-friendly gardening methods.",
+  "guidelines.ruleNoHarvest": "Do not harvest from other beds without permission.",
+  "guidelines.supportTitle": "Support & resources",
+  "guidelines.supportTools": "Basic gardening tools and compost are available for shared use.",
+  "guidelines.supportContact":
+    "If you need assistance or have questions, reach out to the community coordinators.",
+  "guidelines.contactTitle": "Contact",
 
   "about.title": "About the project",
   "about.description":

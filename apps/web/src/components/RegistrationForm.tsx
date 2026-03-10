@@ -233,6 +233,58 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
         <p style={{ margin: 0 }}>{t("policy.noSelfUnregister")}</p>
       </div>
 
+      <details
+        style={{
+          background: colors.parchment,
+          border: `1px solid ${colors.borderTan}`,
+          borderRadius: 8,
+          padding: "1rem",
+          marginBottom: "1.25rem",
+          fontSize: "0.9rem",
+          lineHeight: 1.6,
+        }}
+      >
+        <summary style={{ fontWeight: 600, cursor: "pointer", color: colors.warmBrown }}>
+          {t("guidelines.title")}
+        </summary>
+
+        <ul style={{ margin: "0.75rem 0 0.5rem", paddingLeft: "1.25rem" }}>
+          <li>{t("guidelines.plantingDeadline")}</li>
+          <li>{t("guidelines.rentalFlow")}</li>
+          <li>{t("guidelines.forfeit")}</li>
+          <li>{t("guidelines.participation")}</li>
+          <li>{t("guidelines.assignment")}</li>
+        </ul>
+
+        <p style={{ fontWeight: 600, margin: "0.75rem 0 0.25rem", color: colors.warmBrown }}>
+          {t("guidelines.rulesTitle")}
+        </p>
+        <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem" }}>
+          <li>{t("guidelines.ruleWatering")}</li>
+          <li>{t("guidelines.ruleOrganic")}</li>
+          <li>{t("guidelines.ruleNoHarvest")}</li>
+        </ul>
+
+        <p style={{ fontWeight: 600, margin: "0.75rem 0 0.25rem", color: colors.warmBrown }}>
+          {t("guidelines.supportTitle")}
+        </p>
+        <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.25rem" }}>
+          <li>{t("guidelines.supportTools")}</li>
+          <li>{t("guidelines.supportContact")}</li>
+        </ul>
+
+        <p style={{ fontWeight: 600, margin: "0.75rem 0 0.25rem", color: colors.warmBrown }}>
+          {t("guidelines.contactTitle")}
+        </p>
+        <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+          {ORGANIZER_CONTACTS.map((c) => (
+            <li key={c.email}>
+              {c.name} — <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.email}</a>
+            </li>
+          ))}
+        </ul>
+      </details>
+
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="reg-name" style={labelStyle}>
