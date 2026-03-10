@@ -9,6 +9,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseCard } from "./GreenhouseCard";
 import { WaitlistBanner } from "./WaitlistBanner";
+import { LoadingSplash } from "./LoadingSplash";
 import { containerStyle, headingStyle } from "@/styles/theme";
 
 interface LandingPageProps {
@@ -40,6 +41,10 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJo
     return () => { cancelled = true; };
   }, []);
 
+  if (loading) {
+    return <LoadingSplash />;
+  }
+
   const displayGreenhouses = greenhouses.length > 0
     ? greenhouses
     : GREENHOUSES.map((name) => ({ name, totalBoxes: 0, availableBoxes: 0, occupiedBoxes: 0 }));
@@ -59,7 +64,7 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJo
           />
         ))}
       </div>
-      {!loading && !hasAvailableBoxes && <WaitlistBanner onJoinWaitlist={onJoinWaitlist} />}
+      {!hasAvailableBoxes && <WaitlistBanner onJoinWaitlist={onJoinWaitlist} />}
     </section>
   );
 }

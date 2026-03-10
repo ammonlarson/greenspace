@@ -22,10 +22,23 @@ vi.mock("./WaitlistBanner", () => ({
   ),
 }));
 
+vi.mock("./LoadingSplash", () => ({
+  LoadingSplash: () => <div data-testid="loading-splash" />,
+}));
+
 describe("LandingPage", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+  });
+
+  it("shows loading splash while greenhouses are being fetched", () => {
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+
+    render(<LandingPage />);
+
+    expect(screen.getByTestId("loading-splash")).toBeDefined();
+    expect(screen.queryByText("greenhouse.title")).toBeNull();
   });
 
   it("does not show waitlist banner when hasAvailableBoxes is true", async () => {
