@@ -4,6 +4,10 @@ import type { Database } from "../db/types.js";
 import type { RequestContext } from "../router.js";
 import { AppError } from "../lib/errors.js";
 import { setSesClient } from "../lib/email-service.js";
+
+vi.mock("../lib/admin-ops-notifications.js", () => ({
+  notifyAdmins: vi.fn().mockResolvedValue(undefined),
+}));
 import {
   handleJoinWaitlist,
   handlePublicBoxes,
