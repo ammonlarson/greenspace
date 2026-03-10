@@ -2,6 +2,7 @@
 
 import { AUDIT_ACTIONS } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { translations, type TranslationKey } from "@/i18n/translations";
 import { colors, fonts } from "@/styles/theme";
 
 interface AuditEvent {
@@ -45,6 +46,14 @@ function truncateId(id: string, len = 8): string {
   return id.length > len ? `${id.slice(0, len)}...` : id;
 }
 
+function actionLabel(action: string, t: (key: TranslationKey) => string): string {
+  const key = `audit.action.${action}`;
+  if (key in translations.en) {
+    return t(key as TranslationKey);
+  }
+  return action;
+}
+
 function formatSnapshot(data: Record<string, unknown> | null): string {
   if (!data) return "\u2014";
   return Object.entries(data)
@@ -78,7 +87,7 @@ export function AuditTimeline({
             <option value="">{t("audit.allActions")}</option>
             {AUDIT_ACTIONS.map((a) => (
               <option key={a} value={a}>
-                {a}
+                {t(`audit.action.${a}` as TranslationKey)}
               </option>
             ))}
           </select>
@@ -127,7 +136,7 @@ export function AuditTimeline({
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     <code style={{ fontSize: "0.8rem", background: colors.parchment, color: colors.inkBrown, padding: "0.1rem 0.3rem", borderRadius: 3 }}>
-                      {evt.action}
+                      {actionLabel(evt.action, t)}
                     </code>
                   </td>
                   <td style={{ padding: "0.5rem" }}>

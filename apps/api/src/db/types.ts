@@ -5,6 +5,7 @@ export interface Database {
   planter_boxes: PlanterBoxTable;
   admins: AdminTable;
   admin_credentials: AdminCredentialTable;
+  admin_notification_preferences: AdminNotificationPreferencesTable;
   sessions: SessionTable;
   system_settings: SystemSettingsTable;
   registrations: RegistrationTable;
@@ -40,6 +41,13 @@ export interface AdminTable {
 export interface AdminCredentialTable {
   admin_id: string;
   password_hash: string;
+  updated_at: ColumnType<Date, string | undefined, string>;
+}
+
+export interface AdminNotificationPreferencesTable {
+  admin_id: string;
+  notify_user_registration: ColumnType<boolean, boolean | undefined, boolean>;
+  notify_admin_box_action: ColumnType<boolean, boolean | undefined, boolean>;
   updated_at: ColumnType<Date, string | undefined, string>;
 }
 
@@ -126,6 +134,7 @@ export type NewPlanterBox = Insertable<PlanterBoxTable>;
 export type Admin = Selectable<AdminTable>;
 export type NewAdmin = Insertable<AdminTable>;
 export type AdminCredential = Selectable<AdminCredentialTable>;
+export type AdminNotificationPreferences = Selectable<AdminNotificationPreferencesTable>;
 export type Session = Selectable<SessionTable>;
 export type SystemSettings = Selectable<SystemSettingsTable>;
 export type Registration = Selectable<RegistrationTable>;
