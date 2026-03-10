@@ -186,6 +186,27 @@ describe("handleCreateRegistration (happy path)", () => {
     }
   });
 
+  it("defaults language to English when not provided", async () => {
+    const mockDb = makeMockTrxDb({
+      boxResult: { id: 1, state: "available" },
+      existingReg: undefined,
+    });
+
+    const result = await handleCreateRegistration(
+      makeCtx({
+        db: mockDb,
+        body: {
+          boxId: 1,
+          name: "Alice",
+          email: "a@b.com",
+          street: "Else Alfelts Vej",
+          houseNumber: 130,
+        },
+      }),
+    );
+    expect(result.statusCode).toBe(201);
+  });
+
   it("sends notification email when notification.sendEmail is true", async () => {
     const { queueAndSendEmail } = await import("../../lib/email-service.js");
     const mockSendEmail = vi.mocked(queueAndSendEmail);
