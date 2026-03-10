@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  GREENHOUSES,
   type Greenhouse,
+  type GreenhouseSummary,
   type PlanterBoxPublic,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -16,16 +18,18 @@ import { colors, fonts, containerStyle, headingStyle, alertWarning } from "@/sty
 interface GreenhouseMapPageProps {
   greenhouse: Greenhouse;
   onBack: () => void;
+  onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
 }
 
 type PageView = "map" | "register" | "waitlist";
 
-export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps) {
+export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: GreenhouseMapPageProps) {
   const { t } = useLanguage();
   const [boxes, setBoxes] = useState<PlanterBoxPublic[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageView, setPageView] = useHistoryState<PageView>("greenhouse.pageView", "map");
   const [selectedBoxId, setSelectedBoxId] = useHistoryState<number | null>("greenhouse.boxId", null);
+  const [otherGreenhouse, setOtherGreenhouse] = useState<GreenhouseSummary | null>(null);
 
   const fetchBoxes = useCallback(async () => {
     try {
@@ -42,6 +46,23 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   }, [greenhouse]);
 
   useEffect(() => {
+    async function fetchGreenhouseSummaries() {
+      try {
+        const res = await fetch("/public/greenhouses");
+        if (res.ok) {
+          const summaries: GreenhouseSummary[] = await res.json();
+          const otherName = GREENHOUSES.find((g) => g !== greenhouse);
+          const other = summaries.find((s) => s.name === otherName) ?? null;
+          setOtherGreenhouse(other);
+        }
+      } catch {
+        /* API unreachable — cross-link will not show */
+      }
+    }
+    fetchGreenhouseSummaries();
+  }, [greenhouse]);
+
+  useEffect(() => {
     fetchBoxes();
   }, [fetchBoxes]);
 
@@ -49,6 +70,7 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
   const available = boxes.filter((b) => b.state === "available").length;
   const occupied = boxes.filter((b) => b.state === "occupied").length;
   const hasAvailable = available > 0;
+  const otherHasAvailable = otherGreenhouse !== null && otherGreenhouse.availableBoxes > 0;
 
   if (pageView === "register" && selectedBoxId !== null) {
     return (
@@ -163,6 +185,36 @@ export function GreenhouseMapPage({ greenhouse, onBack }: GreenhouseMapPageProps
             >
               {t("waitlist.joinButton")}
             </button>
+            {otherHasAvailable && onSelectGreenhouse && (
+              <div
+                style={{
+                  marginTop: "1rem",
+                  paddingTop: "0.75rem",
+                  borderTop: `1px solid ${colors.borderTan}`,
+                }}
+              >
+                <p style={{ margin: "0 0 0.5rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
+                  {t("waitlist.otherAvailable").replace("{greenhouse}", otherGreenhouse!.name)}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onSelectGreenhouse(otherGreenhouse!.name)}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background: colors.sage,
+                    color: colors.white,
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontFamily: fonts.body,
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {t("waitlist.goToOther").replace("{greenhouse}", otherGreenhouse!.name)}
+                </button>
+              </div>
+            )}
           </section>
         </div>
       )}

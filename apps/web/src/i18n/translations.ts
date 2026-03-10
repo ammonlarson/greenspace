@@ -49,6 +49,9 @@ const da = {
   "waitlist.alreadyOnWaitlist":
     "Din lejlighed er allerede på ventelisten. Din plads i køen er bevaret.",
   "waitlist.success": "Du er nu på ventelisten!",
+  "waitlist.otherAvailable":
+    "Der er stadig ledige plantekasser i {greenhouse}.",
+  "waitlist.goToOther": "Gå til {greenhouse}",
 
   "audit.title": "Hændelseslog",
   "audit.timestamp": "Tidsstempel",
@@ -387,6 +390,9 @@ const en: Record<TranslationKey, string> = {
   "waitlist.alreadyOnWaitlist":
     "Your apartment is already on the waitlist. Your position in the queue has been preserved.",
   "waitlist.success": "You are now on the waitlist!",
+  "waitlist.otherAvailable":
+    "There are still available planter boxes in {greenhouse}.",
+  "waitlist.goToOther": "Go to {greenhouse}",
 
   "audit.title": "Audit Log",
   "audit.timestamp": "Timestamp",
