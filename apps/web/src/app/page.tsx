@@ -115,6 +115,7 @@ export default function Home() {
             fetchStatus();
             setLandingRefreshKey((k) => k + 1);
           }}
+          onSelectGreenhouse={setSelectedGreenhouse}
         />
       );
     }
