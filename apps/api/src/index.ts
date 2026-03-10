@@ -24,6 +24,10 @@ import {
   handleGetOpeningTime,
   handleUpdateOpeningTime,
 } from "./routes/admin/settings.js";
+import {
+  handleFillBoxes,
+  handleClearRegistrations,
+} from "./routes/admin/staging.js";
 import { handleListWaitlist } from "./routes/admin/waitlist.js";
 import { handleHealth } from "./routes/health.js";
 import {
@@ -80,6 +84,9 @@ export function createRouter(): Router {
 
   router.get("/admin/settings/opening-time", requireAdmin(handleGetOpeningTime));
   router.patch("/admin/settings/opening-time", requireAdmin(handleUpdateOpeningTime));
+
+  router.post("/admin/staging/fill-boxes", requireAdmin(handleFillBoxes));
+  router.post("/admin/staging/clear-registrations", requireAdmin(handleClearRegistrations));
 
   return router;
 }
