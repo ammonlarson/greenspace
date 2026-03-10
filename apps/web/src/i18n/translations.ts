@@ -260,7 +260,6 @@ const da = {
 
   "admin.boxes.title": "Plantekasseoversigt",
   "admin.boxes.greenhouse": "Drivhus",
-  "admin.boxes.id": "ID",
   "admin.boxes.name": "Navn",
   "admin.boxes.state": "Status",
   "admin.boxes.actions": "Handlinger",
@@ -594,7 +593,6 @@ const en: Record<TranslationKey, string> = {
 
   "admin.boxes.title": "Box Overview",
   "admin.boxes.greenhouse": "Greenhouse",
-  "admin.boxes.id": "ID",
   "admin.boxes.name": "Name",
   "admin.boxes.state": "State",
   "admin.boxes.actions": "Actions",
