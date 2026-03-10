@@ -23,8 +23,8 @@ export function GreenhouseMap({ boxes, onSelectBox }: GreenhouseMapProps) {
       {boxes.map((box) => (
         <BoxCard
           key={box.id}
-          id={box.id}
           name={box.name}
+          greenhouse={box.greenhouse}
           state={box.state}
           onClick={onSelectBox ? () => onSelectBox(box.id) : undefined}
         />

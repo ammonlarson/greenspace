@@ -33,7 +33,6 @@ const translations = {
     boxDetailsTitle: "Din plantekasse",
     boxLabel: "Kasse",
     greenhouseLabel: "Drivhus",
-    boxNameLabel: "Navn",
     locationTitle: "Placering",
     kronenLocation:
       "Kronen-drivhuset ligger på taget af Else Alfelts Vej bygning, ved den nordlige indgang.",
@@ -41,9 +40,9 @@ const translations = {
       "Søen-drivhuset ligger på taget af Else Alfelts Vej bygning, ved den sydlige indgang tæt på søen.",
     mapTitle: "Plantekasse-kort",
     kronenMapDesc:
-      "Kronen-drivhuset: Kasserne 1-14 er arrangeret i to rækker. Kasserne 1-7 langs den nordlige væg, kasserne 8-14 langs den sydlige væg.",
+      "Kronen-drivhuset: Kasserne er arrangeret i to rækker langs den nordlige og sydlige væg.",
     soenMapDesc:
-      "Søen-drivhuset: Kasserne 15-29 er arrangeret i to rækker. Kasserne 15-22 langs den vestlige væg, kasserne 23-29 langs den østlige væg.",
+      "Søen-drivhuset: Kasserne er arrangeret i to rækker langs den vestlige og østlige væg.",
     careTitle: "Retningslinjer for pasning",
     careGuidelines: [
       "Vand dine planter regelmæssigt, især i varme perioder.",
@@ -72,7 +71,6 @@ const translations = {
     boxDetailsTitle: "Your planter box",
     boxLabel: "Box",
     greenhouseLabel: "Greenhouse",
-    boxNameLabel: "Name",
     locationTitle: "Location",
     kronenLocation:
       "The Kronen greenhouse is located on the rooftop of the Else Alfelts Vej building, at the northern entrance.",
@@ -80,9 +78,9 @@ const translations = {
       "The Søen greenhouse is located on the rooftop of the Else Alfelts Vej building, at the southern entrance near the lake.",
     mapTitle: "Planter box map",
     kronenMapDesc:
-      "Kronen greenhouse: Boxes 1-14 are arranged in two rows. Boxes 1-7 along the north wall, boxes 8-14 along the south wall.",
+      "Kronen greenhouse: Boxes are arranged in two rows along the north and south walls.",
     soenMapDesc:
-      "Søen greenhouse: Boxes 15-29 are arranged in two rows. Boxes 15-22 along the west wall, boxes 23-29 along the east wall.",
+      "Søen greenhouse: Boxes are arranged in two rows along the west and east walls.",
     careTitle: "Care guidelines",
     careGuidelines: [
       "Water your plants regularly, especially during warm periods.",
@@ -112,6 +110,10 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#39;");
 }
 
+function getBoxName(id: number): string {
+  return BOX_CATALOG.find((b) => b.id === id)?.name ?? `Box ${id}`;
+}
+
 function buildGreenhouseMap(greenhouse: string, boxId: number): string {
   if (greenhouse === "Kronen") {
     const northRow = Array.from({ length: 7 }, (_, i) => i + 1);
@@ -120,11 +122,11 @@ function buildGreenhouseMap(greenhouse: string, boxId: number): string {
       <table style="border-collapse: collapse; margin: 0 auto; font-size: 13px;">
         <tr>
           <td style="padding: 4px 8px; color: #888; font-size: 11px;">N &uarr;</td>
-          ${northRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${id}</td>`).join("")}
+          ${northRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
         </tr>
         <tr>
           <td style="padding: 4px 8px; color: #888; font-size: 11px;">S &darr;</td>
-          ${southRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${id}</td>`).join("")}
+          ${southRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
         </tr>
       </table>`;
   }
@@ -135,11 +137,11 @@ function buildGreenhouseMap(greenhouse: string, boxId: number): string {
     <table style="border-collapse: collapse; margin: 0 auto; font-size: 13px;">
       <tr>
         <td style="padding: 4px 8px; color: #888; font-size: 11px;">W &larr;</td>
-        ${westRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${id}</td>`).join("")}
+        ${westRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
       </tr>
       <tr>
         <td style="padding: 4px 8px; color: #888; font-size: 11px;">E &rarr;</td>
-        ${eastRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${id}</td>`).join("")}
+        ${eastRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
         <td></td>
       </tr>
     </table>`;
@@ -148,7 +150,7 @@ function buildGreenhouseMap(greenhouse: string, boxId: number): string {
 export function buildConfirmationEmail(data: ConfirmationEmailData): EmailContent {
   const t = translations[data.language];
   const box = BOX_CATALOG.find((b) => b.id === data.boxId);
-  const boxName = box?.name ?? `#${data.boxId}`;
+  const boxName = box?.name ?? `Box ${data.boxId}`;
   const greenhouse = box?.greenhouse ?? "Unknown";
 
   const switchedBox = data.switchedFromBoxId
@@ -197,10 +199,6 @@ export function buildConfirmationEmail(data: ConfirmationEmailData): EmailConten
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
         <tr>
           <td style="padding: 8px 12px; background: #f5f5f5; font-weight: bold; width: 40%;">${escapeHtml(t.boxLabel)}</td>
-          <td style="padding: 8px 12px;">#${data.boxId}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 12px; background: #f5f5f5; font-weight: bold;">${escapeHtml(t.boxNameLabel)}</td>
           <td style="padding: 8px 12px;">${escapeHtml(boxName)}</td>
         </tr>
         <tr>
