@@ -87,8 +87,7 @@ export function PreOpenPage({ openingDatetime }: PreOpenPageProps) {
         <ul style={{ listStyle: "none", padding: 0 }}>
           {ORGANIZER_CONTACTS.map((contact) => (
             <li key={contact.email} style={{ margin: "0.25rem 0" }}>
-              {contact.name} –{" "}
-              <a href={`mailto:${contact.email}`} style={{ color: colors.sage }}>{contact.email}</a>
+              <a href={`mailto:${contact.email}`} style={{ color: colors.sage }}>{contact.name}</a>
             </li>
           ))}
         </ul>

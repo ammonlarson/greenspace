@@ -113,7 +113,7 @@ function buildContactHtml(
 ): string {
   const contactListHtml = ORGANIZER_CONTACTS.map(
     (c) =>
-      `<li>${escapeHtml(c.name)} – <a href="mailto:${escapeHtml(c.email)}" style="color: #2e7d32;">${escapeHtml(c.email)}</a></li>`,
+      `<li><a href="mailto:${escapeHtml(c.email)}" style="color: #2e7d32;">${escapeHtml(c.name)}</a></li>`,
   ).join("");
 
   return `

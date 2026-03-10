@@ -197,7 +197,7 @@ export function WaitlistForm({ onCancel }: WaitlistFormProps) {
               {ORGANIZER_CONTACTS.map((c, i) => (
                 <span key={c.email}>
                   {i > 0 && ", "}
-                  <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.name} ({c.email})</a>
+                  <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.name}</a>
                 </span>
               ))}
             </li>
