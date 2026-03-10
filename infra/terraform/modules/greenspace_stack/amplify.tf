@@ -5,8 +5,6 @@ resource "aws_amplify_app" "web" {
   repository = "https://github.com/${var.github_repo}"
   platform   = "WEB_COMPUTE"
 
-  access_token = var.amplify_github_access_token
-
   build_spec = <<-YAML
 version: 1
 applications:
@@ -52,6 +50,10 @@ applications:
         NEXT_PUBLIC_ENV = "preview"
       }
     }
+  }
+
+  lifecycle {
+    ignore_changes = [access_token, oauth_token]
   }
 
   tags = {

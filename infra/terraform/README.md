@@ -143,18 +143,6 @@ are stored in GitHub repository variables:
 | `TF_ROLE_ARN_STAGING` | OIDC role ARN for staging plan/apply |
 | `TF_ROLE_ARN_PROD`    | OIDC role ARN for prod plan/apply    |
 
-#### Required variables
-
-Terraform variables that must be supplied at plan/apply time:
-
-| Variable                              | Purpose                                              |
-| ------------------------------------- | ---------------------------------------------------- |
-| `TF_VAR_amplify_github_access_token`  | GitHub PAT for Amplify repository integration        |
-
-Store the token in a GitHub Actions secret (e.g. `AMPLIFY_GITHUB_TOKEN`) and
-export it as an environment variable in CI steps that run `terraform plan` or
-`terraform apply`.
-
 ## Amplify Hosting
 
 Each environment provisions an AWS Amplify app for the Next.js frontend
