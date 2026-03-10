@@ -20,6 +20,7 @@ jobs:
   deploy-web-prod:
     name: Deploy Web (prod)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: production
     concurrency:
       group: deploy-web-prod
