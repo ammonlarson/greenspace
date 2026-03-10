@@ -6,9 +6,10 @@ import { colors, fonts } from "@/styles/theme";
 interface WaitlistBannerProps {
   position?: number | null;
   alreadyOnWaitlist?: boolean;
+  onJoinWaitlist?: () => void;
 }
 
-export function WaitlistBanner({ position, alreadyOnWaitlist }: WaitlistBannerProps) {
+export function WaitlistBanner({ position, alreadyOnWaitlist, onJoinWaitlist }: WaitlistBannerProps) {
   const { t } = useLanguage();
 
   return (
@@ -41,6 +42,26 @@ export function WaitlistBanner({ position, alreadyOnWaitlist }: WaitlistBannerPr
         >
           {t("waitlist.positionLabel")}: #{position}
         </p>
+      )}
+      {onJoinWaitlist && (
+        <button
+          type="button"
+          onClick={onJoinWaitlist}
+          style={{
+            marginTop: "0.75rem",
+            padding: "0.5rem 1rem",
+            background: colors.mutedGold,
+            color: colors.white,
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontFamily: fonts.body,
+            fontSize: "0.95rem",
+            fontWeight: 600,
+          }}
+        >
+          {t("waitlist.joinButton")}
+        </button>
       )}
     </section>
   );

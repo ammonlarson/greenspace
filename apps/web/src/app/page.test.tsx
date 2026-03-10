@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { render, screen, act, cleanup } from "@testing-library/react";
+import { render, screen, act, cleanup, fireEvent } from "@testing-library/react";
 import {
   GREENHOUSES,
   DEFAULT_OPENING_DATETIME,
@@ -371,10 +371,19 @@ vi.mock("@/components/PreOpenPage", () => ({
   PreOpenPage: () => <div data-testid="pre-open-page" />,
 }));
 vi.mock("@/components/LandingPage", () => ({
-  LandingPage: () => <div data-testid="landing-page" />,
+  LandingPage: ({ hasAvailableBoxes, onJoinWaitlist }: { hasAvailableBoxes?: boolean; onJoinWaitlist?: () => void }) => (
+    <div data-testid="landing-page">
+      {!hasAvailableBoxes && onJoinWaitlist && (
+        <button data-testid="join-waitlist-btn" onClick={onJoinWaitlist}>Join waitlist</button>
+      )}
+    </div>
+  ),
 }));
 vi.mock("@/components/GreenhouseMapPage", () => ({
   GreenhouseMapPage: () => <div data-testid="greenhouse-map-page" />,
+}));
+vi.mock("@/components/WaitlistForm", () => ({
+  WaitlistForm: () => <div data-testid="waitlist-form" />,
 }));
 vi.mock("@/components/AdminPage", () => ({
   AdminPage: () => <div data-testid="admin-page" />,
@@ -453,5 +462,68 @@ describe("Home page render gating", () => {
 
     expect(screen.getByTestId("pre-open-page")).toBeDefined();
     expect(screen.queryByTestId("loading-splash")).toBeNull();
+  });
+
+  it("shows waitlist form when join-waitlist button is clicked from landing page", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ isOpen: true, openingDatetime: "2026-04-01T10:00:00", hasAvailableBoxes: false }), { status: 200 }),
+    ));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    expect(screen.getByTestId("landing-page")).toBeDefined();
+    expect(screen.getByTestId("join-waitlist-btn")).toBeDefined();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("join-waitlist-btn"));
+    });
+
+    expect(screen.getByTestId("waitlist-form")).toBeDefined();
+    expect(screen.queryByTestId("landing-page")).toBeNull();
+  });
+
+  it("returns to landing page when header home button is clicked from waitlist form", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ isOpen: true, openingDatetime: "2026-04-01T10:00:00", hasAvailableBoxes: false }), { status: 200 }),
+    ));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("join-waitlist-btn"));
+    });
+
+    expect(screen.getByTestId("waitlist-form")).toBeDefined();
+
+    const homeButton = screen.getByText("common.appName");
+    await act(async () => {
+      fireEvent.click(homeButton);
+    });
+
+    expect(screen.getByTestId("landing-page")).toBeDefined();
+    expect(screen.queryByTestId("waitlist-form")).toBeNull();
+  });
+
+  it("does not show join-waitlist button when boxes are available", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ isOpen: true, openingDatetime: "2026-04-01T10:00:00", hasAvailableBoxes: true }), { status: 200 }),
+    ));
+
+    const Home = (await import("./page")).default;
+
+    await act(async () => {
+      render(<Home />);
+    });
+
+    expect(screen.getByTestId("landing-page")).toBeDefined();
+    expect(screen.queryByTestId("join-waitlist-btn")).toBeNull();
   });
 });
