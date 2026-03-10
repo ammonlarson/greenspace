@@ -247,7 +247,7 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
         <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
           {ORGANIZER_CONTACTS.map((c) => (
             <li key={c.email}>
-              {c.name} — <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.email}</a>
+              <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.name}</a>
             </li>
           ))}
         </ul>
