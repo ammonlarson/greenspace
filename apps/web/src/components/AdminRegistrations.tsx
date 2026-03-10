@@ -686,6 +686,7 @@ export function AdminRegistrations() {
                 <SortableHeader label={t("admin.registrations.name")} sortKey="name" sort={sort} onToggle={toggleSort} />
                 <SortableHeader label={t("admin.registrations.email")} sortKey="email" sort={sort} onToggle={toggleSort} />
                 <SortableHeader label={t("admin.registrations.box")} sortKey="box_id" sort={sort} onToggle={toggleSort} />
+                <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}` }}>{t("admin.registrations.greenhouse")}</th>
                 <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}` }}>{t("admin.registrations.apartment")}</th>
                 <SortableHeader label={t("admin.registrations.status")} sortKey="status" sort={sort} onToggle={toggleSort} />
                 <SortableHeader label={t("admin.registrations.date")} sortKey="created_at" sort={sort} onToggle={toggleSort} />
@@ -698,6 +699,7 @@ export function AdminRegistrations() {
                   <td style={{ padding: "0.5rem" }}>{reg.name}</td>
                   <td style={{ padding: "0.5rem" }}>{reg.email}</td>
                   <td style={{ padding: "0.5rem" }}>{BOX_CATALOG.find((b) => b.id === reg.box_id)?.name ?? `Box ${reg.box_id}`}</td>
+                  <td style={{ padding: "0.5rem" }}>{BOX_CATALOG.find((b) => b.id === reg.box_id)?.greenhouse ?? ""}</td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>{formatAddress(reg.street, reg.house_number, reg.floor, reg.door)}</td>
                   <td style={{ padding: "0.5rem" }}>
                     <span
