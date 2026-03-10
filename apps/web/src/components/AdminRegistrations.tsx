@@ -63,7 +63,7 @@ const requiredLabelStyle: React.CSSProperties = {
 };
 
 function formatBoxLabel(box: { id: number; name: string; greenhouse: string }): string {
-  return `${box.greenhouse} ${box.id} - ${box.name}`;
+  return `${box.greenhouse} - ${box.name}`;
 }
 
 const dialogStyle: React.CSSProperties = {
