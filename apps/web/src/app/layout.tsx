@@ -1,9 +1,15 @@
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { colors } from "@/styles/theme";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "UN17 Village Rooftop Gardens",
   description: "Rooftop planter box registration",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

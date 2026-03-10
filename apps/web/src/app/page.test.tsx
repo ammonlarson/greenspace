@@ -267,7 +267,6 @@ describe("translations", () => {
       "admin.waitlist.confirmAssign",
       "admin.boxes.title",
       "admin.boxes.greenhouse",
-      "admin.boxes.id",
       "admin.boxes.name",
       "admin.boxes.state",
     ];

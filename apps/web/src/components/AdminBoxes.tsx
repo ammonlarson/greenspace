@@ -126,7 +126,7 @@ export function AdminBoxes() {
     processedData: filteredBoxes,
   } = useTableControls({
     data: boxesWithSearchField,
-    defaultSort: { key: "id", direction: "asc" },
+    defaultSort: { key: "name", direction: "asc" },
     searchableFields: ["name", "_searchText"],
     filterConfigs: [
       { key: "state", allValue: "__all__" },
@@ -443,7 +443,7 @@ export function AdminBoxes() {
       {activeDialog?.type === "reserve" && (
         <div role="dialog" aria-labelledby="reserve-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
           <h3 id="reserve-dialog-title" style={{ margin: "0 0 0.75rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-            {t("admin.boxes.confirmReserve")} – #{activeDialog.box.id} {activeDialog.box.name}
+            {t("admin.boxes.confirmReserve")} – {activeDialog.box.name}
           </h3>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button type="button" onClick={handleReserve} disabled={submitting} style={{ ...buttonTerracotta, cursor: submitting ? "not-allowed" : "pointer" }}>
@@ -460,7 +460,7 @@ export function AdminBoxes() {
       {activeDialog?.type === "release" && (
         <div role="dialog" aria-labelledby="release-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
           <h3 id="release-dialog-title" style={{ margin: "0 0 0.75rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-            {t("admin.boxes.confirmRelease")} – #{activeDialog.box.id} {activeDialog.box.name}
+            {t("admin.boxes.confirmRelease")} – {activeDialog.box.name}
           </h3>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button type="button" onClick={handleRelease} disabled={submitting} style={{ ...buttonPrimary, cursor: submitting ? "not-allowed" : "pointer" }}>
@@ -477,7 +477,7 @@ export function AdminBoxes() {
       {activeDialog?.type === "removeRegistration" && activeDialog.box.registration && (
         <div role="dialog" aria-labelledby="remove-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
           <h3 id="remove-reg-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-            {t("admin.boxes.confirmRemoveRegistration")} – #{activeDialog.box.id} {activeDialog.box.name}
+            {t("admin.boxes.confirmRemoveRegistration")} – {activeDialog.box.name}
           </h3>
           <p style={{ fontSize: "0.85rem", color: colors.inkBrown, margin: "0 0 0.75rem" }}>
             {t("admin.boxes.occupiedBy")}: {activeDialog.box.registration.name} ({activeDialog.box.registration.email})
@@ -533,7 +533,7 @@ export function AdminBoxes() {
       {activeDialog?.type === "addRegistration" && (
         <div role="dialog" aria-labelledby="add-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
           <h3 id="add-reg-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-            {t("admin.boxes.addRegistration")} – #{activeDialog.box.id} {activeDialog.box.name}
+            {t("admin.boxes.addRegistration")} – {activeDialog.box.name}
           </h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
             <div>
@@ -678,7 +678,6 @@ export function AdminBoxes() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem" }}>
                 <thead>
                   <tr>
-                    <SortableHeader label={t("admin.boxes.id")} sortKey="id" sort={sort} onToggle={toggleSort} style={{ padding: "0.5rem 0.75rem" }} />
                     <SortableHeader label={t("admin.boxes.name")} sortKey="name" sort={sort} onToggle={toggleSort} style={{ padding: "0.5rem 0.75rem" }} />
                     <SortableHeader label={t("admin.boxes.state")} sortKey="state" sort={sort} onToggle={toggleSort} style={{ padding: "0.5rem 0.75rem" }} />
                     <th style={tableHeaderStyle}>{t("admin.boxes.actions")}</th>
@@ -689,7 +688,6 @@ export function AdminBoxes() {
                     const boxColors = BOX_STATE_COLORS[box.state];
                     return (
                       <tr key={box.id} style={tableRowStyle}>
-                        <td style={{ ...tableCellStyle, fontWeight: 700 }}>#{box.id}</td>
                         <td style={tableCellStyle}>
                           {box.name}
                           {box.registration && (
