@@ -25,6 +25,9 @@ vi.mock("./GreenhouseMap", () => ({
 vi.mock("./BoxStateLegend", () => ({
   BoxStateLegend: () => <div data-testid="box-state-legend" />,
 }));
+vi.mock("./LoadingSplash", () => ({
+  LoadingSplash: () => <div data-testid="loading-splash" />,
+}));
 vi.mock("./WaitlistForm", () => ({
   WaitlistForm: ({ onCancel }: { onCancel: () => void }) => (
     <div data-testid="waitlist-form">
@@ -83,6 +86,19 @@ describe("GreenhouseMapPage", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+  });
+
+  it("shows loading splash while boxes are being fetched", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+
+    const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
+
+    await act(async () => {
+      render(<GreenhouseMapPage greenhouse="Kronen" onBack={vi.fn()} />);
+    });
+
+    expect(screen.getByTestId("loading-splash")).toBeDefined();
+    expect(screen.queryByTestId("greenhouse-map")).toBeNull();
   });
 
   it("fetches boxes on mount and renders map", async () => {

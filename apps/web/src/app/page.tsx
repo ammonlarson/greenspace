@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DEFAULT_OPENING_DATETIME, type Greenhouse } from "@greenspace/shared";
+import { DEFAULT_OPENING_DATETIME, type Greenhouse, type GreenhouseSummary } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHistoryState } from "@/hooks/useHistoryState";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -33,6 +33,8 @@ export default function Home() {
   const [showWaitlistForm, setShowWaitlistForm] = useHistoryState<boolean>("home.waitlistForm", false);
   const [status, setStatus] = useState<PublicStatus | null>(null);
   const [statusResolved, setStatusResolved] = useState(false);
+  const [greenhouses, setGreenhouses] = useState<GreenhouseSummary[]>([]);
+  const [greenhousesLoaded, setGreenhousesLoaded] = useState(false);
   const [landingRefreshKey, setLandingRefreshKey] = useState(0);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -49,14 +51,35 @@ export default function Home() {
     }
   }, []);
 
+  const fetchGreenhouses = useCallback(async () => {
+    try {
+      const res = await fetch("/public/greenhouses");
+      if (res.ok) {
+        setGreenhouses(await res.json());
+      }
+    } catch {
+      /* API unreachable — cards will show fallback data */
+    } finally {
+      setGreenhousesLoaded(true);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStatus();
-  }, [fetchStatus]);
+    fetchGreenhouses();
+  }, [fetchStatus, fetchGreenhouses]);
 
   // Server-authoritative gate: trust the server's isOpen flag.
   // When API is unreachable (status === null), default to pre-open (safe/deny).
   const preOpen = status ? !status.isOpen : true;
   const openingDatetime = status?.openingDatetime ?? DEFAULT_OPENING_DATETIME;
+
+  // Re-fetch greenhouses when returning from a greenhouse map view.
+  useEffect(() => {
+    if (landingRefreshKey > 0) {
+      fetchGreenhouses();
+    }
+  }, [landingRefreshKey, fetchGreenhouses]);
 
   // Poll /public/status while in pre-open so the page auto-transitions
   // at the correct server-determined time without requiring a manual refresh.
@@ -105,15 +128,15 @@ export default function Home() {
     }
     return (
       <LandingPage
+        greenhouses={greenhouses}
         onSelectGreenhouse={setSelectedGreenhouse}
         hasAvailableBoxes={status?.hasAvailableBoxes ?? true}
         onJoinWaitlist={() => setShowWaitlistForm(true)}
-        refreshKey={landingRefreshKey}
       />
     );
   }
 
-  if (!ready || !statusResolved) {
+  if (!ready || !statusResolved || !greenhousesLoaded) {
     return <LoadingSplash />;
   }
 

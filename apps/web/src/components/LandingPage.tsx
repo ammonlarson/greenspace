@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   GREENHOUSES,
   type Greenhouse,
@@ -9,41 +8,16 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GreenhouseCard } from "./GreenhouseCard";
 import { WaitlistBanner } from "./WaitlistBanner";
-import { LoadingSplash } from "./LoadingSplash";
 import { containerStyle, headingStyle } from "@/styles/theme";
 
 interface LandingPageProps {
+  greenhouses?: GreenhouseSummary[];
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
   hasAvailableBoxes?: boolean;
   onJoinWaitlist?: () => void;
-  refreshKey?: number;
 }
-export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist, refreshKey = 0 }: LandingPageProps) {
+export function LandingPage({ greenhouses = [], onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist }: LandingPageProps) {
   const { t } = useLanguage();
-  const [greenhouses, setGreenhouses] = useState<GreenhouseSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/public/greenhouses");
-        if (res.ok && !cancelled) {
-          setGreenhouses(await res.json());
-        }
-      } catch {
-        /* API unreachable — cards will show empty until loaded */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [refreshKey]);
-
-  if (loading) {
-    return <LoadingSplash />;
-  }
 
   const displayGreenhouses = greenhouses.length > 0
     ? greenhouses
