@@ -17,10 +17,8 @@ the staging and production environment stacks.
 ## Least-privilege IAM
 
 SES send permissions are scoped to the SES domain identity provisioned by the
-module (`aws_ses_domain_identity`). CloudFront invalidation permissions are
-scoped to explicit ARNs supplied via `cloudfront_distribution_arns`. Wildcard
-(`*`) resources are not accepted; input validations enforce correct ARN
-prefixes and non-empty lists.
+module (`aws_ses_domain_identity`). Wildcard (`*`) resources are not accepted
+where resource-level scoping is possible.
 
 ## SES email configuration
 
@@ -56,7 +54,6 @@ are managed by Terraform. After the first `terraform apply`:
 | `vpc_cidr`                    | CIDR block for the VPC                               |
 | `ses_sender_domain`           | Domain for SES identity and Route 53 zone            |
 | `ses_reply_to_email`          | Default Reply-To (defaults to `elise7284@gmail.com`) |
-| `cloudfront_distribution_arns`| CloudFront ARNs for CI invalidation permissions      |
 | `db_instance_class`           | RDS instance class                                   |
 
 See `variables.tf` for the full list with descriptions and defaults.

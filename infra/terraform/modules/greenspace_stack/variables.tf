@@ -105,26 +105,6 @@ variable "ses_reply_to_email" {
   default     = "elise7284@gmail.com"
 }
 
-variable "cloudfront_distribution_arns" {
-  description = "CloudFront distribution ARN(s) that CI is allowed to create invalidations for."
-  type        = list(string)
-
-  validation {
-    condition     = length(var.cloudfront_distribution_arns) > 0
-    error_message = "At least one CloudFront distribution ARN is required. Wildcard '*' is not allowed."
-  }
-
-  validation {
-    condition     = alltrue([for arn in var.cloudfront_distribution_arns : can(regex("^arn:aws:cloudfront:", arn))])
-    error_message = "Each CloudFront distribution ARN must start with 'arn:aws:cloudfront:'."
-  }
-
-  validation {
-    condition     = alltrue([for arn in var.cloudfront_distribution_arns : !can(regex("[*]", arn))])
-    error_message = "CloudFront distribution ARNs must not contain wildcards ('*')."
-  }
-}
-
 # ---------- Amplify ----------
 
 variable "amplify_github_access_token" {
