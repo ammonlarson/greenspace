@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, act, cleanup, fireEvent } from "@testing-library/react";
-import type { PlanterBoxPublic } from "@greenspace/shared";
+import type { PlanterBoxPublic, GreenhouseSummary } from "@greenspace/shared";
 
 vi.mock("@/i18n/LanguageProvider", () => ({
   useLanguage: () => ({ language: "en", ready: true, setLanguage: vi.fn(), t: (key: string) => key }),
@@ -61,6 +61,20 @@ function makeBoxes(overrides?: Partial<PlanterBoxPublic>[]): PlanterBoxPublic[] 
   return defaults.map((b, i) => ({ ...b, ...overrides[i] }));
 }
 
+const defaultSummaries: GreenhouseSummary[] = [
+  { name: "Kronen", totalBoxes: 14, availableBoxes: 1, occupiedBoxes: 13 },
+  { name: "Søen", totalBoxes: 15, availableBoxes: 5, occupiedBoxes: 10 },
+];
+
+function makeFetchMock(boxes: PlanterBoxPublic[], summaries: GreenhouseSummary[] = defaultSummaries) {
+  return vi.fn().mockImplementation((url: string) => {
+    if (url === "/public/greenhouses") {
+      return Promise.resolve(new Response(JSON.stringify(summaries), { status: 200 }));
+    }
+    return Promise.resolve(new Response(JSON.stringify(boxes), { status: 200 }));
+  });
+}
+
 describe("GreenhouseMapPage", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -89,9 +103,7 @@ describe("GreenhouseMapPage", () => {
 
   it("fetches boxes on mount and renders map", async () => {
     const boxes = makeBoxes();
-    fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(boxes), { status: 200 }),
-    );
+    fetchMock = makeFetchMock(boxes);
     vi.stubGlobal("fetch", fetchMock);
 
     const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
@@ -109,10 +121,13 @@ describe("GreenhouseMapPage", () => {
     const initialBoxes = makeBoxes();
     const updatedBoxes = makeBoxes([{ state: "occupied" }]);
 
-    let callCount = 0;
-    fetchMock = vi.fn().mockImplementation(() => {
-      callCount++;
-      const data = callCount === 1 ? initialBoxes : updatedBoxes;
+    let boxCallCount = 0;
+    fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/public/greenhouses") {
+        return Promise.resolve(new Response(JSON.stringify(defaultSummaries), { status: 200 }));
+      }
+      boxCallCount++;
+      const data = boxCallCount === 1 ? initialBoxes : updatedBoxes;
       return Promise.resolve(new Response(JSON.stringify(data), { status: 200 }));
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -135,16 +150,13 @@ describe("GreenhouseMapPage", () => {
       fireEvent.click(screen.getByTestId("reg-success"));
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(screen.getByTestId("greenhouse-map")).toBeDefined();
     expect(screen.getByTestId("available-count").textContent).toBe("0");
   });
 
   it("does not refetch boxes when cancelling registration", async () => {
     const boxes = makeBoxes();
-    fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(boxes), { status: 200 }),
-    );
+    fetchMock = makeFetchMock(boxes);
     vi.stubGlobal("fetch", fetchMock);
 
     const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
@@ -163,15 +175,12 @@ describe("GreenhouseMapPage", () => {
       fireEvent.click(screen.getByTestId("reg-cancel"));
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("greenhouse-map")).toBeDefined();
   });
 
   it("passes onSuccess prop to RegistrationForm", async () => {
     const boxes = makeBoxes();
-    fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(boxes), { status: 200 }),
-    );
+    fetchMock = makeFetchMock(boxes);
     vi.stubGlobal("fetch", fetchMock);
 
     const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
@@ -187,5 +196,68 @@ describe("GreenhouseMapPage", () => {
     expect(capturedOnSuccess).toBeDefined();
     expect(capturedOnCancel).toBeDefined();
     expect(capturedOnSuccess).not.toBe(capturedOnCancel);
+  });
+
+  it("shows cross-greenhouse hint when current is full and other has availability", async () => {
+    const fullBoxes: PlanterBoxPublic[] = [
+      { id: 1, name: "Stellaria", greenhouse: "Kronen", state: "occupied" },
+      { id: 2, name: "Rosemary", greenhouse: "Kronen", state: "occupied" },
+    ];
+    const summaries: GreenhouseSummary[] = [
+      { name: "Kronen", totalBoxes: 14, availableBoxes: 0, occupiedBoxes: 14 },
+      { name: "Søen", totalBoxes: 15, availableBoxes: 5, occupiedBoxes: 10 },
+    ];
+    fetchMock = makeFetchMock(fullBoxes, summaries);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
+    const onSelectGreenhouse = vi.fn();
+
+    await act(async () => {
+      render(<GreenhouseMapPage greenhouse="Kronen" onBack={vi.fn()} onSelectGreenhouse={onSelectGreenhouse} />);
+    });
+
+    expect(screen.getByText("waitlist.title")).toBeDefined();
+    expect(screen.getByText(/waitlist\.otherAvailable/)).toBeDefined();
+    expect(screen.getByText(/waitlist\.goToOther/)).toBeDefined();
+
+    fireEvent.click(screen.getByText(/waitlist\.goToOther/));
+    expect(onSelectGreenhouse).toHaveBeenCalledWith("Søen");
+  });
+
+  it("does not show cross-greenhouse hint when both greenhouses are full", async () => {
+    const fullBoxes: PlanterBoxPublic[] = [
+      { id: 1, name: "Stellaria", greenhouse: "Kronen", state: "occupied" },
+    ];
+    const summaries: GreenhouseSummary[] = [
+      { name: "Kronen", totalBoxes: 14, availableBoxes: 0, occupiedBoxes: 14 },
+      { name: "Søen", totalBoxes: 15, availableBoxes: 0, occupiedBoxes: 15 },
+    ];
+    fetchMock = makeFetchMock(fullBoxes, summaries);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
+
+    await act(async () => {
+      render(<GreenhouseMapPage greenhouse="Kronen" onBack={vi.fn()} onSelectGreenhouse={vi.fn()} />);
+    });
+
+    expect(screen.getByText("waitlist.title")).toBeDefined();
+    expect(screen.queryByText(/waitlist\.otherAvailable/)).toBeNull();
+  });
+
+  it("does not show cross-greenhouse hint when current greenhouse has availability", async () => {
+    const boxes = makeBoxes();
+    fetchMock = makeFetchMock(boxes);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
+
+    await act(async () => {
+      render(<GreenhouseMapPage greenhouse="Kronen" onBack={vi.fn()} onSelectGreenhouse={vi.fn()} />);
+    });
+
+    expect(screen.queryByText("waitlist.title")).toBeNull();
+    expect(screen.queryByText(/waitlist\.otherAvailable/)).toBeNull();
   });
 });

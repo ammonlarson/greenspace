@@ -68,6 +68,8 @@ export const I18N_KEYS = {
     positionLabel: "waitlist.positionLabel",
     alreadyOnWaitlist: "waitlist.alreadyOnWaitlist",
     success: "waitlist.success",
+    otherAvailable: "waitlist.otherAvailable",
+    goToOther: "waitlist.goToOther",
   },
   validation: {
     emailRequired: "validation.emailRequired",
