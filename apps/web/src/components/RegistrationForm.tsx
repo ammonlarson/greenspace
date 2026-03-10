@@ -218,20 +218,40 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
         </p>
       )}
 
-      <div
-        style={{
-          background: colors.parchment,
-          border: `1px solid ${colors.borderTan}`,
-          borderRadius: 8,
-          padding: "1rem",
-          marginBottom: "1.25rem",
-          fontSize: "0.9rem",
-          lineHeight: 1.5,
-        }}
-      >
+      <div style={infoCardStyle}>
         <p style={{ margin: "0 0 0.5rem" }}>{t("policy.oneApartmentRule")}</p>
         <p style={{ margin: 0 }}>{t("policy.noSelfUnregister")}</p>
       </div>
+
+      <details style={infoCardStyle}>
+        <summary style={{ fontWeight: 600, cursor: "pointer", color: colors.warmBrown }}>
+          {t("guidelines.title")}
+        </summary>
+
+        <p style={guidelinesSectionHeadingStyle}>{t("guidelines.rulesTitle")}</p>
+        <ul style={guidelinesListStyle}>
+          <li>{t("guidelines.plantingDeadline")}</li>
+          <li>{t("guidelines.forfeit")}</li>
+          <li>{t("guidelines.ruleWatering")}</li>
+          <li>{t("guidelines.ruleOrganic")}</li>
+          <li>{t("guidelines.ruleNoHarvest")}</li>
+        </ul>
+
+        <p style={guidelinesSectionHeadingStyle}>{t("guidelines.supportTitle")}</p>
+        <ul style={guidelinesListStyle}>
+          <li>{t("guidelines.supportTools")}</li>
+          <li>{t("guidelines.supportContact")}</li>
+        </ul>
+
+        <p style={guidelinesSectionHeadingStyle}>{t("guidelines.contactTitle")}</p>
+        <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+          {ORGANIZER_CONTACTS.map((c) => (
+            <li key={c.email}>
+              <a href={`mailto:${c.email}`} style={{ color: colors.sage }}>{c.name}</a>
+            </li>
+          ))}
+        </ul>
+      </details>
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "1rem" }}>
@@ -347,6 +367,27 @@ const labelStyle: React.CSSProperties = {
   marginBottom: "0.25rem",
   color: colors.warmBrown,
   fontFamily: fonts.body,
+};
+
+const infoCardStyle: React.CSSProperties = {
+  background: colors.parchment,
+  border: `1px solid ${colors.borderTan}`,
+  borderRadius: 8,
+  padding: "1rem",
+  marginBottom: "1.25rem",
+  fontSize: "0.9rem",
+  lineHeight: 1.5,
+};
+
+const guidelinesSectionHeadingStyle: React.CSSProperties = {
+  fontWeight: 600,
+  margin: "0.75rem 0 0.25rem",
+  color: colors.warmBrown,
+};
+
+const guidelinesListStyle: React.CSSProperties = {
+  margin: "0 0 0.5rem",
+  paddingLeft: "1.25rem",
 };
 
 const inputStyle: React.CSSProperties = {
