@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 export type SortDirection = "asc" | "desc";
 
@@ -9,14 +9,27 @@ export interface SortConfig {
   direction: SortDirection;
 }
 
+export interface FilterConfigEntry<T> {
+  key: keyof T;
+  allValue: string;
+}
+
 export interface TableControlsOptions<T> {
   data: T[];
   defaultSort?: SortConfig;
   searchableFields?: (keyof T)[];
-  filterConfigs?: {
-    key: keyof T;
-    allValue: string;
-  }[];
+  filterConfigs?: FilterConfigEntry<T>[];
+}
+
+function useStableArray<T>(arr: T[]): T[] {
+  const ref = useRef(arr);
+  const serialized = JSON.stringify(arr);
+  const prevSerialized = useRef(serialized);
+  if (serialized !== prevSerialized.current) {
+    ref.current = arr;
+    prevSerialized.current = serialized;
+  }
+  return ref.current;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,48 +39,54 @@ export function useTableControls<T extends Record<string, any>>({
   searchableFields = [],
   filterConfigs = [],
 }: TableControlsOptions<T>) {
+  const stableSearchableFields = useStableArray(searchableFields as string[]);
+  const stableFilterConfigs = useStableArray(filterConfigs as FilterConfigEntry<T>[]);
+
   const [sort, setSort] = useState<SortConfig | null>(defaultSort ?? null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    for (const fc of filterConfigs) {
+    for (const fc of stableFilterConfigs) {
       initial[fc.key as string] = fc.allValue;
     }
     return initial;
   });
 
-  function toggleSort(key: string) {
+  const defaultSortRef = useRef(defaultSort);
+  defaultSortRef.current = defaultSort;
+
+  const toggleSort = useCallback((key: string) => {
     setSort((prev) => {
       if (prev?.key === key) {
         return prev.direction === "asc"
-          ? { key, direction: "desc" }
+          ? { key, direction: "desc" as const }
           : null;
       }
-      return { key, direction: "asc" };
+      return { key, direction: "asc" as const };
     });
-  }
+  }, []);
 
-  function setFilter(key: string, value: string) {
+  const setFilter = useCallback((key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-  }
+  }, []);
 
-  function clearAll() {
+  const clearAll = useCallback(() => {
     setSearchQuery("");
-    setSort(defaultSort ?? null);
+    setSort(defaultSortRef.current ?? null);
     const initial: Record<string, string> = {};
-    for (const fc of filterConfigs) {
+    for (const fc of stableFilterConfigs) {
       initial[fc.key as string] = fc.allValue;
     }
     setFilters(initial);
-  }
+  }, [stableFilterConfigs]);
 
   const hasActiveControls = useMemo(() => {
     if (searchQuery.trim()) return true;
-    for (const fc of filterConfigs) {
+    for (const fc of stableFilterConfigs) {
       if (filters[fc.key as string] !== fc.allValue) return true;
     }
     return false;
-  }, [searchQuery, filters, filterConfigs]);
+  }, [searchQuery, filters, stableFilterConfigs]);
 
   const processedData = useMemo(() => {
     let result = [...data];
@@ -75,14 +94,14 @@ export function useTableControls<T extends Record<string, any>>({
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((item) =>
-        searchableFields.some((field) => {
-          const val = item[field];
+        stableSearchableFields.some((field) => {
+          const val = item[field as keyof T];
           return val != null && String(val).toLowerCase().includes(q);
         })
       );
     }
 
-    for (const fc of filterConfigs) {
+    for (const fc of stableFilterConfigs) {
       const filterValue = filters[fc.key as string];
       if (filterValue && filterValue !== fc.allValue) {
         result = result.filter((item) => String(item[fc.key]) === filterValue);
@@ -110,7 +129,7 @@ export function useTableControls<T extends Record<string, any>>({
     }
 
     return result;
-  }, [data, searchQuery, searchableFields, filters, filterConfigs, sort]);
+  }, [data, searchQuery, stableSearchableFields, filters, stableFilterConfigs, sort]);
 
   return {
     sort,

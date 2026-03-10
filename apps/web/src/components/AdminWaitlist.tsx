@@ -318,24 +318,24 @@ export function AdminWaitlist() {
         </p>
       ) : (
         <>
-        <TableControls
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          filters={[
-            {
-              key: "status",
-              label: t("admin.waitlist.status"),
-              options: statusOptions,
-              value: filters["status"],
-              onChange: (v) => setFilter("status", v),
-            },
-          ]}
-          hasActiveControls={hasActiveControls}
-          onClearAll={clearAll}
-          resultCount={filteredEntries.length}
-          totalCount={entries.length}
-        />
-        <div style={{ overflowX: "auto" }}>
+          <TableControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filters={[
+              {
+                key: "status",
+                label: t("admin.waitlist.status"),
+                options: statusOptions,
+                value: filters["status"],
+                onChange: (v) => setFilter("status", v),
+              },
+            ]}
+            hasActiveControls={hasActiveControls}
+            onClearAll={clearAll}
+            resultCount={filteredEntries.length}
+            totalCount={entries.length}
+          />
+          <div style={{ overflowX: "auto" }}>
           <table
             style={{
               width: "100%",
@@ -404,7 +404,7 @@ export function AdminWaitlist() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
         </>
       )}
     </section>

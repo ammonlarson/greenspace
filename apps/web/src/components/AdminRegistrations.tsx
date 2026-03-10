@@ -637,24 +637,24 @@ export function AdminRegistrations() {
         </p>
       ) : (
         <>
-        <TableControls
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          filters={[
-            {
-              key: "status",
-              label: t("admin.registrations.status"),
-              options: statusOptions,
-              value: filters["status"],
-              onChange: (v) => setFilter("status", v),
-            },
-          ]}
-          hasActiveControls={hasActiveControls}
-          onClearAll={clearAll}
-          resultCount={filteredRegistrations.length}
-          totalCount={registrations.length}
-        />
-        <div style={{ overflowX: "auto" }}>
+          <TableControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filters={[
+              {
+                key: "status",
+                label: t("admin.registrations.status"),
+                options: statusOptions,
+                value: filters["status"],
+                onChange: (v) => setFilter("status", v),
+              },
+            ]}
+            hasActiveControls={hasActiveControls}
+            onClearAll={clearAll}
+            resultCount={filteredRegistrations.length}
+            totalCount={registrations.length}
+          />
+          <div style={{ overflowX: "auto" }}>
           <table
             style={{
               width: "100%",
@@ -742,7 +742,7 @@ export function AdminRegistrations() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
         </>
       )}
     </section>
