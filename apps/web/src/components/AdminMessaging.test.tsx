@@ -213,4 +213,167 @@ describe("AdminMessaging", () => {
     fireEvent.click(screen.getByText("admin.messaging.source"));
     expect(screen.getByLabelText("admin.messaging.body")).toBeDefined();
   });
+
+  it("renders bilingual toggle checkbox", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ count: 0, recipients: [] }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    const toggle = document.getElementById("bilingual-toggle") as HTMLInputElement;
+    expect(toggle).toBeDefined();
+    expect(toggle.checked).toBe(false);
+  });
+
+  it("shows two editor sections when bilingual is enabled", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ count: 2, recipients: [{ email: "a@b.com", name: "A", language: "da" }] }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await act(async () => {
+      fireEvent.click(document.getElementById("bilingual-toggle")!);
+    });
+
+    expect(screen.getByText("admin.messaging.danishVersion")).toBeDefined();
+    expect(screen.getByText("admin.messaging.englishVersion")).toBeDefined();
+    expect(document.getElementById("messaging-da-subject")).toBeDefined();
+    expect(document.getElementById("messaging-en-subject")).toBeDefined();
+  });
+
+  it("validates all bilingual fields before send", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ count: 2, recipients: [{ email: "a@b.com", name: "A", language: "da" }] }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await act(async () => {
+      fireEvent.click(document.getElementById("bilingual-toggle")!);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.send"));
+    });
+
+    expect(screen.getByRole("alert")).toBeDefined();
+    expect(screen.getByText("admin.messaging.subjectDaRequired")).toBeDefined();
+  });
+
+  it("sends bilingual payload when bilingual mode is active", async () => {
+    const recipients = [{ email: "a@b.com", name: "A", language: "da" }];
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/admin/messaging/recipients") {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ count: 1, recipients }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ queuedCount: 1, recipientCount: 1 }),
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("confirm", () => true);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await act(async () => {
+      fireEvent.click(document.getElementById("bilingual-toggle")!);
+    });
+
+    await act(async () => {
+      fireEvent.change(document.getElementById("messaging-da-subject")!, { target: { value: "Dansk emne" } });
+    });
+
+    const daTextarea = screen.getByLabelText("admin.messaging.body (DA)");
+    await act(async () => {
+      fireEvent.change(daTextarea, { target: { value: "<p>Dansk</p>" } });
+    });
+
+    await act(async () => {
+      fireEvent.change(document.getElementById("messaging-en-subject")!, { target: { value: "English subject" } });
+    });
+
+    const enTextarea = screen.getByLabelText("admin.messaging.body (EN)");
+    await act(async () => {
+      fireEvent.change(enTextarea, { target: { value: "<p>English</p>" } });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.send"));
+    });
+
+    const sendCall = fetchMock.mock.calls.find(
+      (c: unknown[]) => (c[0] as string) === "/admin/messaging/send",
+    );
+    expect(sendCall).toBeDefined();
+    const sentBody = JSON.parse((sendCall![1] as { body: string }).body);
+    expect(sentBody.bilingual).toBe(true);
+    expect(sentBody.subjectDa).toBe("Dansk emne");
+    expect(sentBody.bodyHtmlDa).toBe("<p>Dansk</p>");
+    expect(sentBody.subjectEn).toBe("English subject");
+    expect(sentBody.bodyHtmlEn).toBe("<p>English</p>");
+  });
+
+  it("sends single-language payload when bilingual is off", async () => {
+    const recipients = [{ email: "a@b.com", name: "A", language: "da" }];
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/admin/messaging/recipients") {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ count: 1, recipients }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ queuedCount: 1, recipientCount: 1 }),
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("confirm", () => true);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await act(async () => {
+      fireEvent.change(document.getElementById("messaging-subject")!, { target: { value: "Test" } });
+    });
+
+    const textarea = screen.getByLabelText("admin.messaging.body");
+    await act(async () => {
+      fireEvent.change(textarea, { target: { value: "<p>Test</p>" } });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.send"));
+    });
+
+    const sendCall = fetchMock.mock.calls.find(
+      (c: unknown[]) => (c[0] as string) === "/admin/messaging/send",
+    );
+    expect(sendCall).toBeDefined();
+    const sentBody = JSON.parse((sendCall![1] as { body: string }).body);
+    expect(sentBody.bilingual).toBeUndefined();
+    expect(sentBody.subject).toBe("Test");
+    expect(sentBody.bodyHtml).toBe("<p>Test</p>");
+  });
 });

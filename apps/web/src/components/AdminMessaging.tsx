@@ -18,14 +18,187 @@ const AUDIENCE_OPTIONS: { value: Audience; labelKey: string }[] = [
   { value: "søen", labelKey: "admin.messaging.audienceSøen" },
 ];
 
+function makeTabStyle(tab: Tab, activeTab: Tab): React.CSSProperties {
+  const isActive = tab === activeTab;
+  return {
+    padding: "0.4rem 1rem",
+    border: "none",
+    borderBottom: isActive ? `2px solid ${colors.sage}` : "2px solid transparent",
+    background: "none",
+    cursor: "pointer",
+    fontSize: "0.8rem",
+    fontFamily: fonts.body,
+    fontWeight: isActive ? 600 : 400,
+    color: isActive ? colors.sageDark : colors.warmBrown,
+  };
+}
+
+interface EditorSectionProps {
+  idPrefix: string;
+  subjectLabel: string;
+  bodyLabel: string;
+  previewLabel: string;
+  sourceLabel: string;
+  subject: string;
+  bodyHtml: string;
+  onSubjectChange: (value: string) => void;
+  onBodyChange: (value: string) => void;
+  heading?: string;
+}
+
+function EditorSection({
+  idPrefix,
+  subjectLabel,
+  bodyLabel,
+  previewLabel,
+  sourceLabel,
+  subject,
+  bodyHtml,
+  onSubjectChange,
+  onBodyChange,
+  heading,
+}: EditorSectionProps) {
+  const [activeTab, setActiveTab] = useState<Tab>("source");
+
+  return (
+    <div
+      style={{
+        border: `1px solid ${colors.borderTan}`,
+        borderRadius: 6,
+        padding: "1rem",
+        background: colors.parchment,
+        marginBottom: "1rem",
+      }}
+    >
+      {heading && (
+        <h3
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            color: colors.warmBrown,
+            marginBottom: "0.75rem",
+            marginTop: 0,
+          }}
+        >
+          {heading}
+        </h3>
+      )}
+
+      <div style={{ marginBottom: "0.75rem" }}>
+        <label
+          htmlFor={`${idPrefix}-subject`}
+          style={{
+            display: "block",
+            fontSize: "0.8rem",
+            fontWeight: 600,
+            marginBottom: "0.25rem",
+            color: colors.warmBrown,
+          }}
+        >
+          {subjectLabel}
+        </label>
+        <input
+          id={`${idPrefix}-subject`}
+          type="text"
+          value={subject}
+          onChange={(e) => onSubjectChange(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "0.4rem",
+            border: `1px solid ${colors.borderTan}`,
+            borderRadius: 4,
+            fontSize: "0.85rem",
+            fontFamily: fonts.body,
+            boxSizing: "border-box",
+            color: colors.inkBrown,
+            background: colors.white,
+          }}
+        />
+      </div>
+
+      <div
+        role="tablist"
+        style={{
+          display: "flex",
+          borderBottom: `1px solid ${colors.borderTan}`,
+          marginBottom: "0.5rem",
+        }}
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "preview"}
+          onClick={() => setActiveTab("preview")}
+          style={makeTabStyle("preview", activeTab)}
+        >
+          {previewLabel}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "source"}
+          onClick={() => setActiveTab("source")}
+          style={makeTabStyle("source", activeTab)}
+        >
+          {sourceLabel}
+        </button>
+      </div>
+
+      {activeTab === "preview" && (
+        <div role="tabpanel" style={{ marginBottom: "0.5rem" }}>
+          <iframe
+            title={previewLabel}
+            srcDoc={bodyHtml}
+            sandbox=""
+            style={{
+              width: "100%",
+              height: 300,
+              border: `1px solid ${colors.borderTan}`,
+              borderRadius: 4,
+              background: colors.white,
+            }}
+          />
+        </div>
+      )}
+
+      {activeTab === "source" && (
+        <div role="tabpanel" style={{ marginBottom: "0.5rem" }}>
+          <textarea
+            aria-label={bodyLabel}
+            value={bodyHtml}
+            onChange={(e) => onBodyChange(e.target.value)}
+            rows={12}
+            style={{
+              width: "100%",
+              padding: "0.4rem",
+              border: `1px solid ${colors.borderTan}`,
+              borderRadius: 4,
+              fontSize: "0.8rem",
+              fontFamily: "monospace",
+              resize: "vertical",
+              boxSizing: "border-box",
+              color: colors.inkBrown,
+              background: colors.white,
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AdminMessaging() {
   const { t } = useLanguage();
   const [audience, setAudience] = useState<Audience>("all");
   const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
+  const [bilingual, setBilingual] = useState(false);
   const [subject, setSubject] = useState("");
   const [bodyHtml, setBodyHtml] = useState("");
-  const [activeTab, setActiveTab] = useState<Tab>("source");
+  const [subjectDa, setSubjectDa] = useState("");
+  const [bodyHtmlDa, setBodyHtmlDa] = useState("");
+  const [subjectEn, setSubjectEn] = useState("");
+  const [bodyHtmlEn, setBodyHtmlEn] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -74,18 +247,47 @@ export function AdminMessaging() {
     setError("");
   }
 
+  function clearForm() {
+    setSubject("");
+    setBodyHtml("");
+    setSubjectDa("");
+    setBodyHtmlDa("");
+    setSubjectEn("");
+    setBodyHtmlEn("");
+  }
+
   async function handleSend() {
     setError("");
     setSuccess("");
 
-    if (!subject.trim()) {
-      setError(t("admin.messaging.subjectRequired"));
-      return;
+    if (bilingual) {
+      if (!subjectDa.trim()) {
+        setError(t("admin.messaging.subjectDaRequired"));
+        return;
+      }
+      if (!bodyHtmlDa.trim()) {
+        setError(t("admin.messaging.bodyDaRequired"));
+        return;
+      }
+      if (!subjectEn.trim()) {
+        setError(t("admin.messaging.subjectEnRequired"));
+        return;
+      }
+      if (!bodyHtmlEn.trim()) {
+        setError(t("admin.messaging.bodyEnRequired"));
+        return;
+      }
+    } else {
+      if (!subject.trim()) {
+        setError(t("admin.messaging.subjectRequired"));
+        return;
+      }
+      if (!bodyHtml.trim()) {
+        setError(t("admin.messaging.bodyRequired"));
+        return;
+      }
     }
-    if (!bodyHtml.trim()) {
-      setError(t("admin.messaging.bodyRequired"));
-      return;
-    }
+
     if (!recipientInfo || recipientInfo.count === 0) {
       setError(t("admin.messaging.noRecipients"));
       return;
@@ -96,11 +298,15 @@ export function AdminMessaging() {
 
     setSending(true);
     try {
+      const payload = bilingual
+        ? { audience, bilingual: true, subjectDa, bodyHtmlDa, subjectEn, bodyHtmlEn }
+        : { audience, subject, bodyHtml };
+
       const res = await fetch("/admin/messaging/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ audience, subject, bodyHtml }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -108,8 +314,7 @@ export function AdminMessaging() {
         setSuccess(
           `${t("admin.messaging.sent")} (${data.queuedCount}/${data.recipientCount})`,
         );
-        setSubject("");
-        setBodyHtml("");
+        clearForm();
       } else {
         const data = await res.json().catch(() => null);
         setError(data?.error ?? t("admin.messaging.failed"));
@@ -120,18 +325,6 @@ export function AdminMessaging() {
       setSending(false);
     }
   }
-
-  const tabButtonStyle = (tab: Tab): React.CSSProperties => ({
-    padding: "0.4rem 1rem",
-    border: "none",
-    borderBottom: activeTab === tab ? `2px solid ${colors.sage}` : "2px solid transparent",
-    background: "none",
-    cursor: "pointer",
-    fontSize: "0.8rem",
-    fontFamily: fonts.body,
-    fontWeight: activeTab === tab ? 600 : 400,
-    color: activeTab === tab ? colors.sageDark : colors.warmBrown,
-  });
 
   return (
     <div style={{ fontFamily: fonts.body, color: colors.inkBrown }}>
@@ -199,113 +392,74 @@ export function AdminMessaging() {
 
       <div
         style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          marginBottom: "1rem",
+          padding: "0.5rem 0.75rem",
+          background: colors.parchment,
           border: `1px solid ${colors.borderTan}`,
           borderRadius: 6,
-          padding: "1rem",
-          background: colors.parchment,
-          marginBottom: "1rem",
         }}
       >
-        <div style={{ marginBottom: "0.75rem" }}>
-          <label
-            htmlFor="messaging-subject"
-            style={{
-              display: "block",
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              marginBottom: "0.25rem",
-              color: colors.warmBrown,
-            }}
-          >
-            {t("admin.messaging.subject")}
-          </label>
-          <input
-            id="messaging-subject"
-            type="text"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "0.4rem",
-              border: `1px solid ${colors.borderTan}`,
-              borderRadius: 4,
-              fontSize: "0.85rem",
-              fontFamily: fonts.body,
-              boxSizing: "border-box",
-              color: colors.inkBrown,
-              background: colors.white,
-            }}
-          />
-        </div>
-
-        <div
-          role="tablist"
-          style={{
-            display: "flex",
-            borderBottom: `1px solid ${colors.borderTan}`,
-            marginBottom: "0.5rem",
-          }}
+        <input
+          id="bilingual-toggle"
+          type="checkbox"
+          checked={bilingual}
+          onChange={(e) => setBilingual(e.target.checked)}
+          style={{ cursor: "pointer" }}
+        />
+        <label
+          htmlFor="bilingual-toggle"
+          style={{ fontSize: "0.85rem", fontWeight: 600, color: colors.warmBrown, cursor: "pointer" }}
         >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "preview"}
-            onClick={() => setActiveTab("preview")}
-            style={tabButtonStyle("preview")}
-          >
-            {t("admin.messaging.preview")}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "source"}
-            onClick={() => setActiveTab("source")}
-            style={tabButtonStyle("source")}
-          >
-            {t("admin.messaging.source")}
-          </button>
-        </div>
-
-        {activeTab === "preview" && (
-          <div role="tabpanel" style={{ marginBottom: "0.5rem" }}>
-            <iframe
-              title={t("admin.messaging.preview")}
-              srcDoc={bodyHtml}
-              sandbox=""
-              style={{
-                width: "100%",
-                height: 300,
-                border: `1px solid ${colors.borderTan}`,
-                borderRadius: 4,
-                background: colors.white,
-              }}
-            />
-          </div>
-        )}
-
-        {activeTab === "source" && (
-          <div role="tabpanel" style={{ marginBottom: "0.5rem" }}>
-            <textarea
-              aria-label={t("admin.messaging.body")}
-              value={bodyHtml}
-              onChange={(e) => setBodyHtml(e.target.value)}
-              rows={12}
-              style={{
-                width: "100%",
-                padding: "0.4rem",
-                border: `1px solid ${colors.borderTan}`,
-                borderRadius: 4,
-                fontSize: "0.8rem",
-                fontFamily: "monospace",
-                resize: "vertical",
-                boxSizing: "border-box",
-                color: colors.inkBrown,
-                background: colors.white,
-              }}
-            />
-          </div>
-        )}
+          {t("admin.messaging.bilingual")}
+        </label>
+        <span style={{ fontSize: "0.8rem", color: colors.warmBrown, marginLeft: "0.25rem" }}>
+          — {t("admin.messaging.bilingualHint")}
+        </span>
       </div>
+
+      {bilingual ? (
+        <>
+          <EditorSection
+            idPrefix="messaging-da"
+            heading={t("admin.messaging.danishVersion")}
+            subjectLabel={t("admin.messaging.subject")}
+            bodyLabel={`${t("admin.messaging.body")} (DA)`}
+            previewLabel={t("admin.messaging.preview")}
+            sourceLabel={t("admin.messaging.source")}
+            subject={subjectDa}
+            bodyHtml={bodyHtmlDa}
+            onSubjectChange={setSubjectDa}
+            onBodyChange={setBodyHtmlDa}
+          />
+          <EditorSection
+            idPrefix="messaging-en"
+            heading={t("admin.messaging.englishVersion")}
+            subjectLabel={t("admin.messaging.subject")}
+            bodyLabel={`${t("admin.messaging.body")} (EN)`}
+            previewLabel={t("admin.messaging.preview")}
+            sourceLabel={t("admin.messaging.source")}
+            subject={subjectEn}
+            bodyHtml={bodyHtmlEn}
+            onSubjectChange={setSubjectEn}
+            onBodyChange={setBodyHtmlEn}
+          />
+        </>
+      ) : (
+        <EditorSection
+          idPrefix="messaging"
+          subjectLabel={t("admin.messaging.subject")}
+          bodyLabel={t("admin.messaging.body")}
+          previewLabel={t("admin.messaging.preview")}
+          sourceLabel={t("admin.messaging.source")}
+          subject={subject}
+          bodyHtml={bodyHtml}
+          onSubjectChange={setSubject}
+          onBodyChange={setBodyHtml}
+        />
+      )}
 
       {error && (
         <p
