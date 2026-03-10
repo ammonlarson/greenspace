@@ -16,9 +16,9 @@ interface LandingPageProps {
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
   hasAvailableBoxes?: boolean;
   onJoinWaitlist?: () => void;
+  refreshKey?: number;
 }
-
-export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist }: LandingPageProps) {
+export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist, refreshKey = 0 }: LandingPageProps) {
   const { t } = useLanguage();
   const [greenhouses, setGreenhouses] = useState<GreenhouseSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, onJo
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshKey]);
 
   if (loading) {
     return <LoadingSplash />;
