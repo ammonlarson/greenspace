@@ -1,4 +1,5 @@
 import { logAuditEvent } from "../../lib/audit.js";
+import { notifyAdmins } from "../../lib/admin-ops-notifications.js";
 import { badRequest, unauthorized } from "../../lib/errors.js";
 import type { RequestContext, RouteResponse } from "../../router.js";
 
@@ -85,6 +86,12 @@ export async function handleReserveBox(ctx: RequestContext): Promise<RouteRespon
     });
   });
 
+  await notifyAdmins(ctx.db, {
+    type: "admin_box_reserve",
+    actingAdminId: adminId,
+    boxId,
+  });
+
   return {
     statusCode: 200,
     body: { boxId, state: "reserved" },
@@ -138,6 +145,12 @@ export async function handleReleaseBox(ctx: RequestContext): Promise<RouteRespon
       before: { state: "reserved" },
       after: { state: "available" },
     });
+  });
+
+  await notifyAdmins(ctx.db, {
+    type: "admin_box_release",
+    actingAdminId: adminId,
+    boxId,
   });
 
   return {

@@ -23,6 +23,8 @@ import { handleGetRecipients, handleSendBulkEmail } from "./routes/admin/messagi
 import {
   handleGetOpeningTime,
   handleUpdateOpeningTime,
+  handleGetNotificationPreferences,
+  handleUpdateNotificationPreferences,
 } from "./routes/admin/settings.js";
 import {
   handleFillBoxes,
@@ -84,6 +86,8 @@ export function createRouter(): Router {
 
   router.get("/admin/settings/opening-time", requireAdmin(handleGetOpeningTime));
   router.patch("/admin/settings/opening-time", requireAdmin(handleUpdateOpeningTime));
+  router.get("/admin/settings/notification-preferences", requireAdmin(handleGetNotificationPreferences));
+  router.patch("/admin/settings/notification-preferences", requireAdmin(handleUpdateNotificationPreferences));
 
   if (process.env["ENVIRONMENT"] === "staging") {
     router.post("/admin/staging/fill-boxes", requireAdmin(handleFillBoxes));
