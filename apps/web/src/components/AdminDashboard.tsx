@@ -16,7 +16,7 @@ const isStaging = process.env.NEXT_PUBLIC_ENV === "staging";
 
 type Tab = "registrations" | "waitlist" | "boxes" | "messaging" | "settings" | "audit" | "account" | "stagingTools";
 
-const BASE_TABS: Tab[] = ["registrations", "waitlist", "boxes", "messaging", "settings", "audit", "account"];
+const BASE_TABS: Tab[] = ["boxes", "waitlist", "registrations", "messaging", "settings", "audit", "account"];
 const TABS: Tab[] = isStaging ? [...BASE_TABS, "stagingTools"] : BASE_TABS;
 
 const TAB_KEYS: Record<Tab, "admin.tab.registrations" | "admin.tab.waitlist" | "admin.tab.boxes" | "admin.tab.messaging" | "admin.tab.settings" | "admin.tab.audit" | "admin.tab.account" | "admin.tab.stagingTools"> = {
@@ -36,7 +36,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<Tab>("registrations");
+  const [activeTab, setActiveTab] = useState<Tab>("boxes");
   const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {

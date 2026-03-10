@@ -15,7 +15,7 @@ const da = {
     "Tilmelding til plantekasser på taget af UN17 åbner på det angivne tidspunkt. Når tilmeldingen åbner, kan du vælge en plantekasse i et af de to drivhuse. Hver lejlighed kan kun have én aktiv plantekasse.",
   "status.openingDatetime": "Tilmelding åbner",
   "status.eligibility":
-    "Beboere på Else Alfelts Vej 122–202 kan tilmelde sig. Én plantekasse pr. lejlighed.",
+    "Beboere på UN17 Village kan tilmelde sig. Én plantekasse pr. lejlighed.",
   "status.contactInfo": "Kontakt",
 
   "greenhouse.title": "Drivhuse",
@@ -329,6 +329,11 @@ const da = {
   "admin.table.allStatuses": "Alle statusser",
   "admin.table.allStates": "Alle tilstande",
   "admin.table.allGreenhouses": "Alle drivhuse",
+
+  "about.title": "Om projektet",
+  "about.description":
+    "UN17 Village Taghaver er et fællesskabsprojekt for beboere på UN17 Village. Vi driver plantekasser i to tagdrivhuse for at skabe grønne rum og styrke nabofællesskabet.",
+  "about.contact": "Spørgsmål? Kontakt os:",
 };
 
 export type TranslationKey = keyof typeof da;
@@ -348,7 +353,7 @@ const en: Record<TranslationKey, string> = {
     "Registration for rooftop planter boxes at UN17 opens at the time shown below. Once registration opens, you can choose a planter box in one of the two greenhouses. Each apartment may only have one active planter box.",
   "status.openingDatetime": "Registration opens",
   "status.eligibility":
-    "Residents of Else Alfelts Vej 122–202 are eligible. One planter box per apartment.",
+    "Residents of UN17 Village are eligible. One planter box per apartment.",
   "status.contactInfo": "Contact",
 
   "greenhouse.title": "Greenhouses",
@@ -662,6 +667,11 @@ const en: Record<TranslationKey, string> = {
   "admin.table.allStatuses": "All statuses",
   "admin.table.allStates": "All states",
   "admin.table.allGreenhouses": "All greenhouses",
+
+  "about.title": "About the project",
+  "about.description":
+    "UN17 Village Rooftop Gardens is a community project for residents of UN17 Village. We run planter boxes in two rooftop greenhouses to create green spaces and strengthen the neighborhood community.",
+  "about.contact": "Questions? Get in touch:",
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
