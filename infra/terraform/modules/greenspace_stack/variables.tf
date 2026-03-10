@@ -107,12 +107,6 @@ variable "ses_reply_to_email" {
 
 # ---------- Amplify ----------
 
-variable "amplify_github_access_token" {
-  description = "GitHub personal access token for Amplify repository integration."
-  type        = string
-  sensitive   = true
-}
-
 variable "amplify_branch_name" {
   description = "Git branch name for Amplify to build and deploy."
   type        = string

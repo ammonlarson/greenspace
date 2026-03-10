@@ -59,18 +59,11 @@ module "greenspace_stack" {
   alarm_email                     = "ammonl@hotmail.com"
   alarm_rds_connections_threshold = 50
 
-  amplify_github_access_token     = var.amplify_github_access_token
   amplify_branch_name             = "main"
   amplify_enable_auto_build       = false
   amplify_domain_prefix           = "greenspace"
   amplify_enable_preview_branches = true
   amplify_preview_branch_patterns = ["**"]
-}
-
-variable "amplify_github_access_token" {
-  description = "GitHub personal access token for Amplify. Pass via TF_VAR_amplify_github_access_token or -var."
-  type        = string
-  sensitive   = true
 }
 
 output "alarm_sns_topic_arn" {
