@@ -25,8 +25,10 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("Alice");
+    expect(result.subject).toContain("Linaria (Kronen)");
     expect(result.bodyHtml).toContain("alice@test.com");
     expect(result.bodyHtml).toContain("registered");
+    expect(result.bodyHtml).toContain("Linaria (Kronen)");
   });
 
   it("builds user switch email", () => {
@@ -41,7 +43,11 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("switch");
+    expect(result.subject).toContain("Linaria (Kronen)");
+    expect(result.subject).toContain("Harebell (Kronen)");
     expect(result.bodyHtml).toContain("switched");
+    expect(result.bodyHtml).toContain("Linaria (Kronen)");
+    expect(result.bodyHtml).toContain("Harebell (Kronen)");
   });
 
   it("builds admin box reserve email with admin email", () => {
@@ -55,7 +61,9 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("reserved");
+    expect(result.subject).toContain("Daisy (Kronen)");
     expect(result.bodyHtml).toContain("admin@test.com");
+    expect(result.bodyHtml).toContain("Daisy (Kronen)");
   });
 
   it("builds admin box release email", () => {
@@ -69,6 +77,7 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("released");
+    expect(result.subject).toContain("Daisy (Kronen)");
   });
 
   it("builds admin registration create email", () => {
@@ -83,7 +92,9 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("Registration added");
+    expect(result.subject).toContain("Stellaria (Kronen)");
     expect(result.bodyHtml).toContain("Alice");
+    expect(result.bodyHtml).toContain("Stellaria (Kronen)");
   });
 
   it("builds admin registration move email", () => {
@@ -99,7 +110,11 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("moved");
+    expect(result.subject).toContain("Linaria (Kronen)");
+    expect(result.subject).toContain("Harebell (Kronen)");
     expect(result.bodyHtml).toContain("Bob");
+    expect(result.bodyHtml).toContain("Linaria (Kronen)");
+    expect(result.bodyHtml).toContain("Harebell (Kronen)");
   });
 
   it("builds admin registration remove email", () => {
@@ -114,7 +129,9 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("removed");
+    expect(result.subject).toContain("Honeysuckle (Kronen)");
     expect(result.bodyHtml).toContain("Carol");
+    expect(result.bodyHtml).toContain("Honeysuckle (Kronen)");
   });
 
   it("builds admin waitlist assign email", () => {
@@ -129,7 +146,23 @@ describe("buildOpsNotificationEmail", () => {
     });
 
     expect(result.subject).toContain("Waitlist assigned");
+    expect(result.subject).toContain("Alder (Kronen)");
     expect(result.bodyHtml).toContain("Dave");
+    expect(result.bodyHtml).toContain("Alder (Kronen)");
+  });
+
+  it("uses fallback label for unknown box IDs", () => {
+    const result = buildOpsNotificationEmail({
+      event: {
+        type: "user_registration",
+        userName: "Alice",
+        userEmail: "alice@test.com",
+        boxId: 999,
+      },
+    });
+
+    expect(result.subject).toContain("Box 999");
+    expect(result.bodyHtml).toContain("Box 999");
   });
 
   it("escapes HTML in user-supplied values", () => {

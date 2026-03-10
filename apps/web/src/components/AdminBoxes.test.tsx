@@ -33,7 +33,7 @@ describe("AdminBoxes", () => {
     });
 
     expect(screen.getByText("admin.boxes.title")).toBeDefined();
-    expect(screen.getByText("#1")).toBeDefined();
+    expect(screen.getByText("Linaria")).toBeDefined();
     expect(screen.getByText("admin.boxes.reserve")).toBeDefined();
     expect(screen.getByText("admin.boxes.removeRegistration")).toBeDefined();
     expect(screen.getByText("admin.boxes.release")).toBeDefined();

@@ -7,6 +7,7 @@ import {
   validateFloorDoor,
   validateAddress,
   normalizeApartmentKey,
+  formatAddress,
   validateName,
   validateBoxId,
   validateLanguage,
@@ -177,6 +178,50 @@ describe("normalizeApartmentKey", () => {
     const key1 = normalizeApartmentKey("Else Alfelts Vej", 170, "2", "Th");
     const key2 = normalizeApartmentKey("ELSE ALFELTS VEJ", 170, "2", "th");
     expect(key1).toBe(key2);
+  });
+});
+
+describe("formatAddress", () => {
+  it("formats address with street and house number only", () => {
+    expect(formatAddress("Else Alfelts Vej", 130, null, null)).toBe(
+      "Else Alfelts Vej 130",
+    );
+  });
+
+  it("formats address with floor and door", () => {
+    expect(formatAddress("Else Alfelts Vej", 170, "2", "th")).toBe(
+      "Else Alfelts Vej 170 2. th",
+    );
+  });
+
+  it("formats address with floor only (no door)", () => {
+    expect(formatAddress("Else Alfelts Vej", 138, "st", null)).toBe(
+      "Else Alfelts Vej 138 st.",
+    );
+  });
+
+  it("handles undefined floor and door", () => {
+    expect(formatAddress("Else Alfelts Vej", 122, undefined, undefined)).toBe(
+      "Else Alfelts Vej 122",
+    );
+  });
+
+  it("handles empty string floor and door gracefully", () => {
+    expect(formatAddress("Else Alfelts Vej", 144, "", "")).toBe(
+      "Else Alfelts Vej 144",
+    );
+  });
+
+  it("trims whitespace from floor and door", () => {
+    expect(formatAddress("Else Alfelts Vej", 170, " 2 ", " th ")).toBe(
+      "Else Alfelts Vej 170 2. th",
+    );
+  });
+
+  it("omits door when floor is missing", () => {
+    expect(formatAddress("Else Alfelts Vej", 170, null, "th")).toBe(
+      "Else Alfelts Vej 170",
+    );
   });
 });
 

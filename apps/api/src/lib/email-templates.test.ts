@@ -28,7 +28,6 @@ describe("buildConfirmationEmail", () => {
 
   it("includes box details", () => {
     const result = buildConfirmationEmail(baseData);
-    expect(result.bodyHtml).toContain("#3");
     expect(result.bodyHtml).toContain("Stellaria");
     expect(result.bodyHtml).toContain("Kronen");
   });
@@ -111,7 +110,7 @@ describe("buildConfirmationEmail", () => {
 
   it("handles unknown box ID gracefully", () => {
     const result = buildConfirmationEmail({ ...baseData, boxId: 999 });
-    expect(result.bodyHtml).toContain("#999");
+    expect(result.bodyHtml).toContain("Box 999");
     expect(result.bodyHtml).toContain("Unknown");
   });
 

@@ -16,8 +16,8 @@ export type AdminOpsEvent =
 
 function boxLabel(boxId: number): string {
   const box = BOX_CATALOG.find((b) => b.id === boxId);
-  if (box) return `${box.name} (#${boxId}, ${box.greenhouse})`;
-  return `#${boxId}`;
+  if (box) return `${box.name} (${box.greenhouse})`;
+  return `Box ${boxId}`;
 }
 
 function escapeHtml(text: string): string {
@@ -46,7 +46,7 @@ export function buildOpsNotificationEmail(eventWithEmail: AdminEventWithEmail | 
       bodyText = `<strong>${escapeHtml(event.userName)}</strong> (${escapeHtml(event.userEmail)}) registered for box <strong>${escapeHtml(boxLabel(event.boxId))}</strong>.`;
       break;
     case "user_switch":
-      subject = `Box switch: ${event.userName} moved from #${event.oldBoxId} to #${event.newBoxId}`;
+      subject = `Box switch: ${event.userName} moved from ${boxLabel(event.oldBoxId)} to ${boxLabel(event.newBoxId)}`;
       bodyText = `<strong>${escapeHtml(event.userName)}</strong> (${escapeHtml(event.userEmail)}) switched from box <strong>${escapeHtml(boxLabel(event.oldBoxId))}</strong> to <strong>${escapeHtml(boxLabel(event.newBoxId))}</strong>.`;
       break;
     case "admin_box_reserve":
@@ -62,7 +62,7 @@ export function buildOpsNotificationEmail(eventWithEmail: AdminEventWithEmail | 
       bodyText = `Admin <strong>${escapeHtml(adminEmail)}</strong> registered <strong>${escapeHtml(event.userName)}</strong> for box <strong>${escapeHtml(boxLabel(event.boxId))}</strong>.`;
       break;
     case "admin_registration_move":
-      subject = `Registration moved: ${event.userName} from #${event.oldBoxId} to #${event.newBoxId}`;
+      subject = `Registration moved: ${event.userName} from ${boxLabel(event.oldBoxId)} to ${boxLabel(event.newBoxId)}`;
       bodyText = `Admin <strong>${escapeHtml(adminEmail)}</strong> moved <strong>${escapeHtml(event.userName)}</strong> from box <strong>${escapeHtml(boxLabel(event.oldBoxId))}</strong> to <strong>${escapeHtml(boxLabel(event.newBoxId))}</strong>.`;
       break;
     case "admin_registration_remove":

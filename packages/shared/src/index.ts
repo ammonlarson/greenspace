@@ -69,6 +69,7 @@ export {
   validateFloorDoor,
   validateAddress,
   normalizeApartmentKey,
+  formatAddress,
   validateName,
   validateBoxId,
   validateLanguage,

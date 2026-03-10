@@ -141,7 +141,6 @@ export const I18N_KEYS = {
     waitlistConfirmAssign: "admin.waitlist.confirmAssign",
     boxesTitle: "admin.boxes.title",
     boxesGreenhouse: "admin.boxes.greenhouse",
-    boxesId: "admin.boxes.id",
     boxesName: "admin.boxes.name",
     boxesState: "admin.boxes.state",
     registrationsSelectBox: "admin.registrations.selectBox",
