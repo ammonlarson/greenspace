@@ -254,6 +254,7 @@ const da = {
     "Klik 'Bekræft duplikat' for at fortsætte med tildelingen.",
   "admin.waitlist.confirmDuplicate": "Bekræft duplikat",
   "admin.waitlist.box": "Kasse",
+  "admin.waitlist.selectBox": "Vælg plantekasse...",
 
   "admin.boxes.title": "Plantekasseoversigt",
   "admin.boxes.greenhouse": "Drivhus",
@@ -585,6 +586,7 @@ const en: Record<TranslationKey, string> = {
     "Click 'Confirm Duplicate' to proceed with the assignment.",
   "admin.waitlist.confirmDuplicate": "Confirm Duplicate",
   "admin.waitlist.box": "Box",
+  "admin.waitlist.selectBox": "Select planter box...",
 
   "admin.boxes.title": "Box Overview",
   "admin.boxes.greenhouse": "Greenhouse",
