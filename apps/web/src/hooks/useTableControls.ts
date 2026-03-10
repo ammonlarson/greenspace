@@ -12,6 +12,7 @@ export interface SortConfig {
 export interface FilterConfigEntry<T> {
   key: keyof T;
   allValue: string;
+  defaultValue?: string;
 }
 
 export interface TableControlsOptions<T> {
@@ -47,7 +48,7 @@ export function useTableControls<T extends Record<string, any>>({
   const [filters, setFilters] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     for (const fc of stableFilterConfigs) {
-      initial[fc.key as string] = fc.allValue;
+      initial[fc.key as string] = fc.defaultValue ?? fc.allValue;
     }
     return initial;
   });
@@ -75,7 +76,7 @@ export function useTableControls<T extends Record<string, any>>({
     setSort(defaultSortRef.current ?? null);
     const initial: Record<string, string> = {};
     for (const fc of stableFilterConfigs) {
-      initial[fc.key as string] = fc.allValue;
+      initial[fc.key as string] = fc.defaultValue ?? fc.allValue;
     }
     setFilters(initial);
   }, [stableFilterConfigs]);
@@ -83,7 +84,8 @@ export function useTableControls<T extends Record<string, any>>({
   const hasActiveControls = useMemo(() => {
     if (searchQuery.trim()) return true;
     for (const fc of stableFilterConfigs) {
-      if (filters[fc.key as string] !== fc.allValue) return true;
+      const resetValue = fc.defaultValue ?? fc.allValue;
+      if (filters[fc.key as string] !== resetValue) return true;
     }
     return false;
   }, [searchQuery, filters, stableFilterConfigs]);

@@ -171,7 +171,7 @@ export function AdminRegistrations() {
     data: registrations,
     defaultSort: { key: "created_at", direction: "desc" },
     searchableFields: ["name", "email", "apartment_key"],
-    filterConfigs: [{ key: "status", allValue: "__all__" }],
+    filterConfigs: [{ key: "status", allValue: "__all__", defaultValue: "active" }],
   });
 
   const parsedAddHouseNumber = parseInt(addHouseNumber, 10);
