@@ -7,3 +7,13 @@ export function formatDate(iso: string, lang: string): string {
     day: "numeric",
   });
 }
+
+export function formatDateTime(iso: string, lang: string): string {
+  return new Date(iso).toLocaleString(LOCALE_MAP[lang] ?? "da-DK", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
