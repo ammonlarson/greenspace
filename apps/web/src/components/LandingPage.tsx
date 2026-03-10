@@ -14,9 +14,10 @@ import { containerStyle, headingStyle } from "@/styles/theme";
 interface LandingPageProps {
   onSelectGreenhouse?: (greenhouse: Greenhouse) => void;
   hasAvailableBoxes?: boolean;
+  refreshKey?: number;
 }
 
-export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: LandingPageProps) {
+export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true, refreshKey = 0 }: LandingPageProps) {
   const { t } = useLanguage();
   const [greenhouses, setGreenhouses] = useState<GreenhouseSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,7 @@ export function LandingPage({ onSelectGreenhouse, hasAvailableBoxes = true }: La
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshKey]);
 
   const displayGreenhouses = greenhouses.length > 0
     ? greenhouses
