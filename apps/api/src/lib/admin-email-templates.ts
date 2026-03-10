@@ -230,6 +230,34 @@ function buildRemoveNotification(data: NotificationPreviewInput): NotificationPr
   };
 }
 
+const bulkTemplateTranslations = {
+  da: {
+    greeting: "Kære beboer,",
+    placeholder: "Skriv dit budskab her...",
+    closing: "Med venlig hilsen,",
+    teamSignature: "UN17 Village Taghaver-teamet",
+  },
+  en: {
+    greeting: "Dear resident,",
+    placeholder: "Write your message here...",
+    closing: "Best regards,",
+    teamSignature: "The UN17 Village Rooftop Gardens Team",
+  },
+} as const;
+
+export function buildBulkEmailTemplate(language: Language): string {
+  const t = bulkTemplateTranslations[language];
+
+  return `<p style="margin-top: 0;">${escapeHtml(t.greeting)}</p>
+
+<p>${escapeHtml(t.placeholder)}</p>
+
+<p style="margin-top: 28px;">${escapeHtml(t.closing)}</p>
+<p style="font-weight: bold;">${escapeHtml(t.teamSignature)}</p>`;
+}
+
+export { wrapEmailHtml };
+
 export function buildAdminNotification(data: NotificationPreviewInput): NotificationPreview {
   switch (data.action) {
     case "add":

@@ -1,5 +1,7 @@
 import { KRONEN_BOX_RANGE, SOEN_BOX_RANGE } from "@greenspace/shared";
+import type { Language } from "@greenspace/shared";
 import { logAuditEvent } from "../../lib/audit.js";
+import { buildBulkEmailTemplate, wrapEmailHtml } from "../../lib/admin-email-templates.js";
 import { queueAndSendEmail } from "../../lib/email-service.js";
 import { badRequest, unauthorized } from "../../lib/errors.js";
 import { logger } from "../../lib/logger.js";
@@ -94,6 +96,60 @@ export async function handleGetRecipients(ctx: RequestContext): Promise<RouteRes
   };
 }
 
+const VALID_LANGUAGES = new Set<string>(["da", "en"]);
+
+interface TemplateBody {
+  language?: string;
+}
+
+export async function handleGetBulkEmailTemplate(ctx: RequestContext): Promise<RouteResponse> {
+  if (!ctx.adminId) {
+    throw unauthorized();
+  }
+
+  const body = (ctx.body ?? {}) as TemplateBody;
+  const language: Language = VALID_LANGUAGES.has(body.language ?? "") ? (body.language as Language) : "da";
+
+  const defaultBody = buildBulkEmailTemplate(language);
+
+  return {
+    statusCode: 200,
+    body: {
+      language,
+      defaultBody,
+    },
+  };
+}
+
+interface PreviewBody {
+  bodyHtml?: string;
+  subject?: string;
+  language?: string;
+}
+
+export async function handleBulkEmailPreview(ctx: RequestContext): Promise<RouteResponse> {
+  if (!ctx.adminId) {
+    throw unauthorized();
+  }
+
+  const body = (ctx.body ?? {}) as PreviewBody;
+  const { bodyHtml, subject } = body;
+  const language: Language = VALID_LANGUAGES.has(body.language ?? "") ? (body.language as Language) : "da";
+
+  if (!bodyHtml) {
+    throw badRequest("bodyHtml is required");
+  }
+
+  const previewHtml = wrapEmailHtml(language, subject ?? "", bodyHtml);
+
+  return {
+    statusCode: 200,
+    body: {
+      previewHtml,
+    },
+  };
+}
+
 interface SendBulkEmailBody {
   audience?: string;
   subject?: string;
@@ -162,14 +218,17 @@ export async function handleSendBulkEmail(ctx: RequestContext): Promise<RouteRes
   let queueFailedCount = 0;
 
   for (const recipient of recipients) {
-    const lang = recipient.language as "da" | "en";
+    const lang: Language = VALID_LANGUAGES.has(recipient.language)
+      ? (recipient.language as Language)
+      : "da";
     const content = resolveEmailContent(body, lang);
+    const wrappedHtml = wrapEmailHtml(lang, content.subject, content.bodyHtml);
 
     const emailId = await queueAndSendEmail(ctx.db, {
       recipientEmail: recipient.email,
       language: lang,
       subject: content.subject,
-      bodyHtml: content.bodyHtml,
+      bodyHtml: wrappedHtml,
     });
 
     if (emailId) {
