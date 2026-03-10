@@ -87,6 +87,10 @@ export const FLOOR_DOOR_REQUIRED_NUMBERS: readonly number[] = [
   ...Array.from({ length: 202 - 161 + 1 }, (_, i) => 161 + i),
 ];
 
+/** Greenhouse preference options for waitlist */
+export const GREENHOUSE_PREFERENCES = ["kronen", "søen", "any"] as const;
+export type GreenhousePreference = (typeof GREENHOUSE_PREFERENCES)[number];
+
 /** Default language */
 export const DEFAULT_LANGUAGE: Language = "da";
 

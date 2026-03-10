@@ -84,6 +84,7 @@ export interface RegistrationTable {
 }
 
 type WaitlistStatus = "waiting" | "assigned" | "cancelled";
+type GreenhousePref = "kronen" | "søen" | "any";
 
 export interface WaitlistEntryTable {
   id: Generated<string>;
@@ -95,6 +96,7 @@ export interface WaitlistEntryTable {
   door: string | null;
   apartment_key: string;
   language: ColumnType<Lang, Lang | undefined, Lang>;
+  greenhouse_preference: ColumnType<GreenhousePref, GreenhousePref | undefined, GreenhousePref>;
   status: ColumnType<WaitlistStatus, WaitlistStatus | undefined, WaitlistStatus>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string>;
