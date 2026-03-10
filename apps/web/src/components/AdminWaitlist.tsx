@@ -217,7 +217,7 @@ export function AdminWaitlist() {
               }}
             >
               <option value="">{t("admin.waitlist.selectBox")}</option>
-              {BOX_CATALOG.map((box) => (
+              {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
                 <option key={box.id} value={String(box.id)}>
                   {formatBoxLabel(box)}
                 </option>

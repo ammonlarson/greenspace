@@ -410,7 +410,7 @@ export function AdminRegistrations() {
               <label htmlFor="add-box-id" style={requiredLabelStyle}>{t("admin.registrations.addBoxId")} *</label>
               <select id="add-box-id" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle}>
                 <option value="">{t("admin.registrations.selectBox")}</option>
-                {BOX_CATALOG.map((box) => (
+                {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
                   <option key={box.id} value={String(box.id)}>
                     {formatBoxLabel(box)}
                   </option>
@@ -511,7 +511,7 @@ export function AdminRegistrations() {
               style={{ ...inputStyle, maxWidth: 300 }}
             >
               <option value="">{t("admin.registrations.selectBox")}</option>
-              {BOX_CATALOG.map((box) => (
+              {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
                 <option key={box.id} value={String(box.id)}>
                   {formatBoxLabel(box)}
                 </option>

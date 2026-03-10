@@ -376,10 +376,10 @@ describe("AdminRegistrations", () => {
       const options = Array.from(boxSelect.options);
       expect(options[0].textContent).toBe("admin.registrations.selectBox");
       expect(options[0].value).toBe("");
-      expect(options[1].textContent).toBe("Kronen - Linaria");
-      expect(options[1].value).toBe("1");
-      expect(options[15].textContent).toBe("Søen - Robin");
-      expect(options[15].value).toBe("15");
+      expect(options[1].textContent).toBe("Kronen - Alder");
+      expect(options[1].value).toBe("7");
+      expect(options[15].textContent).toBe("Søen - Barn swallow");
+      expect(options[15].value).toBe("26");
       expect(options).toHaveLength(30);
     });
 
@@ -454,7 +454,7 @@ describe("AdminRegistrations", () => {
 
       const options = Array.from(boxSelect.options);
       expect(options[0].textContent).toBe("admin.registrations.selectBox");
-      expect(options[15].textContent).toBe("Søen - Robin");
+      expect(options[15].textContent).toBe("Søen - Barn swallow");
     });
 
     it("shows error when move submitted without selecting a box", async () => {
