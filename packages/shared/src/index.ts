@@ -38,11 +38,12 @@ export {
   FLOOR_DOOR_REQUIRED_NUMBERS,
   DEFAULT_LANGUAGE,
   ADMIN_DEFAULT_LANGUAGE,
+  GREENHOUSE_PREFERENCES,
   RESERVED_LABEL_DEFAULT,
   SEED_ADMIN_EMAILS,
 } from "./constants.js";
 
-export type { Greenhouse, BoxCatalogEntry } from "./constants.js";
+export type { Greenhouse, BoxCatalogEntry, GreenhousePreference } from "./constants.js";
 
 export type {
   SystemSettings,

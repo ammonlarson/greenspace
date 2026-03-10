@@ -49,6 +49,10 @@ const da = {
   "waitlist.alreadyOnWaitlist":
     "Din lejlighed er allerede på ventelisten. Din plads i køen er bevaret.",
   "waitlist.success": "Du er nu på ventelisten!",
+  "waitlist.greenhousePreference": "Drivhuspræference",
+  "waitlist.preferenceKronen": "Kun Kronen drivhus",
+  "waitlist.preferenceSøen": "Kun Søen drivhus",
+  "waitlist.preferenceAny": "Begge drivhuse (ingen præference)",
 
   "audit.title": "Hændelseslog",
   "audit.timestamp": "Tidsstempel",
@@ -257,6 +261,7 @@ const da = {
   "admin.waitlist.confirmDuplicate": "Bekræft duplikat",
   "admin.waitlist.box": "Kasse",
   "admin.waitlist.selectBox": "Vælg plantekasse...",
+  "admin.waitlist.preference": "Drivhuspræference",
 
   "admin.boxes.title": "Plantekasseoversigt",
   "admin.boxes.greenhouse": "Drivhus",
@@ -402,6 +407,10 @@ const en: Record<TranslationKey, string> = {
   "waitlist.alreadyOnWaitlist":
     "Your apartment is already on the waitlist. Your position in the queue has been preserved.",
   "waitlist.success": "You are now on the waitlist!",
+  "waitlist.greenhousePreference": "Greenhouse preference",
+  "waitlist.preferenceKronen": "Kronen greenhouse only",
+  "waitlist.preferenceSøen": "Søen greenhouse only",
+  "waitlist.preferenceAny": "Either greenhouse (no preference)",
 
   "audit.title": "Audit Log",
   "audit.timestamp": "Timestamp",
@@ -610,6 +619,7 @@ const en: Record<TranslationKey, string> = {
   "admin.waitlist.confirmDuplicate": "Confirm Duplicate",
   "admin.waitlist.box": "Box",
   "admin.waitlist.selectBox": "Select planter box...",
+  "admin.waitlist.preference": "Greenhouse preference",
 
   "admin.boxes.title": "Box Overview",
   "admin.boxes.greenhouse": "Greenhouse",
