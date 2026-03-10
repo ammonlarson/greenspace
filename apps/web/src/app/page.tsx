@@ -11,6 +11,7 @@ import { GreenhouseMapPage } from "@/components/GreenhouseMapPage";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { AdminPage } from "@/components/AdminPage";
 import { LoadingSplash } from "@/components/LoadingSplash";
+import { ProjectAbout } from "@/components/ProjectAbout";
 import { colors, fonts } from "@/styles/theme";
 
 type View = "public" | "admin";
@@ -173,6 +174,7 @@ export default function Home() {
       </header>
 
       {renderContent()}
+      {view === "public" && <ProjectAbout />}
     </main>
   );
 }
