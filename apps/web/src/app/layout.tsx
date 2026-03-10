@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "UN17 Village Rooftop Gardens",
   description: "Rooftop planter box registration",
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 
