@@ -217,6 +217,12 @@ describe("formatAddress", () => {
       "Else Alfelts Vej 170 2. th",
     );
   });
+
+  it("omits door when floor is missing", () => {
+    expect(formatAddress("Else Alfelts Vej", 170, null, "th")).toBe(
+      "Else Alfelts Vej 170",
+    );
+  });
 });
 
 describe("validateName", () => {
