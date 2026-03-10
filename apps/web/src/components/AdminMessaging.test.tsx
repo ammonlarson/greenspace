@@ -49,7 +49,11 @@ describe("AdminMessaging", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("12 admin.messaging.recipientCount")).toBeDefined();
+      expect(
+        screen.getByText(
+          "12 admin.messaging.recipientCount (0 admin.messaging.englishCount, 0 admin.messaging.danishCount)",
+        ),
+      ).toBeDefined();
     });
   });
 
@@ -107,6 +111,89 @@ describe("AdminMessaging", () => {
     expect(screen.getByLabelText("admin.messaging.body")).toBeDefined();
     const subjectInput = document.getElementById("messaging-subject");
     expect(subjectInput).toBeDefined();
+  });
+
+  it("shows language preference breakdown in recipient count", async () => {
+    const recipients = [
+      { email: "a@b.com", name: "Alice", language: "en" },
+      { email: "b@b.com", name: "Bob", language: "da" },
+      { email: "c@b.com", name: "Charlie", language: "en" },
+      { email: "d@b.com", name: "Diana", language: "da" },
+      { email: "e@b.com", name: "Eve", language: "en" },
+    ];
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ count: 5, recipients }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "5 admin.messaging.recipientCount (3 admin.messaging.englishCount, 2 admin.messaging.danishCount)",
+        ),
+      ).toBeDefined();
+    });
+  });
+
+  it("updates language counts when audience changes", async () => {
+    let callCount = 0;
+    const fetchMock = vi.fn().mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            count: 4,
+            recipients: [
+              { email: "a@b.com", name: "A", language: "en" },
+              { email: "b@b.com", name: "B", language: "en" },
+              { email: "c@b.com", name: "C", language: "da" },
+              { email: "d@b.com", name: "D", language: "da" },
+            ],
+          }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          count: 2,
+          recipients: [
+            { email: "a@b.com", name: "A", language: "en" },
+            { email: "c@b.com", name: "C", language: "da" },
+          ],
+        }),
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await act(async () => {
+      render(<AdminMessaging />);
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "4 admin.messaging.recipientCount (2 admin.messaging.englishCount, 2 admin.messaging.danishCount)",
+        ),
+      ).toBeDefined();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.messaging.audienceKronen"));
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "2 admin.messaging.recipientCount (1 admin.messaging.englishCount, 1 admin.messaging.danishCount)",
+        ),
+      ).toBeDefined();
+    });
   });
 
   it("switches between preview and source tabs", async () => {

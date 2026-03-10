@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { colors, fonts } from "@/styles/theme";
 
@@ -29,6 +29,17 @@ export function AdminMessaging() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const langCounts = useMemo(() => {
+    if (!recipientInfo) return { en: 0, da: 0 };
+    let en = 0;
+    let da = 0;
+    for (const r of recipientInfo.recipients) {
+      if (r.language === "en") en++;
+      else da++;
+    }
+    return { en, da };
+  }, [recipientInfo]);
 
   const fetchRecipients = useCallback(async (aud: Audience) => {
     setLoadingRecipients(true);
@@ -80,7 +91,7 @@ export function AdminMessaging() {
       return;
     }
 
-    const confirmMsg = `${t("admin.messaging.confirmSend")} ${recipientInfo.count} ${t("admin.messaging.recipientCount")}?`;
+    const confirmMsg = `${t("admin.messaging.confirmSend")} ${recipientInfo.count} ${t("admin.messaging.recipientCount")} (${langCounts.en} ${t("admin.messaging.englishCount")}, ${langCounts.da} ${t("admin.messaging.danishCount")})?`;
     if (!window.confirm(confirmMsg)) return;
 
     setSending(true);
@@ -181,7 +192,7 @@ export function AdminMessaging() {
           {loadingRecipients
             ? t("common.loading")
             : recipientInfo
-              ? `${recipientInfo.count} ${t("admin.messaging.recipientCount")}`
+              ? `${recipientInfo.count} ${t("admin.messaging.recipientCount")} (${langCounts.en} ${t("admin.messaging.englishCount")}, ${langCounts.da} ${t("admin.messaging.danishCount")})`
               : "—"}
         </div>
       </div>
