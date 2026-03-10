@@ -78,7 +78,7 @@ describe("AdminRegistrations", () => {
   });
 
   describe("list view", () => {
-    it("renders registration table after fetch", async () => {
+    it("renders registration table after fetch defaulting to active filter", async () => {
       vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
 
       await act(async () => {
@@ -86,9 +86,22 @@ describe("AdminRegistrations", () => {
       });
 
       expect(screen.getByText("Alice")).toBeDefined();
-      expect(screen.getByText("Bob")).toBeDefined();
       expect(screen.getByText("Linaria")).toBeDefined();
-      expect(screen.getByText("Daisy")).toBeDefined();
+      expect(screen.queryByText("Bob")).toBeNull();
+    });
+
+    it("shows all registrations when filter changed to all", async () => {
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      const statusSelect = screen.getByRole("combobox");
+      fireEvent.change(statusSelect, { target: { value: "__all__" } });
+
+      expect(screen.getByText("Alice")).toBeDefined();
+      expect(screen.getByText("Bob")).toBeDefined();
     });
 
     it("shows empty state when no registrations", async () => {
