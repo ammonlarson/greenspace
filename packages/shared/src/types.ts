@@ -1,4 +1,4 @@
-import type { Greenhouse } from "./constants.js";
+import type { Greenhouse, GreenhousePreference } from "./constants.js";
 import type {
   ActorType,
   AuditAction,
@@ -77,6 +77,7 @@ export interface WaitlistEntry {
   address: NormalizedAddress;
   apartmentKey: string;
   language: Language;
+  greenhousePreference: GreenhousePreference;
   status: WaitlistEntryStatus;
   createdAt: string;
   updatedAt: string;
@@ -138,6 +139,7 @@ export interface WaitlistInput {
   floor: string | null;
   door: string | null;
   language: Language;
+  greenhousePreference: GreenhousePreference;
 }
 
 /** Public status response */

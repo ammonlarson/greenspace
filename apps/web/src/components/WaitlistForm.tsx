@@ -8,6 +8,7 @@ import {
   ORGANIZER_CONTACTS,
   isFloorDoorRequired,
   validateWaitlistInput,
+  type GreenhousePreference,
   type Language,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -26,6 +27,7 @@ export function WaitlistForm({ onCancel }: WaitlistFormProps) {
   const [houseNumber, setHouseNumber] = useState("");
   const [floor, setFloor] = useState("");
   const [door, setDoor] = useState("");
+  const [greenhousePreference, setGreenhousePreference] = useState<GreenhousePreference>("any");
   const [consentChecked, setConsentChecked] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -55,6 +57,7 @@ export function WaitlistForm({ onCancel }: WaitlistFormProps) {
       floor: floor.trim() || null,
       door: door.trim() || null,
       language: language as Language,
+      greenhousePreference,
     };
 
     const validation = validateWaitlistInput(input);
@@ -181,6 +184,20 @@ export function WaitlistForm({ onCancel }: WaitlistFormProps) {
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="wl-door" style={labelStyle}>{t("registration.doorLabel")}</label>
           <input id="wl-door" type="text" value={door} onChange={(e) => setDoor(e.target.value)} style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <label htmlFor="wl-greenhouse-pref" style={labelStyle}>{t("waitlist.greenhousePreference")} *</label>
+          <select
+            id="wl-greenhouse-pref"
+            value={greenhousePreference}
+            onChange={(e) => setGreenhousePreference(e.target.value as GreenhousePreference)}
+            style={inputStyle}
+          >
+            <option value="any">{t("waitlist.preferenceAny")}</option>
+            <option value="kronen">{t("waitlist.preferenceKronen")}</option>
+            <option value="søen">{t("waitlist.preferenceSøen")}</option>
+          </select>
         </div>
 
         <fieldset style={{ border: `1px solid ${colors.borderTan}`, borderRadius: 8, padding: "1rem", marginBottom: "1.25rem" }}>

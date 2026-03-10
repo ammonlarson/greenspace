@@ -20,6 +20,7 @@ interface WaitlistEntry {
   door: string | null;
   apartment_key: string;
   language: string;
+  greenhouse_preference: string;
   status: string;
   created_at: string;
 }
@@ -359,6 +360,7 @@ export function AdminWaitlist() {
                 <SortableHeader label={t("admin.waitlist.name")} sortKey="name" sort={sort} onToggle={toggleSort} />
                 <SortableHeader label={t("admin.waitlist.email")} sortKey="email" sort={sort} onToggle={toggleSort} />
                 <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}`, color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.apartment")}</th>
+                <SortableHeader label={t("admin.waitlist.preference")} sortKey="greenhouse_preference" sort={sort} onToggle={toggleSort} />
                 <SortableHeader label={t("admin.waitlist.status")} sortKey="status" sort={sort} onToggle={toggleSort} />
                 <SortableHeader label={t("admin.waitlist.date")} sortKey="created_at" sort={sort} onToggle={toggleSort} />
                 <th style={{ padding: "0.5rem", borderBottom: `2px solid ${colors.borderTan}`, color: colors.warmBrown, fontFamily: fonts.body }}>{t("admin.waitlist.actions")}</th>
@@ -371,6 +373,13 @@ export function AdminWaitlist() {
                   <td style={{ padding: "0.5rem" }}>{entry.email}</td>
                   <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>
                     {formatAddress(entry.street, entry.house_number, entry.floor, entry.door)}
+                  </td>
+                  <td style={{ padding: "0.5rem", fontSize: "0.8rem" }}>
+                    {entry.greenhouse_preference === "any"
+                      ? t("waitlist.preferenceAny")
+                      : entry.greenhouse_preference === "kronen"
+                        ? t("waitlist.preferenceKronen")
+                        : t("waitlist.preferenceSøen")}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     <span
