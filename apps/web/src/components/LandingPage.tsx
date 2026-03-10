@@ -25,7 +25,7 @@ export function LandingPage({ greenhouses = [], onSelectGreenhouse, hasAvailable
 
   return (
     <section style={{ ...containerStyle, maxWidth: 700 }}>
-      <h2 style={{ ...headingStyle, fontSize: "1.5rem" }}>{t("greenhouse.title")}</h2>
+      <h2 style={{ ...headingStyle, fontSize: "1.5rem", textAlign: "center" }}>{t("greenhouse.title")}</h2>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginTop: "1rem" }}>
         {displayGreenhouses.map((gh) => (
           <GreenhouseCard
