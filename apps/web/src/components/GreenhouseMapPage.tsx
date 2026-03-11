@@ -37,7 +37,11 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
       const res = await fetch("/public/boxes");
       if (res.ok) {
         const all: PlanterBoxPublic[] = await res.json();
-        setBoxes(all.filter((b) => b.greenhouse === greenhouse));
+        setBoxes(
+          all
+            .filter((b) => b.greenhouse === greenhouse)
+            .sort((a, b) => a.name.localeCompare(b.name)),
+        );
       }
     } catch {
       /* API unreachable — map will show empty */
