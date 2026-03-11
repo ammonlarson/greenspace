@@ -46,13 +46,11 @@ export function ProjectAbout() {
       <p
         style={{
           fontFamily: fonts.body,
-          color: colors.borderTan,
+          color: colors.sage,
           fontSize: "0.8rem",
           lineHeight: 1.6,
-          margin: "0 0 0.5rem",
+          margin: "0 auto 0.5rem",
           maxWidth: 500,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
         {t("about.description")}

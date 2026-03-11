@@ -3,7 +3,7 @@
 import Image from "next/image";
 import type { Greenhouse } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { colors, fonts } from "@/styles/theme";
+import { colors, fonts, shadows } from "@/styles/theme";
 
 interface GreenhouseCardProps {
   name: Greenhouse;
@@ -87,11 +87,11 @@ export function GreenhouseCard({
       {/* Info card overlay */}
       <div style={{
         position: "relative",
-        background: "rgba(255, 255, 255, 0.92)",
+        background: colors.overlayWhite,
         borderRadius: 10,
         padding: "0.75rem 1rem",
-        boxShadow: "0 1px 8px rgba(0, 0, 0, 0.06)",
-        border: "1px solid rgba(200, 200, 195, 0.4)",
+        boxShadow: shadows.overlay,
+        border: `1px solid ${colors.overlayBorder}`,
       }}>
         <div style={{
           display: "flex",
@@ -109,17 +109,16 @@ export function GreenhouseCard({
           }}>{name}</h3>
         </div>
 
-        {/* Stats - horizontal on desktop, stacked on mobile */}
-        <div className="greenhouse-stats" style={{
+        <div style={{
           fontFamily: fonts.body,
           fontSize: "0.85rem",
           color: colors.sage,
           lineHeight: 1.6,
         }}>
           <span><strong style={{ color: colors.inkBrown }}>{totalBoxes}</strong> {t("greenhouse.totalBoxes")}</span>
-          <span className="stat-separator" style={{ margin: "0 0.15rem", color: colors.borderTan }}> · </span>
+          <span style={{ margin: "0 0.15rem", color: colors.borderTan }}> · </span>
           <span><strong style={{ color: colors.sageDark }}>{availableBoxes}</strong> {t("greenhouse.available")}</span>
-          <span className="stat-separator" style={{ margin: "0 0.15rem", color: colors.borderTan }}> </span>
+          <span style={{ margin: "0 0.15rem", color: colors.borderTan }}> · </span>
           <span><strong style={{ color: colors.inkBrown }}>{occupiedBoxes}</strong> {t("greenhouse.occupied")}</span>
         </div>
 

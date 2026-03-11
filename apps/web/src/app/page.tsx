@@ -141,7 +141,7 @@ export default function Home() {
   }
 
   return (
-    <main style={{ fontFamily: fonts.body, color: colors.inkBrown, background: "#F5F4F0", minHeight: "100vh" }}>
+    <main style={{ fontFamily: fonts.body, color: colors.inkBrown, background: colors.backgroundLight, minHeight: "100vh" }}>
       <header
         style={{
           display: "grid",

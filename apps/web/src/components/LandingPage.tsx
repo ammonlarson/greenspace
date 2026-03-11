@@ -28,6 +28,7 @@ export function LandingPage({ greenhouses = [], onSelectGreenhouse, hasAvailable
       <div style={{
         display: "flex",
         gap: "1.5rem",
+        flexWrap: "wrap",
         alignItems: "flex-end",
       }}>
         {displayGreenhouses.map((gh) => (
