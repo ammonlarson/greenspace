@@ -33,27 +33,17 @@ const translations = {
     boxDetailsTitle: "Din plantekasse",
     boxLabel: "Kasse",
     greenhouseLabel: "Drivhus",
-    locationTitle: "Placering",
-    kronenLocation:
-      "Kronen-drivhuset ligger på taget af Else Alfelts Vej bygning, ved den nordlige indgang.",
-    soenLocation:
-      "Søen-drivhuset ligger på taget af Else Alfelts Vej bygning, ved den sydlige indgang tæt på søen.",
-    mapTitle: "Plantekasse-kort",
-    kronenMapDesc:
-      "Kronen-drivhuset: Kasserne er arrangeret i to rækker langs den nordlige og sydlige væg.",
-    soenMapDesc:
-      "Søen-drivhuset: Kasserne er arrangeret i to rækker langs den vestlige og østlige væg.",
     careTitle: "Retningslinjer for pasning",
     careGuidelines: [
-      "Vand dine planter regelmæssigt, især i varme perioder.",
-      "Brug kun økologisk jord og gødning.",
-      "Hold din kasse ren og ryddelig.",
-      "Respektér de fælles områder og dine naboers planter.",
-      "Høst kun fra din egen plantekasse.",
+      "Planter skal være plantet inden for én uge efter reservationens start. Dette sikrer, at den 2 måneders reservation forløber smidigt og er fair over for dem, der venter.",
+      "Hvis planterne ikke er startet, mistes pladsen, og den går videre til næste person på ventelisten.",
+      "Hold plantebordet ved at vande og luge regelmæssigt.",
+      "Brug kun økologiske og miljøvenlige havebrugsmetoder.",
+      "Høst ikke fra andre planteborde uden tilladelse.",
     ],
     whatsappTitle: "Fællesskab",
     whatsappText:
-      "Deltag i vores WhatsApp-gruppe for at holde dig opdateret og forbinde med andre grønne naboer:",
+      "Deltag i Gardens & Rooftops gruppen i vores WhatsApp community for at holde dig opdateret og forbinde med andre grønne naboer:",
     whatsappLink: "Deltag i WhatsApp-gruppen",
     contactTitle: "Kontakt",
     contactText: "Hvis du har spørgsmål, er du velkommen til at kontakte os:",
@@ -71,27 +61,17 @@ const translations = {
     boxDetailsTitle: "Your planter box",
     boxLabel: "Box",
     greenhouseLabel: "Greenhouse",
-    locationTitle: "Location",
-    kronenLocation:
-      "The Kronen greenhouse is located on the rooftop of the Else Alfelts Vej building, at the northern entrance.",
-    soenLocation:
-      "The Søen greenhouse is located on the rooftop of the Else Alfelts Vej building, at the southern entrance near the lake.",
-    mapTitle: "Planter box map",
-    kronenMapDesc:
-      "Kronen greenhouse: Boxes are arranged in two rows along the north and south walls.",
-    soenMapDesc:
-      "Søen greenhouse: Boxes are arranged in two rows along the west and east walls.",
     careTitle: "Care guidelines",
     careGuidelines: [
-      "Water your plants regularly, especially during warm periods.",
-      "Use only organic soil and fertilizer.",
-      "Keep your box clean and tidy.",
-      "Respect the common areas and your neighbors' plants.",
-      "Only harvest from your own planter box.",
+      "Plants must be planted within one week of your reservation start date. This keeps the 2-month reservations moving and ensures fairness for those waiting.",
+      "If plants are not started, the spot will be forfeited to the next person in line.",
+      "Maintain the garden bed by watering and weeding regularly.",
+      "Use only organic and eco-friendly gardening methods.",
+      "Do not harvest from other beds without permission.",
     ],
     whatsappTitle: "Community",
     whatsappText:
-      "Join our WhatsApp group to stay updated and connect with fellow green neighbors:",
+      "Join the Gardens & Rooftops group in our WhatsApp community to stay updated and connect with fellow green neighbors:",
     whatsappLink: "Join the WhatsApp group",
     contactTitle: "Contact",
     contactText:
@@ -110,42 +90,6 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function getBoxName(id: number): string {
-  return BOX_CATALOG.find((b) => b.id === id)?.name ?? `Box ${id}`;
-}
-
-function buildGreenhouseMap(greenhouse: string, boxId: number): string {
-  if (greenhouse === "Kronen") {
-    const northRow = Array.from({ length: 7 }, (_, i) => i + 1);
-    const southRow = Array.from({ length: 7 }, (_, i) => i + 8);
-    return `
-      <table style="border-collapse: collapse; margin: 0 auto; font-size: 13px;">
-        <tr>
-          <td style="padding: 4px 8px; color: #888; font-size: 11px;">N &uarr;</td>
-          ${northRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
-        </tr>
-        <tr>
-          <td style="padding: 4px 8px; color: #888; font-size: 11px;">S &darr;</td>
-          ${southRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
-        </tr>
-      </table>`;
-  }
-
-  const westRow = Array.from({ length: 8 }, (_, i) => i + 15);
-  const eastRow = Array.from({ length: 7 }, (_, i) => i + 23);
-  return `
-    <table style="border-collapse: collapse; margin: 0 auto; font-size: 13px;">
-      <tr>
-        <td style="padding: 4px 8px; color: #888; font-size: 11px;">W &larr;</td>
-        ${westRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
-      </tr>
-      <tr>
-        <td style="padding: 4px 8px; color: #888; font-size: 11px;">E &rarr;</td>
-        ${eastRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
-        <td></td>
-      </tr>
-    </table>`;
-}
 
 export function buildConfirmationEmail(data: ConfirmationEmailData): EmailContent {
   const t = translations[data.language];
@@ -156,10 +100,6 @@ export function buildConfirmationEmail(data: ConfirmationEmailData): EmailConten
   const switchedBox = data.switchedFromBoxId
     ? BOX_CATALOG.find((b) => b.id === data.switchedFromBoxId)
     : null;
-
-  const locationDesc = greenhouse === "Kronen" ? t.kronenLocation : t.soenLocation;
-  const mapDesc = greenhouse === "Kronen" ? t.kronenMapDesc : t.soenMapDesc;
-  const mapHtml = buildGreenhouseMap(greenhouse, data.boxId);
 
   const switchHtml = switchedBox
     ? `<div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px 16px; margin-bottom: 20px; border-radius: 4px;">
@@ -207,13 +147,6 @@ export function buildConfirmationEmail(data: ConfirmationEmailData): EmailConten
         </tr>
       </table>
 
-      <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">${escapeHtml(t.locationTitle)}</h2>
-      <p>${escapeHtml(locationDesc)}</p>
-
-      <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">${escapeHtml(t.mapTitle)}</h2>
-      <p style="font-size: 13px; color: #666;">${escapeHtml(mapDesc)}</p>
-      ${mapHtml}
-
       <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; margin-top: 28px;">${escapeHtml(t.careTitle)}</h2>
       <ul style="padding-left: 20px; line-height: 1.6;">
         ${careListHtml}
@@ -221,7 +154,7 @@ export function buildConfirmationEmail(data: ConfirmationEmailData): EmailConten
 
       <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">${escapeHtml(t.whatsappTitle)}</h2>
       <p>${escapeHtml(t.whatsappText)}</p>
-      <p><a href="${WHATSAPP_GROUP_URL}" style="display: inline-block; background: #25d366; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold;">${escapeHtml(t.whatsappLink)}</a></p>
+      <p><a href="${WHATSAPP_GROUP_URL}" style="display: inline-block; background: #2e7d32; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold;">${escapeHtml(t.whatsappLink)}</a></p>
 
       <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">${escapeHtml(t.contactTitle)}</h2>
       <p>${escapeHtml(t.contactText)}</p>
