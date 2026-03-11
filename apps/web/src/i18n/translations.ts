@@ -374,7 +374,7 @@ const en: Record<TranslationKey, string> = {
 
   "status.preOpenTitle": "Registration opens soon",
   "status.preOpenDescription":
-    "Registration for rooftop planter boxes at UN17 opens at the time shown below. Once registration opens, you can choose a planter box in one of the two greenhouses. Each apartment may only have one active planter box.",
+    "Registration for rooftop planter boxes at UN17 Village opens at the time shown below. Once registration opens, you can choose a planter box in one of the two greenhouses. Each apartment may only have one active planter box.",
   "status.openingDatetime": "Registration opens",
   "status.eligibility":
     "Residents of UN17 Village are eligible. One planter box per apartment.",

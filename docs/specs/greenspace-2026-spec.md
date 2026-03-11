@@ -410,7 +410,7 @@ Søen:
 
 ### 14.1 Visual Intent
 - Warm, community-focused rooftop-garden look.
-- Inspired by UN17 architecture and greenhouse atmosphere.
+- Inspired by UN17 Village architecture and greenhouse atmosphere.
 - 2D map interactions over photorealistic rendering.
 
 ### 14.2 Components
