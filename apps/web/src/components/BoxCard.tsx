@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { PublicBoxState } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BOX_STATE_COLORS } from "./boxStateColors";
@@ -56,12 +57,15 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
       >
         {t(`map.state.${state}`)}
       </span>
-      <img
+      <Image
         src={boxImagePath(name)}
-        alt={name}
+        alt=""
         width={48}
         height={48}
         style={{ objectFit: "contain", opacity: state !== "available" ? 0.6 : 1 }}
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
       />
       <span style={{ fontSize: "0.85rem", color: themeColors.warmBrown }}>{name}</span>
     </button>
