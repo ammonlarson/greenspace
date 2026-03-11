@@ -68,7 +68,15 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
           e.currentTarget.style.display = "none";
         }}
       />
-      <span style={{ fontSize: "0.85rem", color: themeColors.warmBrown, paddingBottom: "0.5rem" }}>{name}</span>
+      <span
+        style={{
+          fontSize: "0.85rem",
+          color: themeColors.warmBrown,
+          paddingBottom: "0.5rem",
+        }}
+      >
+        {name}
+      </span>
     </button>
   );
 }
