@@ -90,25 +90,6 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function getBoxName(id: number): string {
-  return BOX_CATALOG.find((b) => b.id === id)?.name ?? `Box ${id}`;
-}
-
-  const westRow = Array.from({ length: 8 }, (_, i) => i + 15);
-  const eastRow = Array.from({ length: 7 }, (_, i) => i + 23);
-  return `
-    <table style="border-collapse: collapse; margin: 0 auto; font-size: 13px;">
-      <tr>
-        <td style="padding: 4px 8px; color: #888; font-size: 11px;">W &larr;</td>
-        ${westRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
-      </tr>
-      <tr>
-        <td style="padding: 4px 8px; color: #888; font-size: 11px;">E &rarr;</td>
-        ${eastRow.map((id) => `<td style="border: 2px solid ${id === boxId ? "#2e7d32" : "#ccc"}; padding: 6px 10px; text-align: center; background: ${id === boxId ? "#e8f5e9" : "#fafafa"}; font-weight: ${id === boxId ? "bold" : "normal"};">${escapeHtml(getBoxName(id))}</td>`).join("")}
-        <td></td>
-      </tr>
-    </table>`;
-}
 
 export function buildConfirmationEmail(data: ConfirmationEmailData): EmailContent {
   const t = translations[data.language];
