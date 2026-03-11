@@ -182,14 +182,7 @@ export function buildConfirmationEmail(data: ConfirmationEmailData): EmailConten
           <td style="padding: 8px 12px;">${escapeHtml(greenhouse)}</td>
         </tr>
       </table>
-----
-      <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">${escapeHtml(t.locationTitle)}</h2>
-      <p>${escapeHtml(locationDesc)}</p>
 
-      <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px;">${escapeHtml(t.mapTitle)}</h2>
-      <p style="font-size: 13px; color: #666;">${escapeHtml(mapDesc)}</p>
-      ${mapHtml}
-----
       <h2 style="color: #2e7d32; font-size: 18px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; margin-top: 28px;">${escapeHtml(t.careTitle)}</h2>
       <ul style="padding-left: 20px; line-height: 1.6;">
         ${careListHtml}
