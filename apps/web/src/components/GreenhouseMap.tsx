@@ -24,7 +24,6 @@ export function GreenhouseMap({ boxes, onSelectBox }: GreenhouseMapProps) {
         <BoxCard
           key={box.id}
           name={box.name}
-          greenhouse={box.greenhouse}
           state={box.state}
           onClick={onSelectBox ? () => onSelectBox(box.id) : undefined}
         />
