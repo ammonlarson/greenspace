@@ -31,19 +31,17 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "0.25rem",
-        padding: "0.75rem 0.5rem",
         border: `2px solid ${colors.border}`,
         borderRadius: 8,
-        background: colors.background,
+        background: "#fdfdfd",
         cursor: isClickable ? "pointer" : "default",
-        opacity: state !== "available" ? 0.7 : 1,
         minWidth: 100,
         textAlign: "center",
         fontFamily: fonts.body,
         fontSize: "inherit",
         overflow: "hidden",
         transition: "box-shadow 0.15s",
+        padding: 0,
       }}
     >
       <span
@@ -53,6 +51,9 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
           color: colors.text,
           textTransform: "uppercase",
           letterSpacing: "0.05em",
+          background: colors.background,
+          width: "100%",
+          padding: "0.35rem 0.5rem",
         }}
       >
         {t(`map.state.${state}`)}
@@ -62,12 +63,20 @@ export function BoxCard({ name, state, onClick }: BoxCardProps) {
         alt=""
         width={48}
         height={48}
-        style={{ objectFit: "contain", opacity: state !== "available" ? 0.6 : 1 }}
+        style={{ objectFit: "contain", margin: "0.5rem 0 0.25rem" }}
         onError={(e) => {
           e.currentTarget.style.display = "none";
         }}
       />
-      <span style={{ fontSize: "0.85rem", color: themeColors.warmBrown }}>{name}</span>
+      <span
+        style={{
+          fontSize: "0.85rem",
+          color: themeColors.warmBrown,
+          paddingBottom: "0.5rem",
+        }}
+      >
+        {name}
+      </span>
     </button>
   );
 }
