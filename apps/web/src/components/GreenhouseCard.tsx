@@ -96,6 +96,7 @@ export function GreenhouseCard({
         <div style={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
           gap: "0.4rem",
           marginBottom: "0.35rem",
         }}>
@@ -122,16 +123,6 @@ export function GreenhouseCard({
           <span><strong style={{ color: colors.inkBrown }}>{occupiedBoxes}</strong> {t("greenhouse.occupied")}</span>
         </div>
 
-        {onSelect && (
-          <p style={{
-            margin: "0.5rem 0 0",
-            fontSize: "0.8rem",
-            color: colors.sage,
-            fontFamily: fonts.body,
-          }}>
-            {t("map.viewMap")} &rsaquo;
-          </p>
-        )}
       </div>
     </article>
   );

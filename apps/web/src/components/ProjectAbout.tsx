@@ -43,17 +43,37 @@ export function ProjectAbout() {
         <div style={{ flex: 1, maxWidth: 200, height: 1, background: `linear-gradient(to left, transparent, ${colors.borderTan})` }} />
       </div>
 
+      <h2
+        style={{
+          fontFamily: fonts.heading,
+          color: colors.warmBrown,
+          fontSize: "1rem",
+          margin: "0 0 0.5rem",
+        }}
+      >
+        {t("about.title")}
+      </h2>
       <p
         style={{
           fontFamily: fonts.body,
-          color: colors.sage,
+          color: colors.warmBrown,
           fontSize: "0.8rem",
           lineHeight: 1.6,
-          margin: "0 auto 0.5rem",
+          margin: "0 auto 0.75rem",
           maxWidth: 500,
         }}
       >
         {t("about.description")}
+      </p>
+      <p
+        style={{
+          fontFamily: fonts.body,
+          color: colors.warmBrown,
+          fontSize: "0.8rem",
+          margin: "0 0 0.25rem",
+        }}
+      >
+        {t("about.contact")}
       </p>
       <p style={{ margin: 0, fontSize: "0.8rem" }}>
         {ORGANIZER_CONTACTS.map((contact, i) => (
