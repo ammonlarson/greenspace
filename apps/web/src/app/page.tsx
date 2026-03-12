@@ -170,7 +170,7 @@ export default function Home() {
             color: colors.inkBrown,
           }}
         >
-          <h1 style={{ fontSize: "inherit", margin: 0, fontFamily: "inherit", color: "inherit", fontWeight: 500 }}>
+          <h1 style={{ fontSize: "inherit", margin: 0, fontFamily: "inherit", color: "inherit", fontWeight: 700 }}>
             {t("common.appName")}
           </h1>
         </button>
