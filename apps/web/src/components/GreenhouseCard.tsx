@@ -82,7 +82,7 @@ export function GreenhouseCard({
         position: "relative",
         background: colors.overlayWhite,
         borderRadius: 10,
-        padding: "0.75rem 1rem",
+        padding: "1.25rem 1rem",
         boxShadow: shadows.overlay,
         border: `1px solid ${colors.overlayBorder}`,
       }}>
