@@ -3,7 +3,6 @@
 import Image from "next/image";
 import {
   OPENING_TIMEZONE,
-  ORGANIZER_CONTACTS,
 } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { colors, fonts } from "@/styles/theme";
@@ -62,10 +61,19 @@ export function PreOpenPage({ openingDatetime }: PreOpenPageProps) {
           color: colors.inkBrown,
           fontSize: "1.5rem",
           fontWeight: 500,
-          margin: "0 0 1.25rem",
+          margin: "0 0 1rem",
         }}>
           {t("status.preOpenTitle")}
         </h2>
+
+        <p style={{
+          fontSize: "0.9rem",
+          color: colors.warmBrown,
+          margin: "0 0 1.25rem",
+          lineHeight: 1.6,
+        }}>
+          {t("status.preOpenDescription")}
+        </p>
 
         <div style={{
           display: "inline-block",
@@ -74,7 +82,16 @@ export function PreOpenPage({ openingDatetime }: PreOpenPageProps) {
           border: `1px solid ${colors.overlayBorder}`,
           borderRadius: 10,
           marginBottom: "1.25rem",
+          textAlign: "center",
         }}>
+          <p style={{
+            fontSize: "0.85rem",
+            fontWeight: 500,
+            margin: "0 0 0.25rem",
+            color: colors.warmBrown,
+          }}>
+            {t("status.openingDatetime")}
+          </p>
           <p style={{
             fontSize: "1.25rem",
             fontWeight: 600,
@@ -88,27 +105,10 @@ export function PreOpenPage({ openingDatetime }: PreOpenPageProps) {
         <p style={{
           fontSize: "0.9rem",
           color: colors.warmBrown,
-          margin: "0 0 1.5rem",
+          margin: "0",
         }}>
           {t("status.eligibility")}
         </p>
-
-        <div style={{
-          borderTop: `1px solid ${colors.borderTan}`,
-          paddingTop: "1rem",
-          fontSize: "0.85rem",
-          color: colors.warmBrown,
-        }}>
-          <span>{t("status.contactInfo")}: </span>
-          {ORGANIZER_CONTACTS.map((contact, i) => (
-            <span key={contact.email}>
-              {i > 0 && "  "}
-              <a href={`mailto:${contact.email}`} style={{ color: colors.sage, textDecoration: "none" }}>
-                {contact.email}
-              </a>
-            </span>
-          ))}
-        </div>
       </div>
     </section>
   );
