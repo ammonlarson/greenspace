@@ -1,7 +1,7 @@
 import type { Language } from "@greenspace/shared";
 
 const da = {
-  "common.appName": "UN17 Village Taghaver",
+  "common.appName": "UN17 Village Taghaver  |  2026 Tilmelding",
   "common.language": "Sprog",
   "common.submit": "Indsend",
   "common.cancel": "Annuller",
@@ -363,7 +363,7 @@ const da = {
 export type TranslationKey = keyof typeof da;
 
 const en: Record<TranslationKey, string> = {
-  "common.appName": "UN17 Village Rooftop Gardens",
+  "common.appName": "UN17 Village Rooftop Gardens  |  2026 Registration",
   "common.language": "Language",
   "common.submit": "Submit",
   "common.cancel": "Cancel",
