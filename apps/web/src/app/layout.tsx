@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "UN17 Village Rooftop Gardens",
-  description: "Rooftop planter box registration",
+  description: "Greenhouse planter box registration",
   icons: {
     icon: "/favicon.ico",
     apple: "/favicon.ico",

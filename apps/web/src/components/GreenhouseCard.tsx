@@ -82,7 +82,7 @@ export function GreenhouseCard({
         position: "relative",
         background: colors.overlayWhite,
         borderRadius: 10,
-        padding: "1.75rem 1rem",
+        padding: "1.25rem 1rem 2rem",
         boxShadow: shadows.overlay,
         border: `1px solid ${colors.overlayBorder}`,
         textAlign: "center",
@@ -91,8 +91,8 @@ export function GreenhouseCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "0.4rem",
-          marginBottom: "0.5rem",
+          gap: "0.8rem",
+          marginBottom: "1.25rem",
         }}>
           <GreenhouseIcon isKronen={isKronen} />
           <h3 style={{
