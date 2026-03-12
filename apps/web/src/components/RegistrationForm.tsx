@@ -215,13 +215,29 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
       <h2 style={{ textAlign: "center", margin: "0 0 1.5rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("registration.formTitle")}</h2>
       {box && (
         <div style={{ textAlign: "center", margin: "0.5rem 0 1.5rem" }}>
-          <Image
-            src={`/${box.name.toLowerCase().replace(/ /g, "_")}_lg.png`}
-            alt={box.name}
-            width={240}
-            height={240}
-            style={{ objectFit: "contain", borderRadius: 8 }}
-          />
+          <div style={{
+            display: "inline-block",
+            borderRadius: 12,
+            border: `2px solid ${colors.borderTan}`,
+            boxShadow: `
+              1px 1px 0 ${colors.borderTan},
+              -1px -1px 0 ${colors.borderTan},
+              2px 0 0 ${colors.parchment},
+              -2px 0 0 ${colors.parchment},
+              0 2px 0 ${colors.parchment},
+              0 -2px 0 ${colors.parchment}
+            `,
+            padding: 8,
+            background: colors.white,
+          }}>
+            <Image
+              src={`/${box.name.toLowerCase().replace(/ /g, "_")}_lg.png`}
+              alt={box.name}
+              width={240}
+              height={240}
+              style={{ objectFit: "contain", borderRadius: 8, display: "block" }}
+            />
+          </div>
           <p style={{ color: colors.warmBrown, margin: "0.5rem 0 0.75rem", fontSize: "1.75rem", fontWeight: 300, fontFamily: fonts.heading }}>
             <strong>{box.name}</strong> ({box.greenhouse})
           </p>
