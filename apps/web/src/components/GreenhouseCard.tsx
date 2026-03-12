@@ -72,7 +72,7 @@ export function GreenhouseCard({
         width: "100%",
         aspectRatio: "2.2 / 1",
         position: "relative",
-        marginBottom: "-2rem",
+        marginBottom: "0.5rem",
       }}>
         <Image
           src={imageSrc}
