@@ -13,22 +13,15 @@ interface GreenhouseCardProps {
   onSelect?: () => void;
 }
 
-function KronenIcon() {
+function GreenhouseIcon({ isKronen }: { isKronen: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M10 16 C10 16 10 10 10 8 M10 8 C8 6 6 7 5 9 M10 8 C12 6 14 7 15 9 M10 12 C8.5 11 7 12 6.5 13.5 M10 12 C11.5 11 13 12 13.5 13.5" stroke={colors.sage} strokeWidth="1.2" strokeLinecap="round" fill="none" />
-    </svg>
-  );
-}
-
-function SoenIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M4 12 C4 12 6 10 8 11 C10 12 9 14 7 14 C5 14 4 12 4 12Z" stroke={colors.sage} strokeWidth="1.2" fill="none" />
-      <circle cx="6" cy="11.5" r="0.8" fill={colors.sage} />
-      <path d="M8 13 L10 14 L12 13" stroke={colors.sage} strokeWidth="1" strokeLinecap="round" fill="none" />
-      <path d="M12 11 L14 10 L16 11" stroke={colors.sage} strokeWidth="1.2" strokeLinecap="round" fill="none" />
-    </svg>
+    <Image
+      src={isKronen ? "/leaf.png" : "/bird.png"}
+      alt=""
+      width={20}
+      height={20}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
@@ -100,7 +93,7 @@ export function GreenhouseCard({
           gap: "0.4rem",
           marginBottom: "0.35rem",
         }}>
-          {isKronen ? <KronenIcon /> : <SoenIcon />}
+          <GreenhouseIcon isKronen={isKronen} />
           <h3 style={{
             margin: 0,
             fontFamily: fonts.heading,

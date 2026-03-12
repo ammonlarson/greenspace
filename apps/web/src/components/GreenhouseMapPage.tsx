@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import {
   GREENHOUSES,
   type Greenhouse,
@@ -118,32 +119,46 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
         &larr; {t("map.back")}
       </button>
 
-      <h2 style={{ ...headingStyle, marginBottom: "0.5rem" }}>{greenhouse}</h2>
+      <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+          <Image
+            src={greenhouse.includes("Kronen") ? "/leaf.png" : "/bird.png"}
+            alt=""
+            width={24}
+            height={24}
+            style={{ objectFit: "contain" }}
+          />
+          <h2 style={{ ...headingStyle, margin: 0 }}>{greenhouse}</h2>
+        </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "1.5rem",
-          flexWrap: "wrap",
-          fontSize: "0.9rem",
-          color: colors.warmBrown,
-          fontFamily: fonts.body,
-          marginBottom: "1.25rem",
-        }}
-      >
-        <span>
-          {t("greenhouse.totalBoxes")}: <strong>{total}</strong>
-        </span>
-        <span>
-          {t("greenhouse.available")}:{" "}
-          <strong style={{ color: colors.sageDark }}>{available}</strong>
-        </span>
-        <span>
-          {t("greenhouse.occupied")}: <strong>{occupied}</strong>
-        </span>
+        <div
+          style={{
+            display: "flex",
+            gap: "1.5rem",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            fontSize: "0.9rem",
+            color: colors.warmBrown,
+            fontFamily: fonts.body,
+            marginBottom: "0.75rem",
+          }}
+        >
+          <span>
+            {t("greenhouse.totalBoxes")}: <strong>{total}</strong>
+          </span>
+          <span>
+            {t("greenhouse.available")}:{" "}
+            <strong style={{ color: colors.sageDark }}>{available}</strong>
+          </span>
+          <span>
+            {t("greenhouse.occupied")}: <strong>{occupied}</strong>
+          </span>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <BoxStateLegend />
+        </div>
       </div>
-
-      <BoxStateLegend />
 
       <div style={{ marginTop: "1.25rem" }}>
         <GreenhouseMap
