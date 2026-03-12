@@ -135,7 +135,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         />
       </div>
 
-      <div role="tabpanel">
+      <div role="tabpanel" style={{ maxWidth: 800, margin: "0 auto" }}>
         {activeTab === "registrations" && <AdminRegistrations />}
         {activeTab === "waitlist" && <AdminWaitlist />}
         {activeTab === "boxes" && <AdminBoxes />}
