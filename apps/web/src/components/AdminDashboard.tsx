@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { colors, fonts } from "@/styles/theme";
 import { AdminRegistrations } from "./AdminRegistrations";
@@ -74,6 +75,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             borderBottom: `2px solid ${colors.borderTan}`,
             overflowX: "auto",
             flex: 1,
+            justifyContent: "center",
           }}
         >
           {TABS.map((tab) => (
@@ -120,6 +122,16 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         >
           {loggingOut ? t("common.loading") : t("admin.logout")}
         </button>
+      </div>
+
+      <div style={{ textAlign: "center", margin: "0.5rem 0 1rem" }}>
+        <Image
+          src="/plant_separator.png"
+          alt=""
+          width={400}
+          height={80}
+          style={{ objectFit: "contain" }}
+        />
       </div>
 
       <div role="tabpanel">
