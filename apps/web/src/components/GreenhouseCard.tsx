@@ -71,7 +71,7 @@ export function GreenhouseCard({
           src={imageSrc}
           alt={name}
           fill
-          style={{ objectFit: "contain", objectPosition: "bottom" }}
+          style={{ objectFit: "contain", objectPosition: isKronen ? "bottom" : "bottom 55%" }}
           sizes="(max-width: 600px) 45vw, 300px"
           priority
         />

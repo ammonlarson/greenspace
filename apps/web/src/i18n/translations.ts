@@ -12,10 +12,10 @@ const da = {
 
   "status.preOpenTitle": "Tilmelding åbner snart",
   "status.preOpenDescription":
-    "Tilmelding til plantekasser på taget af UN17 åbner på det angivne tidspunkt. Når tilmeldingen åbner, kan du vælge en plantekasse i et af de to drivhuse. Hver lejlighed kan kun have én aktiv plantekasse.",
+    "Tilmelding til plantekasser på taget af UN17 åbner på det angivne tidspunkt. Når tilmeldingen åbner, kan du vælge en plantekasse i et af de to drivhuse.",
   "status.openingDatetime": "Tilmelding åbner",
   "status.eligibility":
-    "Beboere på UN17 Village kan tilmelde sig. Én plantekasse pr. lejlighed.",
+    "Beboere på UN17 Village kan tilmelde sig. Hver lejlighed kan kun have én aktiv plantekasse.",
   "status.contactInfo": "Kontakt",
 
   "greenhouse.title": "Drivhuse - 2026 Tilmelding",
@@ -374,10 +374,10 @@ const en: Record<TranslationKey, string> = {
 
   "status.preOpenTitle": "Registration opens soon",
   "status.preOpenDescription":
-    "Registration for rooftop planter boxes at UN17 Village opens at the time shown below. Once registration opens, you can choose a planter box in one of the two greenhouses. Each apartment may only have one active planter box.",
+    "Registration for rooftop planter boxes at UN17 Village opens at the time shown below. Once registration opens, you can choose a planter box in one of the two greenhouses.",
   "status.openingDatetime": "Registration opens",
   "status.eligibility":
-    "Residents of UN17 Village are eligible. One planter box per apartment.",
+    "Residents of UN17 Village are eligible. Each apartment may only have one active planter box.",
   "status.contactInfo": "Contact",
 
   "greenhouse.title": "Greenhouses - 2026 Registration",
