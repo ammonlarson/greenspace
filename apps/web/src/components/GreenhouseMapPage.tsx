@@ -119,8 +119,8 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
         &larr; {t("map.back")}
       </button>
 
-      <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+      <div style={{ textAlign: "center", marginBottom: ".25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
           <Image
             src={greenhouse.includes("Kronen") ? "/leaf.png" : "/bird.png"}
             alt=""
