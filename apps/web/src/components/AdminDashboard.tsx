@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { colors, fonts } from "@/styles/theme";
 import { AdminRegistrations } from "./AdminRegistrations";
@@ -71,9 +72,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           style={{
             display: "flex",
             gap: "0.25rem",
-            borderBottom: `2px solid ${colors.borderTan}`,
+            borderBottom: `1px solid ${colors.borderTan}`,
             overflowX: "auto",
             flex: 1,
+            justifyContent: "center",
           }}
         >
           {TABS.map((tab) => (
@@ -86,7 +88,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               style={{
                 padding: "0.6rem 1.25rem",
                 border: "none",
-                borderBottom: activeTab === tab ? `2px solid ${colors.sage}` : "2px solid transparent",
+                borderBottom: activeTab === tab ? `3px solid ${colors.sageDark}` : "3px solid transparent",
                 background: "none",
                 cursor: "pointer",
                 fontFamily: fonts.body,
@@ -95,6 +97,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 color: activeTab === tab ? colors.sageDark : colors.warmBrown,
                 whiteSpace: "nowrap",
                 marginBottom: "-2px",
+                paddingBottom: "0.75rem",
               }}
             >
               {t(TAB_KEYS[tab])}
@@ -122,7 +125,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         </button>
       </div>
 
-      <div role="tabpanel">
+      <div style={{ textAlign: "center", margin: "0.25rem 0 0" }}>
+        <Image
+          src="/plant_separator.png"
+          alt=""
+          width={400}
+          height={80}
+          style={{ objectFit: "contain" }}
+        />
+      </div>
+
+      <div role="tabpanel" style={{ maxWidth: 800, margin: "0 auto" }}>
         {activeTab === "registrations" && <AdminRegistrations />}
         {activeTab === "waitlist" && <AdminWaitlist />}
         {activeTab === "boxes" && <AdminBoxes />}

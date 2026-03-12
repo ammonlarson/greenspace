@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 export const colors = {
+  backgroundLight: "#F5F4F0",
   cream: "#FAF6F0",
   parchment: "#F0EBE1",
   sage: "#7A8B6F",
@@ -22,10 +23,12 @@ export const colors = {
   infoText: "#4A7572",
   warningBg: "#FCF8EE",
   warningText: "#7A6A30",
+  overlayWhite: "rgba(255, 255, 255, 0.92)",
+  overlayBorder: "rgba(200, 200, 195, 0.4)",
 };
 
 export const fonts = {
-  heading: "'Playfair Display', Georgia, serif",
+  heading: "'Inter', system-ui, sans-serif",
   body: "'Inter', system-ui, sans-serif",
 };
 
@@ -33,6 +36,7 @@ export const shadows = {
   card: "0 2px 8px rgba(74, 55, 40, 0.08)",
   cardHover: "0 4px 16px rgba(74, 55, 40, 0.14)",
   soft: "0 1px 4px rgba(74, 55, 40, 0.06)",
+  overlay: "0 1px 8px rgba(0, 0, 0, 0.06)",
 };
 
 export const containerStyle: CSSProperties = {

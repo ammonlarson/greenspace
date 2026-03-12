@@ -17,7 +17,7 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "DB_PASSWORD=localdev npm run dev --workspace=@greenspace/api",
-      "preLaunchTask": "Start Database"
+      "preLaunchTask": "Setup Database Schema"
     }
   ],
   "compounds": [

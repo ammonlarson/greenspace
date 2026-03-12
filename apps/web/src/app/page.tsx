@@ -141,14 +141,13 @@ export default function Home() {
   }
 
   return (
-    <main style={{ fontFamily: fonts.body, color: colors.inkBrown }}>
+    <main style={{ fontFamily: fonts.body, color: colors.inkBrown, background: colors.backgroundLight, minHeight: "100vh" }}>
       <header
         style={{
           display: "grid",
           gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
-          padding: "1rem",
-          background: colors.parchment,
+          padding: "1rem 1.5rem",
           borderBottom: `1px solid ${colors.borderTan}`,
         }}
       >
@@ -168,10 +167,10 @@ export default function Home() {
             margin: 0,
             fontSize: "1.25rem",
             fontFamily: fonts.heading,
-            color: colors.warmBrown,
+            color: colors.inkBrown,
           }}
         >
-          <h1 style={{ fontSize: "inherit", margin: 0, fontFamily: "inherit", color: "inherit" }}>
+          <h1 style={{ fontSize: "inherit", margin: 0, fontFamily: "inherit", color: "inherit", fontWeight: 700 }}>
             {t("common.appName")}
           </h1>
         </button>
@@ -186,7 +185,7 @@ export default function Home() {
                 cursor: "pointer",
                 fontSize: "0.8rem",
                 color: colors.warmBrown,
-                opacity: 0.6,
+                opacity: 0.4,
                 fontFamily: fonts.body,
               }}
             >

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   BOX_CATALOG,
   ELIGIBLE_STREET,
@@ -211,11 +212,20 @@ export function RegistrationForm({ boxId, onCancel, onBoxUnavailable, onSuccess 
         &larr; {t("common.cancel")}
       </button>
 
-      <h2 style={{ margin: "0 0 0.25rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("registration.formTitle")}</h2>
+      <h2 style={{ textAlign: "center", margin: "0 0 1.5rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("registration.formTitle")}</h2>
       {box && (
-        <p style={{ color: colors.warmBrown, margin: "0 0 1.5rem" }}>
-          {t("registration.boxLabel")}: <strong>{box.name}</strong> ({box.greenhouse})
-        </p>
+        <div style={{ textAlign: "center", margin: "0.5rem 0 1.5rem" }}>
+          <Image
+            src={`/${box.name.toLowerCase().replace(/ /g, "_")}_lg.png`}
+            alt={box.name}
+            width={240}
+            height={240}
+            style={{ objectFit: "contain", borderRadius: 8 }}
+          />
+          <p style={{ color: colors.warmBrown, margin: "0.5rem 0 0.75rem", fontSize: "1.75rem", fontWeight: 300, fontFamily: fonts.heading }}>
+            <strong>{box.name}</strong> ({box.greenhouse})
+          </p>
+        </div>
       )}
 
       <div style={infoCardStyle}>
