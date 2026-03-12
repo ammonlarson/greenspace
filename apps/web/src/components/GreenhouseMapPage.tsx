@@ -124,8 +124,8 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
           <Image
             src={greenhouse.includes("Kronen") ? "/leaf.png" : "/bird.png"}
             alt=""
-            width={24}
-            height={24}
+            width={48}
+            height={48}
             style={{ objectFit: "contain" }}
           />
           <h2 style={{ ...headingStyle, margin: 0 }}>{greenhouse}</h2>
