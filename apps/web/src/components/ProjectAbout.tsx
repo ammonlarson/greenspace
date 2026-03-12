@@ -24,7 +24,7 @@ export function ProjectAbout() {
         marginBottom: "1.5rem",
       }}>
         <div style={{ flex: 1, maxWidth: 200, height: 1, background: `linear-gradient(to right, transparent, ${colors.borderTan})` }} />
-        <Image src="/footer.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />
+        <Image src="/footer.png" alt="" width={56} height={56} style={{ objectFit: "contain" }} />
         <div style={{ flex: 1, maxWidth: 200, height: 1, background: `linear-gradient(to left, transparent, ${colors.borderTan})` }} />
       </div>
 

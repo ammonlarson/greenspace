@@ -18,8 +18,8 @@ function GreenhouseIcon({ isKronen }: { isKronen: boolean }) {
     <Image
       src={isKronen ? "/leaf.png" : "/bird.png"}
       alt=""
-      width={20}
-      height={20}
+      width={40}
+      height={40}
       style={{ objectFit: "contain" }}
     />
   );
