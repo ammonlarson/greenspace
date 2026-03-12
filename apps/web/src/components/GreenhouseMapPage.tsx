@@ -131,7 +131,7 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
           <h2 style={{ ...headingStyle, margin: 0 }}>{greenhouse}</h2>
         </div>
 
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: "0.25rem" }}>
           <Image
             src={greenhouse.includes("Kronen") ? "/plant_separator.png" : "/bird_separator.png"}
             alt=""

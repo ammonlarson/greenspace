@@ -125,7 +125,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         </button>
       </div>
 
-      <div style={{ textAlign: "center", margin: "0.5rem 0 0.25rem" }}>
+      <div style={{ textAlign: "center", margin: "0.25rem 0 0" }}>
         <Image
           src="/plant_separator.png"
           alt=""
