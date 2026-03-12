@@ -80,6 +80,8 @@ export function GreenhouseCard({
       {/* Info card overlay */}
       <div style={{
         position: "relative",
+        width: "100%",
+        boxSizing: "border-box",
         background: colors.overlayWhite,
         borderRadius: 10,
         padding: "1.25rem 1rem 2rem",

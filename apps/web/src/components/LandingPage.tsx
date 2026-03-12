@@ -5,6 +5,8 @@ import {
   type Greenhouse,
   type GreenhouseSummary,
 } from "@greenspace/shared";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { fonts, colors } from "@/styles/theme";
 import { GreenhouseCard } from "./GreenhouseCard";
 import { WaitlistBanner } from "./WaitlistBanner";
 
@@ -15,6 +17,7 @@ interface LandingPageProps {
   onJoinWaitlist?: () => void;
 }
 export function LandingPage({ greenhouses = [], onSelectGreenhouse, hasAvailableBoxes = true, onJoinWaitlist }: LandingPageProps) {
+  const { t } = useLanguage();
   const displayGreenhouses = greenhouses.length > 0
     ? greenhouses
     : GREENHOUSES.map((name) => ({ name, totalBoxes: 0, availableBoxes: 0, occupiedBoxes: 0 }));
@@ -25,6 +28,16 @@ export function LandingPage({ greenhouses = [], onSelectGreenhouse, hasAvailable
       margin: "0 auto",
       padding: "2rem 1.5rem 1rem",
     }}>
+      <h2 style={{
+        textAlign: "center",
+        fontFamily: fonts.heading,
+        color: colors.warmBrown,
+        fontWeight: 600,
+        fontSize: "1.25rem",
+        margin: "0 0 1.5rem",
+      }}>
+        {t("greenhouse.title")}
+      </h2>
       <div style={{
         display: "flex",
         gap: "1.5rem",

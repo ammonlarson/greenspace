@@ -1,7 +1,7 @@
 import type { Language } from "@greenspace/shared";
 
 const da = {
-  "common.appName": "UN17 Village Taghaver  |  2026 Tilmelding",
+  "common.appName": "UN17 Village Taghaver",
   "common.language": "Sprog",
   "common.submit": "Indsend",
   "common.cancel": "Annuller",
@@ -18,7 +18,7 @@ const da = {
     "Beboere på UN17 Village kan tilmelde sig. Hver lejlighed kan kun have én aktiv plantekasse.",
   "status.contactInfo": "Kontakt",
 
-  "greenhouse.title": "Drivhuse - 2026 Tilmelding",
+  "greenhouse.title": "Drivhuse  |  2026 Tilmelding",
   "greenhouse.totalBoxes": "Plantekasser i alt",
   "greenhouse.available": "Ledige",
   "greenhouse.occupied": "Optaget",
@@ -363,7 +363,7 @@ const da = {
 export type TranslationKey = keyof typeof da;
 
 const en: Record<TranslationKey, string> = {
-  "common.appName": "UN17 Village Rooftop Gardens  |  2026 Registration",
+  "common.appName": "UN17 Village Rooftop Gardens",
   "common.language": "Language",
   "common.submit": "Submit",
   "common.cancel": "Cancel",
@@ -380,7 +380,7 @@ const en: Record<TranslationKey, string> = {
     "Residents of UN17 Village are eligible. Each apartment may only have one active planter box.",
   "status.contactInfo": "Contact",
 
-  "greenhouse.title": "Greenhouses - 2026 Registration",
+  "greenhouse.title": "Greenhouses  |  2026 Registration",
   "greenhouse.totalBoxes": "Total boxes",
   "greenhouse.available": "Available",
   "greenhouse.occupied": "Occupied",
