@@ -72,7 +72,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           style={{
             display: "flex",
             gap: "0.25rem",
-            borderBottom: `2px solid ${colors.borderTan}`,
+            borderBottom: `1px solid ${colors.borderTan}`,
             overflowX: "auto",
             flex: 1,
             justifyContent: "center",
@@ -88,7 +88,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               style={{
                 padding: "0.6rem 1.25rem",
                 border: "none",
-                borderBottom: activeTab === tab ? `2px solid ${colors.sage}` : "2px solid transparent",
+                borderBottom: activeTab === tab ? `3px solid ${colors.sageDark}` : "3px solid transparent",
                 background: "none",
                 cursor: "pointer",
                 fontFamily: fonts.body,
@@ -97,6 +97,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 color: activeTab === tab ? colors.sageDark : colors.warmBrown,
                 whiteSpace: "nowrap",
                 marginBottom: "-2px",
+                paddingBottom: "0.75rem",
               }}
             >
               {t(TAB_KEYS[tab])}
