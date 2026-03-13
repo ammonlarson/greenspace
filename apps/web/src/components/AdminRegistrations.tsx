@@ -408,7 +408,6 @@ export function AdminRegistrations() {
                 max={HOUSE_NUMBER_MAX}
                 value={addHouseNumber}
                 onChange={(e) => { setAddHouseNumber(e.target.value); setAddFloor(""); setAddDoor(""); }}
-                placeholder={String(HOUSE_NUMBER_MIN)}
                 style={inputStyle}
               />
             </div>
