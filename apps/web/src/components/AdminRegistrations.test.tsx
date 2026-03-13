@@ -7,6 +7,8 @@ vi.mock("@/i18n/LanguageProvider", () => ({
   useLanguage: () => ({ language: "en", setLanguage: vi.fn(), t: stableT }),
 }));
 
+Element.prototype.scrollIntoView = vi.fn();
+
 vi.mock("@/utils/formatDate", () => ({
   formatDate: (iso: string) => iso,
 }));
@@ -425,6 +427,42 @@ describe("AdminRegistrations", () => {
       });
 
       expect(screen.queryByLabelText("admin.registrations.addName *")).toBeNull();
+    });
+  });
+
+  describe("scroll into view", () => {
+    it("scrolls move dialog into view when opened", async () => {
+      const scrollMock = vi.fn();
+      Element.prototype.scrollIntoView = scrollMock;
+
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.move"));
+      });
+
+      expect(scrollMock).toHaveBeenCalledWith({ behavior: "smooth", block: "nearest" });
+    });
+
+    it("scrolls remove dialog into view when opened", async () => {
+      const scrollMock = vi.fn();
+      Element.prototype.scrollIntoView = scrollMock;
+
+      vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.remove"));
+      });
+
+      expect(scrollMock).toHaveBeenCalledWith({ behavior: "smooth", block: "nearest" });
     });
   });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BOX_CATALOG,
   ELIGIBLE_STREET,
@@ -97,6 +97,14 @@ export function AdminRegistrations() {
   const [moveNotification, setMoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
   const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activeDialog && dialogRef.current) {
+      dialogRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [activeDialog]);
 
   const fetchRegistrations = useCallback(async () => {
     try {
@@ -508,7 +516,7 @@ export function AdminRegistrations() {
 
       {/* Move Dialog */}
       {activeDialog?.type === "move" && (
-        <div role="dialog" aria-labelledby="move-dialog-title" style={dialogStyle}>
+        <div ref={dialogRef} role="dialog" aria-labelledby="move-dialog-title" style={dialogStyle}>
           <h3 id="move-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.registrations.move")} – {activeDialog.registration.name}
           </h3>
@@ -582,7 +590,7 @@ export function AdminRegistrations() {
 
       {/* Remove Dialog */}
       {activeDialog?.type === "remove" && (
-        <div role="dialog" aria-labelledby="remove-dialog-title" style={dialogStyle}>
+        <div ref={dialogRef} role="dialog" aria-labelledby="remove-dialog-title" style={dialogStyle}>
           <h3 id="remove-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.registrations.confirmRemove")} – {activeDialog.registration.name}
           </h3>
