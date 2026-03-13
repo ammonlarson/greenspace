@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BoxState } from "@greenspace/shared";
 import {
   ELIGIBLE_STREET,
@@ -86,9 +86,17 @@ export function AdminBoxes() {
   const [addHouseNumber, setAddHouseNumber] = useState("");
   const [addFloor, setAddFloor] = useState("");
   const [addDoor, setAddDoor] = useState("");
-  const [addLanguage, setAddLanguage] = useState<"da" | "en">("da");
+  const [addLanguage, setAddLanguage] = useState<"da" | "en">("en");
   const [addNotification, setAddNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [addErrors, setAddErrors] = useState<string[]>([]);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activeDialog && dialogRef.current) {
+      dialogRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [activeDialog]);
 
   const stateOptions = useMemo(() => {
     const states = [...new Set(boxes.map((b) => b.state))];
@@ -180,7 +188,7 @@ export function AdminBoxes() {
     setAddHouseNumber("");
     setAddFloor("");
     setAddDoor("");
-    setAddLanguage("da");
+    setAddLanguage("en");
     setAddNotification({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
     setAddErrors([]);
     setMessage(null);
@@ -475,7 +483,7 @@ export function AdminBoxes() {
 
       {/* Remove Registration Dialog */}
       {activeDialog?.type === "removeRegistration" && activeDialog.box.registration && (
-        <div role="dialog" aria-labelledby="remove-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
+        <div ref={dialogRef} role="dialog" aria-labelledby="remove-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
           <h3 id="remove-reg-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.boxes.confirmRemoveRegistration")} – {activeDialog.box.name}
           </h3>
@@ -531,7 +539,7 @@ export function AdminBoxes() {
 
       {/* Add Registration Dialog */}
       {activeDialog?.type === "addRegistration" && (
-        <div role="dialog" aria-labelledby="add-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
+        <div ref={dialogRef} role="dialog" aria-labelledby="add-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
           <h3 id="add-reg-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.boxes.addRegistration")} – {activeDialog.box.name}
           </h3>

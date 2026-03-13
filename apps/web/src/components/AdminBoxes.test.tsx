@@ -6,6 +6,8 @@ vi.mock("@/i18n/LanguageProvider", () => ({
   useLanguage: () => ({ language: "en", setLanguage: vi.fn(), t: (key: string) => key }),
 }));
 
+Element.prototype.scrollIntoView = vi.fn();
+
 vi.mock("./NotificationComposer", () => ({
   NotificationComposer: () => <div data-testid="notification-composer" />,
 }));
@@ -138,6 +140,66 @@ describe("AdminBoxes", () => {
     expect(screen.getByRole("dialog")).toBeDefined();
     expect(screen.getByLabelText(/admin.registrations.addName/)).toBeDefined();
     expect(screen.getByLabelText(/admin.registrations.addEmail/)).toBeDefined();
+  });
+
+  it("defaults language to English when add-registration dialog opens", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockBoxes,
+    }));
+
+    await act(async () => {
+      render(<AdminBoxes />);
+    });
+
+    const addButtons = screen.getAllByText("admin.boxes.addRegistration");
+    await act(async () => {
+      fireEvent.click(addButtons[0]);
+    });
+
+    const languageSelect = screen.getByLabelText(/admin.registrations.addLanguage/) as HTMLSelectElement;
+    expect(languageSelect.value).toBe("en");
+  });
+
+  it("scrolls add-registration dialog into view when opened", async () => {
+    const scrollMock = vi.fn();
+    Element.prototype.scrollIntoView = scrollMock;
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockBoxes,
+    }));
+
+    await act(async () => {
+      render(<AdminBoxes />);
+    });
+
+    const addButtons = screen.getAllByText("admin.boxes.addRegistration");
+    await act(async () => {
+      fireEvent.click(addButtons[0]);
+    });
+
+    expect(scrollMock).toHaveBeenCalledWith({ behavior: "smooth", block: "nearest" });
+  });
+
+  it("scrolls remove-registration dialog into view when opened", async () => {
+    const scrollMock = vi.fn();
+    Element.prototype.scrollIntoView = scrollMock;
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockBoxes,
+    }));
+
+    await act(async () => {
+      render(<AdminBoxes />);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("admin.boxes.removeRegistration"));
+    });
+
+    expect(scrollMock).toHaveBeenCalledWith({ behavior: "smooth", block: "nearest" });
   });
 
   it("shows registrant name next to occupied box", async () => {
