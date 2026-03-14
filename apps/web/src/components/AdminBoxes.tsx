@@ -682,7 +682,7 @@ export function AdminBoxes() {
               </span>
             </h3>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem", margin: "0 auto" }}>
+              <table style={{ borderCollapse: "collapse", fontSize: "0.85rem", marginLeft: "auto", marginRight: "auto", marginBottom: "0.5rem" }}>
                 <colgroup>
                   <col />
                   <col />
