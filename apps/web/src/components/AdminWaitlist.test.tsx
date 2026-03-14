@@ -141,11 +141,44 @@ describe("AdminWaitlist", () => {
       expect(screen.getByTestId("notification-composer")).toBeDefined();
     });
 
+    it("disables occupied boxes and appends (occupied) suffix in assign dialog", async () => {
+      const boxesData = [
+        { id: 1, name: "Linaria", greenhouse: "Kronen", state: "occupied" },
+        { id: 5, name: "Elm", greenhouse: "Kronen", state: "available" },
+      ];
+      const fetchMock = mockFetch([
+        { ok: true, body: waitlistEntries },
+        { ok: true, body: boxesData },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminWaitlist />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.waitlist.assign"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.waitlist.assignBoxId") as HTMLSelectElement;
+      const options = Array.from(boxSelect.options);
+
+      const occupiedOption = options.find((o) => o.value === "1");
+      expect(occupiedOption?.disabled).toBe(true);
+      expect(occupiedOption?.textContent).toContain("(occupied)");
+
+      const availableOption = options.find((o) => o.value === "5");
+      expect(availableOption?.disabled).toBe(false);
+      expect(availableOption?.textContent).not.toContain("(occupied)");
+    });
+
     it("submits assignment successfully", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: waitlistEntries },
+        { ok: true, body: [] },
         { ok: true, status: 201, body: { registrationId: "r5", waitlistEntryId: "w1", boxId: 5 } },
         { ok: true, body: waitlistEntries },
+        { ok: true, body: [] },
       ]);
       vi.stubGlobal("fetch", fetchMock);
 
@@ -163,8 +196,8 @@ describe("AdminWaitlist", () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-      const assignCall = fetchMock.mock.calls[1];
+      expect(fetchMock).toHaveBeenCalledTimes(5);
+      const assignCall = fetchMock.mock.calls[2];
       expect(assignCall[0]).toBe("/admin/waitlist/assign");
       const assignBody = JSON.parse(assignCall[1].body);
       expect(assignBody.waitlistEntryId).toBe("w1");

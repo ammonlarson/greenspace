@@ -180,8 +180,10 @@ describe("AdminRegistrations", () => {
     it("opens add dialog and submits successfully with floor-required house number", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
+        { ok: true, body: [] },
         { ok: true, status: 201, body: { id: "r3", boxId: 10, apartmentKey: "Test" } },
         { ok: true, body: registrations },
+        { ok: true, body: [] },
       ]);
       vi.stubGlobal("fetch", fetchMock);
 
@@ -210,8 +212,8 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-      const createCall = fetchMock.mock.calls[1];
+      expect(fetchMock).toHaveBeenCalledTimes(5);
+      const createCall = fetchMock.mock.calls[2];
       expect(createCall[0]).toBe("/admin/registrations");
       expect(createCall[1].method).toBe("POST");
       const createBody = JSON.parse(createCall[1].body);
@@ -224,8 +226,10 @@ describe("AdminRegistrations", () => {
     it("submits successfully with non-floor house number", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
+        { ok: true, body: [] },
         { ok: true, status: 201, body: { id: "r3", boxId: 10, apartmentKey: "Test" } },
         { ok: true, body: registrations },
+        { ok: true, body: [] },
       ]);
       vi.stubGlobal("fetch", fetchMock);
 
@@ -248,7 +252,7 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(fetchMock).toHaveBeenCalledTimes(5);
       expect(screen.getByText("admin.registrations.added")).toBeDefined();
     });
 
@@ -409,6 +413,66 @@ describe("AdminRegistrations", () => {
       expect(options).toHaveLength(30);
     });
 
+    it("disables occupied boxes and appends (occupied) suffix in add dialog", async () => {
+      const boxesData = [
+        { id: 1, name: "Linaria", greenhouse: "Kronen", state: "occupied" },
+        { id: 7, name: "Alder", greenhouse: "Kronen", state: "available" },
+        { id: 15, name: "Robin", greenhouse: "Søen", state: "available" },
+      ];
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, body: boxesData },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.registrations.addBoxId *") as HTMLSelectElement;
+      const options = Array.from(boxSelect.options);
+
+      const linariaOption = options.find((o) => o.value === "1");
+      expect(linariaOption?.disabled).toBe(true);
+      expect(linariaOption?.textContent).toContain("(occupied)");
+
+      const alderOption = options.find((o) => o.value === "7");
+      expect(alderOption?.disabled).toBe(false);
+      expect(alderOption?.textContent).not.toContain("(occupied)");
+    });
+
+    it("sorts available boxes before occupied boxes in add dialog", async () => {
+      const boxesData = Array.from({ length: 29 }, (_, i) => ({
+        id: i + 1,
+        name: `Box${i + 1}`,
+        greenhouse: i < 14 ? "Kronen" : "Søen",
+        state: i === 0 ? "occupied" : "available",
+      }));
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, body: boxesData },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.add"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.registrations.addBoxId *") as HTMLSelectElement;
+      const options = Array.from(boxSelect.options).slice(1);
+      const lastOption = options[options.length - 1];
+      expect(lastOption.value).toBe("1");
+      expect(lastOption.disabled).toBe(true);
+    });
+
     it("closes add dialog on cancel", async () => {
       vi.stubGlobal("fetch", mockFetch([{ ok: true, body: registrations }]));
 
@@ -470,8 +534,10 @@ describe("AdminRegistrations", () => {
     it("opens move dialog and submits successfully", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
+        { ok: true, body: [] },
         { ok: true, body: { registrationId: "r1", newBoxId: 3 } },
         { ok: true, body: registrations },
+        { ok: true, body: [] },
       ]);
       vi.stubGlobal("fetch", fetchMock);
 
@@ -491,8 +557,8 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-      const moveCall = fetchMock.mock.calls[1];
+      expect(fetchMock).toHaveBeenCalledTimes(5);
+      const moveCall = fetchMock.mock.calls[2];
       expect(moveCall[0]).toBe("/admin/registrations/move");
       const moveBody = JSON.parse(moveCall[1].body);
       expect(moveBody.registrationId).toBe("r1");
@@ -517,6 +583,38 @@ describe("AdminRegistrations", () => {
       const options = Array.from(boxSelect.options);
       expect(options[0].textContent).toBe("admin.registrations.selectBox");
       expect(options[15].textContent).toBe("Søen - Barn swallow");
+    });
+
+    it("does not disable the current box in move dialog", async () => {
+      const boxesData = [
+        { id: 1, name: "Linaria", greenhouse: "Kronen", state: "occupied" },
+        { id: 3, name: "Foxglove", greenhouse: "Kronen", state: "occupied" },
+        { id: 7, name: "Alder", greenhouse: "Kronen", state: "available" },
+      ];
+      const fetchMock = mockFetch([
+        { ok: true, body: registrations },
+        { ok: true, body: boxesData },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminRegistrations />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.registrations.move"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.registrations.newBoxId") as HTMLSelectElement;
+      const options = Array.from(boxSelect.options);
+
+      const currentBoxOption = options.find((o) => o.value === "1");
+      expect(currentBoxOption?.disabled).toBe(false);
+      expect(currentBoxOption?.textContent).not.toContain("(occupied)");
+
+      const otherOccupiedOption = options.find((o) => o.value === "3");
+      expect(otherOccupiedOption?.disabled).toBe(true);
+      expect(otherOccupiedOption?.textContent).toContain("(occupied)");
     });
 
     it("shows error when move submitted without selecting a box", async () => {
@@ -566,8 +664,10 @@ describe("AdminRegistrations", () => {
     it("opens remove dialog with release options and submits", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
+        { ok: true, body: [] },
         { ok: true, body: { registrationId: "r1", boxReleased: true } },
         { ok: true, body: registrations },
+        { ok: true, body: [] },
       ]);
       vi.stubGlobal("fetch", fetchMock);
 
@@ -587,8 +687,8 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-      const removeCall = fetchMock.mock.calls[1];
+      expect(fetchMock).toHaveBeenCalledTimes(5);
+      const removeCall = fetchMock.mock.calls[2];
       expect(removeCall[0]).toBe("/admin/registrations/remove");
       const removeBody = JSON.parse(removeCall[1].body);
       expect(removeBody.registrationId).toBe("r1");
@@ -599,8 +699,10 @@ describe("AdminRegistrations", () => {
     it("submits with reserved hold when selected", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: registrations },
+        { ok: true, body: [] },
         { ok: true, body: { registrationId: "r1", boxReleased: false } },
         { ok: true, body: registrations },
+        { ok: true, body: [] },
       ]);
       vi.stubGlobal("fetch", fetchMock);
 
@@ -618,7 +720,7 @@ describe("AdminRegistrations", () => {
         fireEvent.click(screen.getByText("common.confirm"));
       });
 
-      const removeBody = JSON.parse(fetchMock.mock.calls[1][1].body);
+      const removeBody = JSON.parse(fetchMock.mock.calls[2][1].body);
       expect(removeBody.makeBoxPublic).toBe(false);
     });
 

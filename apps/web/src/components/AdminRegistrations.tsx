@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { BoxState } from "@greenspace/shared";
 import {
   BOX_CATALOG,
   ELIGIBLE_STREET,
@@ -98,6 +99,8 @@ export function AdminRegistrations() {
   const [removeMakePublic, setRemoveMakePublic] = useState(true);
   const [removeNotification, setRemoveNotification] = useState({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
 
+  const [boxStates, setBoxStates] = useState<Map<number, BoxState>>(new Map());
+
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,6 +127,34 @@ export function AdminRegistrations() {
   useEffect(() => {
     fetchRegistrations();
   }, [fetchRegistrations]);
+
+  const fetchBoxStates = useCallback(async () => {
+    try {
+      const res = await fetch("/admin/boxes", { credentials: "include" });
+      if (res.ok) {
+        const boxes: { id: number; state: BoxState }[] = await res.json();
+        setBoxStates(new Map(boxes.map((b) => [b.id, b.state])));
+      }
+    } catch {
+      // Box states are a UI enhancement; failures are non-critical
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBoxStates();
+  }, [fetchBoxStates]);
+
+  const sortedBoxOptions = useMemo(() => {
+    return [...BOX_CATALOG]
+      .map((box) => ({
+        ...box,
+        occupied: boxStates.get(box.id) === "occupied",
+      }))
+      .sort((a, b) => {
+        if (a.occupied !== b.occupied) return a.occupied ? 1 : -1;
+        return formatBoxLabel(a).localeCompare(formatBoxLabel(b));
+      });
+  }, [boxStates]);
 
   function openAddDialog() {
     setAddName("");
@@ -251,7 +282,7 @@ export function AdminRegistrations() {
       if (res.ok) {
         setMessage({ type: "success", text: t("admin.registrations.added") });
         setActiveDialog(null);
-        await fetchRegistrations();
+        await Promise.all([fetchRegistrations(), fetchBoxStates()]);
       } else {
         const body = await res.json();
         setMessage({ type: "error", text: body.error ?? t("common.error") });
@@ -293,7 +324,7 @@ export function AdminRegistrations() {
       if (res.ok) {
         setMessage({ type: "success", text: t("admin.registrations.moved") });
         setActiveDialog(null);
-        await fetchRegistrations();
+        await Promise.all([fetchRegistrations(), fetchBoxStates()]);
       } else {
         const body = await res.json();
         setMessage({ type: "error", text: body.error ?? t("common.error") });
@@ -330,7 +361,7 @@ export function AdminRegistrations() {
       if (res.ok) {
         setMessage({ type: "success", text: t("admin.registrations.removed") });
         setActiveDialog(null);
-        await fetchRegistrations();
+        await Promise.all([fetchRegistrations(), fetchBoxStates()]);
       } else {
         const body = await res.json();
         setMessage({ type: "error", text: body.error ?? t("common.error") });
@@ -427,9 +458,9 @@ export function AdminRegistrations() {
               <label htmlFor="add-box-id" style={requiredLabelStyle}>{t("admin.registrations.addBoxId")} *</label>
               <select id="add-box-id" value={addBoxId} onChange={(e) => setAddBoxId(e.target.value)} style={inputStyle}>
                 <option value="">{t("admin.registrations.selectBox")}</option>
-                {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
-                  <option key={box.id} value={String(box.id)}>
-                    {formatBoxLabel(box)}
+                {sortedBoxOptions.map((box) => (
+                  <option key={box.id} value={String(box.id)} disabled={box.occupied}>
+                    {formatBoxLabel(box)}{box.occupied ? " (occupied)" : ""}
                   </option>
                 ))}
               </select>
@@ -528,11 +559,15 @@ export function AdminRegistrations() {
               style={{ ...inputStyle, maxWidth: 300 }}
             >
               <option value="">{t("admin.registrations.selectBox")}</option>
-              {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
-                <option key={box.id} value={String(box.id)}>
-                  {formatBoxLabel(box)}
-                </option>
-              ))}
+              {sortedBoxOptions.map((box) => {
+                const isCurrentBox = activeDialog.type === "move" && box.id === activeDialog.registration.box_id;
+                const isOccupied = box.occupied && !isCurrentBox;
+                return (
+                  <option key={box.id} value={String(box.id)} disabled={isOccupied}>
+                    {formatBoxLabel(box)}{isOccupied ? " (occupied)" : ""}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
