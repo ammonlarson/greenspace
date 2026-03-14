@@ -176,6 +176,7 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
 
       <div style={{ marginTop: "1.25rem" }}>
         <GreenhouseMap
+          greenhouse={greenhouse}
           boxes={boxes}
           onSelectBox={(id) => {
             setSelectedBoxId(id);

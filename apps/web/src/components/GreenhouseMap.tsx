@@ -1,19 +1,16 @@
 "use client";
 
-import type { PlanterBoxPublic } from "@greenspace/shared";
+import type { Greenhouse, PlanterBoxPublic } from "@greenspace/shared";
 import { SoenMap } from "./SoenMap";
 import { KronenMap } from "./KronenMap";
 
 interface GreenhouseMapProps {
+  greenhouse: Greenhouse;
   boxes: PlanterBoxPublic[];
   onSelectBox?: (boxId: number) => void;
 }
 
-export function GreenhouseMap({ boxes, onSelectBox }: GreenhouseMapProps) {
-  if (boxes.length === 0) return null;
-
-  const greenhouse = boxes[0].greenhouse;
-
+export function GreenhouseMap({ greenhouse, boxes, onSelectBox }: GreenhouseMapProps) {
   if (greenhouse === "Søen") {
     return <SoenMap boxes={boxes} onSelectBox={onSelectBox} />;
   }

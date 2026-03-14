@@ -1,7 +1,7 @@
 "use client";
 
 import type { PlanterBoxPublic } from "@greenspace/shared";
-import { MapBox, CommunityBox } from "./MapBox";
+import { MapBox, CommunityBox, type BoxPosition } from "./MapBox";
 import { colors, fonts } from "@/styles/theme";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
@@ -27,12 +27,6 @@ import { useLanguage } from "@/i18n/LanguageProvider";
  * Two rows of boxes along west and east walls, central walkway.
  * Community boxes shown at the north end.
  */
-
-interface BoxPosition {
-  name: string;
-  gridRow: number;
-  gridColumn: number;
-}
 
 /**
  * West column: community boxes at top, then program boxes going south.
@@ -72,16 +66,16 @@ const eastBoxes: BoxPosition[] = [
 const ALL_POSITIONS = [...westBoxes, ...eastBoxes];
 
 interface CommunityPosition {
-  label: string;
+  index: number;
   gridRow: number;
   gridColumn: number;
 }
 
 const communityBoxes: CommunityPosition[] = [
-  { label: "Community 1", gridRow: 1, gridColumn: 1 },
-  { label: "Community 2", gridRow: 2, gridColumn: 1 },
-  { label: "Community 1", gridRow: 1, gridColumn: 3 },
-  { label: "Community 2", gridRow: 2, gridColumn: 3 },
+  { index: 1, gridRow: 1, gridColumn: 1 },
+  { index: 2, gridRow: 2, gridColumn: 1 },
+  { index: 1, gridRow: 1, gridColumn: 3 },
+  { index: 2, gridRow: 2, gridColumn: 3 },
 ];
 
 interface KronenMapProps {
@@ -136,7 +130,7 @@ export function KronenMap({ boxes, onSelectBox }: KronenMapProps) {
                 gridColumn: cb.gridColumn,
               }}
             >
-              <CommunityBox label={cb.label} />
+              <CommunityBox label={`${t("map.community")} ${cb.index}`} />
             </div>
           ))}
 

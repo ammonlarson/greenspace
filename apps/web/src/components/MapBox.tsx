@@ -5,6 +5,12 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { BOX_STATE_COLORS } from "./boxStateColors";
 import { colors as themeColors, fonts } from "@/styles/theme";
 
+export interface BoxPosition {
+  name: string;
+  gridRow: number;
+  gridColumn: number;
+}
+
 interface MapBoxProps {
   name: string;
   state: PublicBoxState;
@@ -80,6 +86,7 @@ interface CommunityBoxProps {
 export function CommunityBox({ label, style }: CommunityBoxProps) {
   return (
     <div
+      aria-label={label}
       style={{
         display: "flex",
         alignItems: "center",

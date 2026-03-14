@@ -1,7 +1,7 @@
 "use client";
 
 import type { PlanterBoxPublic } from "@greenspace/shared";
-import { MapBox } from "./MapBox";
+import { MapBox, type BoxPosition } from "./MapBox";
 import { colors, fonts } from "@/styles/theme";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
@@ -39,12 +39,6 @@ import { useLanguage } from "@/i18n/LanguageProvider";
  * But with the correction: Mallard is just north of Wagtail,
  * so west column becomes: 1,3,5,7,2,9,11,13,15
  */
-
-interface BoxPosition {
-  name: string;
-  gridRow: number;
-  gridColumn: number;
-}
 
 const westBoxes: BoxPosition[] = [
   { name: "Magpie",        gridRow: 1,  gridColumn: 1 },
