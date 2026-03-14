@@ -30,6 +30,10 @@ const da = {
   "map.state.available": "Ledig",
   "map.state.occupied": "Optaget",
   "map.state.reserved": "Reserveret",
+  "map.north": "N",
+  "map.walkway": "Gang",
+  "map.entrance": "Indgang",
+  "map.community": "Fælles",
 
   "address.searchPlaceholder": "Søg din adresse...",
   "address.searchHint":
@@ -392,6 +396,10 @@ const en: Record<TranslationKey, string> = {
   "map.state.available": "Available",
   "map.state.occupied": "Occupied",
   "map.state.reserved": "Reserved",
+  "map.north": "N",
+  "map.walkway": "Walkway",
+  "map.entrance": "Entrance",
+  "map.community": "Community",
 
   "address.searchPlaceholder": "Search your address...",
   "address.searchHint":
