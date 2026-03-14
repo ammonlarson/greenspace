@@ -69,7 +69,7 @@ export function AdminWaitlist() {
     data: entries,
     defaultSort: { key: "created_at", direction: "asc" },
     searchableFields: ["name", "email", "apartment_key"],
-    filterConfigs: [{ key: "status", allValue: "__all__" }],
+    filterConfigs: [{ key: "status", allValue: "__all__", defaultValue: "waiting" }],
   });
 
   const fetchWaitlist = useCallback(async () => {
