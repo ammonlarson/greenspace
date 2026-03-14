@@ -192,35 +192,12 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
               padding: "1.25rem",
             }}
           >
-            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
-              {t("waitlist.title")}
-            </h3>
-            <p style={{ margin: "0 0 0.75rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
-              {t("waitlist.description")}
-            </p>
-            <button
-              type="button"
-              onClick={() => setPageView("waitlist")}
-              style={{
-                padding: "0.5rem 1rem",
-                background: colors.mutedGold,
-                color: colors.white,
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-                fontFamily: fonts.body,
-                fontSize: "0.95rem",
-                fontWeight: 600,
-              }}
-            >
-              {t("waitlist.joinButton")}
-            </button>
             {otherHasAvailable && onSelectGreenhouse && otherGreenhouse && (
               <div
                 style={{
-                  marginTop: "1rem",
-                  paddingTop: "0.75rem",
-                  borderTop: `1px solid ${colors.borderTan}`,
+                  marginBottom: "1rem",
+                  paddingBottom: "0.75rem",
+                  borderBottom: `1px solid ${colors.borderTan}`,
                 }}
               >
                 <p style={{ margin: "0 0 0.5rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
@@ -245,6 +222,29 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
                 </button>
               </div>
             )}
+            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
+              {t("waitlist.title")}
+            </h3>
+            <p style={{ margin: "0 0 0.75rem", color: colors.warmBrown, fontSize: "0.95rem", fontFamily: fonts.body }}>
+              {t("waitlist.description")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPageView("waitlist")}
+              style={{
+                padding: "0.5rem 1rem",
+                background: colors.mutedGold,
+                color: colors.white,
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontFamily: fonts.body,
+                fontSize: "0.95rem",
+                fontWeight: 600,
+              }}
+            >
+              {t("waitlist.joinButton")}
+            </button>
           </section>
         </div>
       )}
