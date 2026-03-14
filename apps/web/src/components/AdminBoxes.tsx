@@ -441,6 +441,9 @@ export function AdminBoxes() {
             color: message.type === "error" ? colors.dustyRose : colors.sage,
             fontSize: "0.85rem",
             marginBottom: "1rem",
+            maxWidth: "80%",
+            marginLeft: "auto",
+            marginRight: "auto",
           }}
         >
           {message.text}
@@ -449,7 +452,7 @@ export function AdminBoxes() {
 
       {/* Reserve Dialog */}
       {activeDialog?.type === "reserve" && (
-        <div role="dialog" aria-labelledby="reserve-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
+        <div role="dialog" aria-labelledby="reserve-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
           <h3 id="reserve-dialog-title" style={{ margin: "0 0 0.75rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.boxes.confirmReserve")} – {activeDialog.box.name}
           </h3>
@@ -466,7 +469,7 @@ export function AdminBoxes() {
 
       {/* Release Dialog */}
       {activeDialog?.type === "release" && (
-        <div role="dialog" aria-labelledby="release-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
+        <div role="dialog" aria-labelledby="release-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
           <h3 id="release-dialog-title" style={{ margin: "0 0 0.75rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.boxes.confirmRelease")} – {activeDialog.box.name}
           </h3>
@@ -483,7 +486,7 @@ export function AdminBoxes() {
 
       {/* Remove Registration Dialog */}
       {activeDialog?.type === "removeRegistration" && activeDialog.box.registration && (
-        <div ref={dialogRef} role="dialog" aria-labelledby="remove-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
+        <div ref={dialogRef} role="dialog" aria-labelledby="remove-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
           <h3 id="remove-reg-dialog-title" style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.boxes.confirmRemoveRegistration")} – {activeDialog.box.name}
           </h3>
@@ -539,7 +542,7 @@ export function AdminBoxes() {
 
       {/* Add Registration Dialog */}
       {activeDialog?.type === "addRegistration" && (
-        <div ref={dialogRef} role="dialog" aria-labelledby="add-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem" }}>
+        <div ref={dialogRef} role="dialog" aria-labelledby="add-reg-dialog-title" style={{ ...dialogStyle, marginBottom: "1.5rem", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
           <h3 id="add-reg-dialog-title" style={{ margin: "0 0 1rem 0", fontSize: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
             {t("admin.boxes.addRegistration")} – {activeDialog.box.name}
           </h3>
