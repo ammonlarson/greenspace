@@ -432,7 +432,7 @@ export function AdminBoxes() {
 
   return (
     <section>
-      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.boxes.title")}</h2>
+      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown, maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>{t("admin.boxes.title")}</h2>
 
       {message && (
         <p
@@ -639,30 +639,32 @@ export function AdminBoxes() {
         </div>
       )}
 
-      <TableControls
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        filters={[
-          {
-            key: "state",
-            label: t("admin.boxes.state"),
-            options: stateOptions,
-            value: filters["state"],
-            onChange: (v) => setFilter("state", v),
-          },
-          {
-            key: "greenhouse",
-            label: t("admin.boxes.greenhouse"),
-            options: greenhouseOptions,
-            value: filters["greenhouse"],
-            onChange: (v) => setFilter("greenhouse", v),
-          },
-        ]}
-        hasActiveControls={hasActiveControls}
-        onClearAll={clearAll}
-        resultCount={filteredBoxes.length}
-        totalCount={boxes.length}
-      />
+      <div style={{ maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
+        <TableControls
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={[
+            {
+              key: "state",
+              label: t("admin.boxes.state"),
+              options: stateOptions,
+              value: filters["state"],
+              onChange: (v) => setFilter("state", v),
+            },
+            {
+              key: "greenhouse",
+              label: t("admin.boxes.greenhouse"),
+              options: greenhouseOptions,
+              value: filters["greenhouse"],
+              onChange: (v) => setFilter("greenhouse", v),
+            },
+          ]}
+          hasActiveControls={hasActiveControls}
+          onClearAll={clearAll}
+          resultCount={filteredBoxes.length}
+          totalCount={boxes.length}
+        />
+      </div>
 
       {greenhouses
         .filter((gh) => filteredBoxes.some((b) => b.greenhouse === gh))
@@ -674,7 +676,7 @@ export function AdminBoxes() {
         const reserved = allGhBoxes.filter((b) => b.state === "reserved").length;
 
         return (
-          <div key={gh} style={{ marginBottom: "2rem" }}>
+          <div key={gh} style={{ marginBottom: "2rem", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
             <h3 style={{ marginBottom: "0.5rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
               {gh}
               <span style={{ fontSize: "0.8rem", fontWeight: 400, color: colors.warmBrown, marginLeft: "0.75rem" }}>
@@ -682,11 +684,11 @@ export function AdminBoxes() {
               </span>
             </h3>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem" }}>
                 <colgroup>
-                  <col style={{ width: "40%" }} />
-                  <col style={{ width: "20%" }} />
-                  <col style={{ width: "40%" }} />
+                  <col />
+                  <col />
+                  <col />
                 </colgroup>
                 <thead>
                   <tr>
