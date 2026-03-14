@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { BoxState } from "@greenspace/shared";
 import { BOX_CATALOG, formatAddress } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDateTime } from "@/utils/formatDate";
@@ -47,6 +48,8 @@ export function AdminWaitlist() {
   const [assignNotification, setAssignNotification] = useState<NotificationValue>({ sendEmail: true, subject: "", bodyHtml: "", valid: true });
   const [assignDuplicateWarning, setAssignDuplicateWarning] = useState<DuplicateExisting[] | null>(null);
 
+  const [boxStates, setBoxStates] = useState<Map<number, BoxState>>(new Map());
+
   const statusOptions = useMemo(() => {
     const statuses = [...new Set(entries.map((e) => e.status))];
     return [
@@ -90,6 +93,34 @@ export function AdminWaitlist() {
   useEffect(() => {
     fetchWaitlist();
   }, [fetchWaitlist]);
+
+  const fetchBoxStates = useCallback(async () => {
+    try {
+      const res = await fetch("/admin/boxes", { credentials: "include" });
+      if (res.ok) {
+        const boxes: { id: number; state: BoxState }[] = await res.json();
+        setBoxStates(new Map(boxes.map((b) => [b.id, b.state])));
+      }
+    } catch {
+      // Box states are a UI enhancement; failures are non-critical
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBoxStates();
+  }, [fetchBoxStates]);
+
+  const sortedBoxOptions = useMemo(() => {
+    return [...BOX_CATALOG]
+      .map((box) => ({
+        ...box,
+        occupied: boxStates.get(box.id) === "occupied",
+      }))
+      .sort((a, b) => {
+        if (a.occupied !== b.occupied) return a.occupied ? 1 : -1;
+        return formatBoxLabel(a).localeCompare(formatBoxLabel(b));
+      });
+  }, [boxStates]);
 
   function openAssignDialog(entry: WaitlistEntry) {
     setAssignBoxId("");
@@ -136,7 +167,7 @@ export function AdminWaitlist() {
         setAssignDuplicateWarning(null);
         setMessage({ type: "success", text: t("admin.waitlist.assigned") });
         setAssigningEntry(null);
-        await fetchWaitlist();
+        await Promise.all([fetchWaitlist(), fetchBoxStates()]);
       } else {
         const body = await res.json();
         if (body.code === "DUPLICATE_ADDRESS_WARNING" || body.code === "APARTMENT_HAS_REGISTRATION") {
@@ -218,9 +249,9 @@ export function AdminWaitlist() {
               }}
             >
               <option value="">{t("admin.waitlist.selectBox")}</option>
-              {[...BOX_CATALOG].sort((a, b) => formatBoxLabel(a).localeCompare(formatBoxLabel(b))).map((box) => (
-                <option key={box.id} value={String(box.id)}>
-                  {formatBoxLabel(box)}
+              {sortedBoxOptions.map((box) => (
+                <option key={box.id} value={String(box.id)} disabled={box.occupied}>
+                  {formatBoxLabel(box)}{box.occupied ? " (occupied)" : ""}
                 </option>
               ))}
             </select>
