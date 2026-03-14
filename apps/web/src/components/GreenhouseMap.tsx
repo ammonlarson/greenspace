@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { PlanterBoxPublic, Greenhouse } from "@greenspace/shared";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { TranslationKey } from "@/i18n/translations";
@@ -12,10 +13,6 @@ interface GreenhouseMapProps {
   boxes: PlanterBoxPublic[];
   greenhouse: Greenhouse;
   onSelectBox?: (boxId: number) => void;
-}
-
-function findBox(boxes: PlanterBoxPublic[], name: string): PlanterBoxPublic | undefined {
-  return boxes.find((b) => b.name === name);
 }
 
 function BoxRect({
@@ -41,7 +38,7 @@ function BoxRect({
 
   return (
     <g
-      role="button"
+      role={isClickable ? "button" : "img"}
       aria-label={`${pos.name} – ${t(stateKey)}`}
       tabIndex={isClickable ? 0 : undefined}
       style={{ cursor: isClickable ? "pointer" : "default" }}
@@ -75,7 +72,7 @@ function BoxRect({
         dominantBaseline="central"
         fontSize={fontSize}
         fontWeight={600}
-        fontFamily="Inter, system-ui, sans-serif"
+        fontFamily={fonts.body}
         fill={stateColors.text}
       >
         {pos.name}
@@ -86,7 +83,7 @@ function BoxRect({
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={statusFontSize}
-        fontFamily="Inter, system-ui, sans-serif"
+        fontFamily={fonts.body}
         fill={stateColors.text}
         opacity={0.7}
       >
@@ -116,7 +113,7 @@ function FixedElementRect({ element }: { element: FixedElement }) {
           textAnchor="middle"
           dominantBaseline="central"
           fontSize={7}
-          fontFamily="Inter, system-ui, sans-serif"
+          fontFamily={fonts.body}
           fill={colors.warmBrown}
           opacity={0.6}
         >
@@ -150,7 +147,7 @@ function FixedElementRect({ element }: { element: FixedElement }) {
             textAnchor="middle"
             dominantBaseline="central"
             fontSize={10}
-            fontFamily="Inter, system-ui, sans-serif"
+            fontFamily={fonts.body}
             fill={colors.warmBrown}
             opacity={0.5}
             fontStyle="italic"
@@ -181,6 +178,14 @@ function FixedElementRect({ element }: { element: FixedElement }) {
 export function GreenhouseMap({ boxes, greenhouse, onSelectBox }: GreenhouseMapProps) {
   const { t } = useLanguage();
   const layout = getGreenhouseLayout(greenhouse);
+
+  const boxByName = useMemo(() => {
+    const map = new Map<string, PlanterBoxPublic>();
+    for (const box of boxes) {
+      map.set(box.name, box);
+    }
+    return map;
+  }, [boxes]);
 
   return (
     <div style={{ width: "100%", fontFamily: fonts.body }}>
@@ -228,7 +233,7 @@ export function GreenhouseMap({ boxes, greenhouse, onSelectBox }: GreenhouseMapP
 
         {/* Planter boxes */}
         {layout.boxes.map((pos) => {
-          const box = findBox(boxes, pos.name);
+          const box = boxByName.get(pos.name);
           return (
             <BoxRect
               key={pos.name}

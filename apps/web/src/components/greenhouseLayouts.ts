@@ -9,7 +9,7 @@ export interface BoxPosition {
 }
 
 export interface FixedElement {
-  type: "table" | "door" | "wall" | "label";
+  type: "table" | "door" | "label";
   x: number;
   y: number;
   width: number;
