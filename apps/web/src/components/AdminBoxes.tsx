@@ -682,11 +682,11 @@ export function AdminBoxes() {
               </span>
             </h3>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+              <table style={{ borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem", margin: "0 auto" }}>
                 <colgroup>
-                  <col style={{ width: "40%" }} />
-                  <col style={{ width: "20%" }} />
-                  <col style={{ width: "40%" }} />
+                  <col />
+                  <col />
+                  <col />
                 </colgroup>
                 <thead>
                   <tr>
