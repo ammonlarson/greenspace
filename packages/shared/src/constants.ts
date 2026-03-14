@@ -38,7 +38,7 @@ export const BOX_CATALOG: readonly BoxCatalogEntry[] = [
   { id: 22, name: "Nuthatch", greenhouse: "Søen" },
   { id: 23, name: "Coot", greenhouse: "Søen" },
   { id: 24, name: "Hooded crow", greenhouse: "Søen" },
-  { id: 25, name: "Gray goose", greenhouse: "Søen" },
+  { id: 25, name: "Graylag goose", greenhouse: "Søen" },
   { id: 26, name: "Barn swallow", greenhouse: "Søen" },
   { id: 27, name: "Magpie", greenhouse: "Søen" },
   { id: 28, name: "Chaffinch", greenhouse: "Søen" },

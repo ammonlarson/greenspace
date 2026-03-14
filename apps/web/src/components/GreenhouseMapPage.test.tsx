@@ -14,7 +14,7 @@ vi.mock("@/hooks/useHistoryState", async () => {
   };
 });
 vi.mock("./GreenhouseMap", () => ({
-  GreenhouseMap: ({ boxes, onSelectBox }: { boxes: PlanterBoxPublic[]; onSelectBox: (id: number) => void }) => (
+  GreenhouseMap: ({ boxes, onSelectBox }: { boxes: PlanterBoxPublic[]; greenhouse: string; onSelectBox: (id: number) => void }) => (
     <div data-testid="greenhouse-map">
       <span data-testid="box-count">{boxes.length}</span>
       <span data-testid="available-count">{boxes.filter((b) => b.state === "available").length}</span>

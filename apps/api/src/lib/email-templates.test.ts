@@ -121,7 +121,7 @@ describe("buildConfirmationEmail", () => {
       switchedFromBoxId: 25,
     });
     expect(result.bodyHtml).toContain("ff9800");
-    expect(result.bodyHtml).toContain("Gray goose");
+    expect(result.bodyHtml).toContain("Graylag goose");
     expect(result.bodyHtml).toContain("Søen");
   });
 });
