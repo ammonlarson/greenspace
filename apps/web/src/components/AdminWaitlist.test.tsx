@@ -141,6 +141,37 @@ describe("AdminWaitlist", () => {
       expect(screen.getByTestId("notification-composer")).toBeDefined();
     });
 
+    it("disables occupied boxes and appends (occupied) suffix in assign dialog", async () => {
+      const boxesData = [
+        { id: 1, name: "Linaria", greenhouse: "Kronen", state: "occupied" },
+        { id: 5, name: "Elm", greenhouse: "Kronen", state: "available" },
+      ];
+      const fetchMock = mockFetch([
+        { ok: true, body: waitlistEntries },
+        { ok: true, body: boxesData },
+      ]);
+      vi.stubGlobal("fetch", fetchMock);
+
+      await act(async () => {
+        render(<AdminWaitlist />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("admin.waitlist.assign"));
+      });
+
+      const boxSelect = screen.getByLabelText("admin.waitlist.assignBoxId") as HTMLSelectElement;
+      const options = Array.from(boxSelect.options);
+
+      const occupiedOption = options.find((o) => o.value === "1");
+      expect(occupiedOption?.disabled).toBe(true);
+      expect(occupiedOption?.textContent).toContain("(occupied)");
+
+      const availableOption = options.find((o) => o.value === "5");
+      expect(availableOption?.disabled).toBe(false);
+      expect(availableOption?.textContent).not.toContain("(occupied)");
+    });
+
     it("submits assignment successfully", async () => {
       const fetchMock = mockFetch([
         { ok: true, body: waitlistEntries },
