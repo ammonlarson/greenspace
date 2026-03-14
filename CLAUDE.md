@@ -1,4 +1,4 @@
-# 🚨 STOP AND READ - MANDATORY INSTRUCTIONS 🚨
+j# 🚨 STOP AND READ - MANDATORY INSTRUCTIONS 🚨
 
 ⚠️ **DO NOT SKIP THIS FILE.** ⚠️
 
@@ -345,13 +345,3 @@ Phase 4: Submission
 **Remember: This file is not a suggestion. It is a requirement.**
 
 **When in doubt, re-read this file. When finishing a task, verify all phases complete.**
-
----
-
-## IMPORTANT! Keep the '# PROJECT-SPECIFIC INFORMATION' header here -- everything above is automatically copied from the Claude configuration repo, and updated whenever the global instructions change. Everything below is project-specific, and should be edited as needed.
-
-## Project Settings
-
-- **Ticket Provider**: GitHub Issues
-- **Branch Format**: any branch name is fine
-- **Main Branch**: `main`
