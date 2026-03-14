@@ -432,7 +432,7 @@ export function AdminBoxes() {
 
   return (
     <section>
-      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown }}>{t("admin.boxes.title")}</h2>
+      <h2 style={{ marginBottom: "1rem", fontFamily: fonts.heading, color: colors.warmBrown, maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>{t("admin.boxes.title")}</h2>
 
       {message && (
         <p
@@ -674,7 +674,7 @@ export function AdminBoxes() {
         const reserved = allGhBoxes.filter((b) => b.state === "reserved").length;
 
         return (
-          <div key={gh} style={{ marginBottom: "2rem" }}>
+          <div key={gh} style={{ marginBottom: "2rem", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
             <h3 style={{ marginBottom: "0.5rem", fontFamily: fonts.heading, color: colors.warmBrown }}>
               {gh}
               <span style={{ fontSize: "0.8rem", fontWeight: 400, color: colors.warmBrown, marginLeft: "0.75rem" }}>
@@ -682,7 +682,7 @@ export function AdminBoxes() {
               </span>
             </h3>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ borderCollapse: "collapse", fontSize: "0.85rem", marginLeft: "auto", marginRight: "auto", marginBottom: "0.5rem" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", marginBottom: "0.5rem" }}>
                 <colgroup>
                   <col />
                   <col />
