@@ -639,30 +639,32 @@ export function AdminBoxes() {
         </div>
       )}
 
-      <TableControls
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        filters={[
-          {
-            key: "state",
-            label: t("admin.boxes.state"),
-            options: stateOptions,
-            value: filters["state"],
-            onChange: (v) => setFilter("state", v),
-          },
-          {
-            key: "greenhouse",
-            label: t("admin.boxes.greenhouse"),
-            options: greenhouseOptions,
-            value: filters["greenhouse"],
-            onChange: (v) => setFilter("greenhouse", v),
-          },
-        ]}
-        hasActiveControls={hasActiveControls}
-        onClearAll={clearAll}
-        resultCount={filteredBoxes.length}
-        totalCount={boxes.length}
-      />
+      <div style={{ maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
+        <TableControls
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filters={[
+            {
+              key: "state",
+              label: t("admin.boxes.state"),
+              options: stateOptions,
+              value: filters["state"],
+              onChange: (v) => setFilter("state", v),
+            },
+            {
+              key: "greenhouse",
+              label: t("admin.boxes.greenhouse"),
+              options: greenhouseOptions,
+              value: filters["greenhouse"],
+              onChange: (v) => setFilter("greenhouse", v),
+            },
+          ]}
+          hasActiveControls={hasActiveControls}
+          onClearAll={clearAll}
+          resultCount={filteredBoxes.length}
+          totalCount={boxes.length}
+        />
+      </div>
 
       {greenhouses
         .filter((gh) => filteredBoxes.some((b) => b.greenhouse === gh))
