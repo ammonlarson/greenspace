@@ -77,7 +77,7 @@ describe("AdminWaitlist", () => {
   });
 
   describe("list view", () => {
-    it("renders waitlist entries after fetch", async () => {
+    it("defaults to showing only waiting entries", async () => {
       vi.stubGlobal("fetch", mockFetch([{ ok: true, body: waitlistEntries }]));
 
       await act(async () => {
@@ -85,7 +85,7 @@ describe("AdminWaitlist", () => {
       });
 
       expect(screen.getByText("Carol")).toBeDefined();
-      expect(screen.getByText("Dave")).toBeDefined();
+      expect(screen.queryByText("Dave")).toBeNull();
     });
 
     it("shows empty state when no entries", async () => {
