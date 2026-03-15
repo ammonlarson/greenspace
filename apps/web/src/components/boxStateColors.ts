@@ -5,3 +5,9 @@ export const BOX_STATE_COLORS: Record<BoxState, { background: string; text: stri
   occupied: { background: "#F5EDE5", text: "#A8623A", border: "#C67D4B" },
   reserved: { background: "#E5EDED", text: "#5A8A87", border: "#A8C4C2" },
 };
+
+export const SHARED_BOX_COLORS = {
+  background: "#F0EBE1",
+  text: "#6B5243",
+  border: "#D4C9B8",
+};

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import {
   GREENHOUSES,
+  GREENHOUSE_GRIDS,
   type Greenhouse,
   type GreenhouseSummary,
   type PlanterBoxPublic,
@@ -11,7 +12,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHistoryState } from "@/hooks/useHistoryState";
 import { LoadingSplash } from "./LoadingSplash";
-import { GreenhouseMap } from "./GreenhouseMap";
+import { GreenhouseGrid } from "./GreenhouseGrid";
 import { BoxStateLegend } from "./BoxStateLegend";
 import { RegistrationForm } from "./RegistrationForm";
 import { WaitlistForm } from "./WaitlistForm";
@@ -175,7 +176,8 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
       </div>
 
       <div style={{ marginTop: "1.25rem" }}>
-        <GreenhouseMap
+        <GreenhouseGrid
+          config={GREENHOUSE_GRIDS[greenhouse]}
           boxes={boxes}
           onSelectBox={(id) => {
             setSelectedBoxId(id);

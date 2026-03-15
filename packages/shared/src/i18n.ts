@@ -38,6 +38,12 @@ export const I18N_KEYS = {
     stateAvailable: "map.state.available",
     stateOccupied: "map.state.occupied",
     stateReserved: "map.state.reserved",
+    stateShared: "map.state.shared",
+    gridDoor: "map.grid.door",
+    gridColumn: "map.grid.column",
+    gridTable: "map.grid.table",
+    gridChair: "map.grid.chair",
+    gridSharedBox: "map.grid.sharedBox",
   },
   registration: {
     formTitle: "registration.formTitle",

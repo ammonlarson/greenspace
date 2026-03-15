@@ -81,6 +81,20 @@ export {
 
 export type { ValidationResult, RegistrationValidationResult } from "./validators.js";
 
+export {
+  GRID_ITEM_TYPES,
+  KRONEN_GRID,
+  SOEN_GRID,
+  GREENHOUSE_GRIDS,
+} from "./grid.js";
+
+export type {
+  GridItemType,
+  Orientation,
+  GridItemPlacement,
+  GreenhouseGridConfig,
+} from "./grid.js";
+
 export { buildDawaAutocompleteUrl, parseDawaHouseNumber } from "./dawa.js";
 
 export type { DawaAutocompleteSuggestion, DawaAddress } from "./dawa.js";
