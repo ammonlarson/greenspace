@@ -87,43 +87,44 @@ export const KRONEN_GRID: GreenhouseGridConfig = {
     door(20, 5),
 
     // Structural columns
-    column(5, 1),
-    column(5, 12),
-    column(10, 1),
-    column(10, 12),
-    column(15, 1),
-    column(15, 12),
+    column(4, 9),
+    column(4, 10),    
+    column(5, 9),
+    column(5, 10),    
+    column(6, 9),
+    column(6, 10),    
+    column(7, 9),
+    column(7, 10),    
 
-    // Planter boxes - left side (vertical orientation along walls)
-    planterBox(1, "Linaria", 3, 1, "vertical"),
-    planterBox(2, "Harebell", 3, 3, "vertical"),
-    planterBox(3, "Stellaria", 6, 1, "vertical"),
-    planterBox(4, "Honeysuckle", 6, 3, "vertical"),
-    planterBox(5, "Daisy", 8, 1, "vertical"),
-    planterBox(6, "Hawthorn", 8, 3, "vertical"),
-    planterBox(7, "Alder", 11, 1, "vertical"),
-
-    // Planter boxes - right side (vertical orientation along walls)
-    planterBox(8, "Linden", 3, 10, "vertical"),
-    planterBox(9, "Thistle", 3, 12, "vertical"),
-    planterBox(10, "Yarrow", 6, 10, "vertical"),
-    planterBox(11, "Seabuck", 6, 12, "vertical"),
-    planterBox(12, "Anemone", 8, 10, "vertical"),
-    planterBox(13, "Jenny", 8, 12, "vertical"),
-    planterBox(14, "Buttercup", 11, 10, "vertical"),
-
+    // Planter boxes
+    planterBox(1, "Buttercup", 20, 3, "horizontal"),
+    planterBox(2, "Daisy", 20, 1, "horizontal"),
+    planterBox(3, "Harebell", 18, 1, "vertical"),
+    planterBox(4, "Yarrow", 8, 1, "vertical"),
+    planterBox(5, "Hawthorn", 6, 1, "vertical"),
+    planterBox(6, "Jenny", 4, 1, "vertical"),
+    planterBox(7, "Linaria", 1, 1, "horizontal"),
+    planterBox(8, "Linden", 1, 3, "horizontal"),
+    planterBox(9, "Seabuck", 1, 9, "horizontal"),
+    planterBox(10, "Stellaria", 2, 12, "vertical"),
+    planterBox(11, "Honeysuckle", 5, 8, "vertical"),
+    planterBox(12, "Thistle", 7, 9, "horizontal"),
+    planterBox(13, "Anemone", 18, 12, "vertical"),
+    planterBox(14, "Alder", 20, 9, "horizontal"),
+    
     // Shared community boxes (center area)
-    sharedBox("Community A", 12, 5, "horizontal"),
-    sharedBox("Community B", 12, 8, "horizontal"),
+    sharedBox("Community A", 10, 12, "vertical"),
+    sharedBox("Community B", 12, 12, "vertical"),
 
     // Tables (center)
-    { type: "table", row: 14, col: 5, width: 4, height: 2, label: "Table" },
+    { type: "table", row: 8, col: 3, width: 3, height: 11, label: "Table" },
 
     // Chairs around table
-    { type: "chair", row: 14, col: 4, width: 1, height: 1, label: "Chair" },
-    { type: "chair", row: 14, col: 9, width: 1, height: 1, label: "Chair" },
-    { type: "chair", row: 15, col: 4, width: 1, height: 1, label: "Chair" },
-    { type: "chair", row: 15, col: 9, width: 1, height: 1, label: "Chair" },
+    { type: "chair", row: 9, col: 2, width: 1, height: 1, label: "Chair" },
+    { type: "chair", row: 11, col: 2, width: 1, height: 1, label: "Chair" },
+    { type: "chair", row: 13, col: 2, width: 1, height: 1, label: "Chair" },
+    { type: "chair", row: 15, col: 2, width: 1, height: 1, label: "Chair" },
+    { type: "chair", row: 17, col: 2, width: 1, height: 1, label: "Chair" },
   ],
 };
 
