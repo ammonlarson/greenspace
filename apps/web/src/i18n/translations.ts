@@ -35,6 +35,7 @@ const da = {
   "map.grid.column": "Søjle",
   "map.grid.table": "Bord",
   "map.grid.chair": "Stol",
+  "map.grid.bench": "Bænk",
   "map.grid.sharedBox": "Fælleskasse",
 
   "address.searchPlaceholder": "Søg din adresse...",
@@ -403,6 +404,7 @@ const en: Record<TranslationKey, string> = {
   "map.grid.column": "Column",
   "map.grid.table": "Table",
   "map.grid.chair": "Chair",
+  "map.grid.bench": "Bench",
   "map.grid.sharedBox": "Community box",
 
   "address.searchPlaceholder": "Search your address...",

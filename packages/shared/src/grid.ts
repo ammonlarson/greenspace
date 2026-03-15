@@ -7,6 +7,7 @@ export const GRID_ITEM_TYPES = [
   "column",
   "table",
   "chair",
+  "bench",
   "door",
 ] as const;
 export type GridItemType = (typeof GRID_ITEM_TYPES)[number];
@@ -123,12 +124,15 @@ export const KRONEN_GRID: GreenhouseGridConfig = {
     // Tables (center)
     { type: "table", row: 8, col: 3, width: 3, height: 11, label: "Table" },
 
-    // Chairs around table
+    // Chairs on left side of table
     { type: "chair", row: 9, col: 2, width: 1, height: 1, label: "Chair" },
     { type: "chair", row: 11, col: 2, width: 1, height: 1, label: "Chair" },
     { type: "chair", row: 13, col: 2, width: 1, height: 1, label: "Chair" },
     { type: "chair", row: 15, col: 2, width: 1, height: 1, label: "Chair" },
     { type: "chair", row: 17, col: 2, width: 1, height: 1, label: "Chair" },
+
+    // Bench along right side of table
+    { type: "bench", row: 9, col: 6, width: 1, height: 9, label: "Bench" },
   ],
 };
 

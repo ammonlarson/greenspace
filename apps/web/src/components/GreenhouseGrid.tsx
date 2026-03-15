@@ -29,6 +29,7 @@ const ITEM_STYLES: Record<GridItemType, { background: string; border: string; te
   column: { background: "#D4D4D4", border: "#999999", text: "#555555" },
   table: { background: "#E8DDD0", border: "#C4B5A0", text: "#6B5243" },
   chair: { background: "#E8DDD0", border: "#C4B5A0", text: "#6B5243" },
+  bench: { background: "#D9CFC2", border: "#B5A48E", text: "#5A4A3A" },
   door: { background: "#D6E8F0", border: "#89B4C8", text: "#3D6B80" },
 };
 
@@ -36,6 +37,7 @@ const FIXED_ITEM_LABELS: Record<string, TranslationKey> = {
   column: "map.grid.column",
   table: "map.grid.table",
   chair: "map.grid.chair",
+  bench: "map.grid.bench",
   door: "map.grid.door",
 };
 

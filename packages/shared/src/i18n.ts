@@ -43,6 +43,7 @@ export const I18N_KEYS = {
     gridColumn: "map.grid.column",
     gridTable: "map.grid.table",
     gridChair: "map.grid.chair",
+    gridBench: "map.grid.bench",
     gridSharedBox: "map.grid.sharedBox",
   },
   registration: {
