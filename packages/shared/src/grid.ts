@@ -88,13 +88,17 @@ export const KRONEN_GRID: GreenhouseGridConfig = {
 
     // Structural columns
     column(4, 9),
-    column(4, 10),    
+    column(4, 10),
+    column(4, 11),
     column(5, 9),
-    column(5, 10),    
+    column(5, 10),
+    column(5, 11),
     column(6, 9),
-    column(6, 10),    
+    column(6, 10),
+    column(6, 11),
     column(7, 9),
-    column(7, 10),    
+    column(7, 10),
+    column(7, 11),
 
     // Planter boxes
     planterBox(1, "Buttercup", 20, 3, "horizontal"),
@@ -108,7 +112,7 @@ export const KRONEN_GRID: GreenhouseGridConfig = {
     planterBox(9, "Seabuck", 1, 9, "horizontal"),
     planterBox(10, "Stellaria", 2, 12, "vertical"),
     planterBox(11, "Honeysuckle", 5, 8, "vertical"),
-    planterBox(12, "Thistle", 7, 9, "horizontal"),
+    planterBox(12, "Thistle", 9, 9, "horizontal"),
     planterBox(13, "Anemone", 18, 12, "vertical"),
     planterBox(14, "Alder", 20, 9, "horizontal"),
     

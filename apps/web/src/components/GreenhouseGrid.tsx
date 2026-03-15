@@ -261,7 +261,8 @@ export function GreenhouseGrid({ config, boxes, onSelectBox }: GreenhouseGridPro
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
-        gridTemplateRows: `repeat(${config.rows}, minmax(28px, auto))`,
+        gridTemplateRows: `repeat(${config.rows}, 1fr)`,
+        aspectRatio: `${config.cols} / ${config.rows}`,
         gap: "3px",
         width: "100%",
         maxWidth: 600,
