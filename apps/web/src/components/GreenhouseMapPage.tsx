@@ -41,7 +41,12 @@ export function GreenhouseMapPage({ greenhouse, onBack, onSelectGreenhouse }: Gr
         setBoxes(
           all
             .filter((b) => b.greenhouse === greenhouse)
-            .sort((a, b) => a.name.localeCompare(b.name)),
+            .sort((a, b) => {
+              const aAvail = a.state === "available" ? 0 : 1;
+              const bAvail = b.state === "available" ? 0 : 1;
+              if (aAvail !== bAvail) return aAvail - bAvail;
+              return a.name.localeCompare(b.name);
+            }),
         );
       }
     } catch {
