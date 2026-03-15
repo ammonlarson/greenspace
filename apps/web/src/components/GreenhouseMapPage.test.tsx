@@ -18,6 +18,7 @@ vi.mock("./GreenhouseMap", () => ({
     <div data-testid="greenhouse-map">
       <span data-testid="box-count">{boxes.length}</span>
       <span data-testid="available-count">{boxes.filter((b) => b.state === "available").length}</span>
+      <span data-testid="box-order">{boxes.map((b) => b.name).join(",")}</span>
       <button data-testid="select-box-1" onClick={() => onSelectBox(1)}>Select 1</button>
     </div>
   ),
@@ -244,6 +245,26 @@ describe("GreenhouseMapPage", () => {
 
     expect(screen.getByText("waitlist.title")).toBeDefined();
     expect(screen.queryByText(/waitlist\.otherAvailable/)).toBeNull();
+  });
+
+  it("sorts available boxes before occupied boxes, both groups alphabetically", async () => {
+    const boxes: PlanterBoxPublic[] = [
+      { id: 1, name: "Stellaria", greenhouse: "Kronen", state: "occupied" },
+      { id: 2, name: "Harebell", greenhouse: "Kronen", state: "available" },
+      { id: 3, name: "Rosemary", greenhouse: "Kronen", state: "occupied" },
+      { id: 4, name: "Linaria", greenhouse: "Kronen", state: "available" },
+    ];
+    fetchMock = makeFetchMock(boxes);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GreenhouseMapPage } = await import("./GreenhouseMapPage");
+
+    await act(async () => {
+      render(<GreenhouseMapPage greenhouse="Kronen" onBack={vi.fn()} />);
+    });
+
+    const order = screen.getByTestId("box-order").textContent;
+    expect(order).toBe("Harebell,Linaria,Rosemary,Stellaria");
   });
 
   it("does not show cross-greenhouse hint when current greenhouse has availability", async () => {
