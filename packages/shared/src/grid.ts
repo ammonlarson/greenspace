@@ -30,6 +30,8 @@ export interface GridItemPlacement {
   label?: string;
   /** Reference to planter box ID (for planter_box and shared_box types) */
   boxId?: number;
+  /** Vertical alignment within the grid cell */
+  verticalAlign?: "top" | "bottom";
 }
 
 /** Grid configuration for a single greenhouse */
@@ -59,18 +61,18 @@ function sharedBox(
   label: string,
   row: number,
   col: number,
-  orientation: Orientation,
+  width: number,
+  height: number,
 ): GridItemPlacement {
-  const size = orientation === "horizontal" ? BOX_H : BOX_V;
-  return { type: "shared_box", row, col, ...size, label };
+  return { type: "shared_box", row, col, width, height, label };
 }
 
-function door(row: number, col: number): GridItemPlacement {
-  return { type: "door", row, col, width: 4, height: 1, label: "Door" };
+function door(row: number, col: number, verticalAlign: "top" | "bottom"): GridItemPlacement {
+  return { type: "door", row, col, width: 4, height: 1, label: "Door", verticalAlign };
 }
 
-function column(row: number, col: number): GridItemPlacement {
-  return { type: "column", row, col, width: 1, height: 1, label: "Column" };
+function column(row: number, col: number, width = 1, height = 1): GridItemPlacement {
+  return { type: "column", row, col, width, height, label: "Column" };
 }
 
 /**
@@ -84,22 +86,11 @@ export const KRONEN_GRID: GreenhouseGridConfig = {
   cols: 12,
   items: [
     // Sliding glass doors (middle 4 columns at top and bottom)
-    door(1, 5),
-    door(20, 5),
+    door(1, 5, "top"),
+    door(20, 5, "bottom"),
 
     // Structural columns
-    column(4, 9),
-    column(4, 10),
-    column(4, 11),
-    column(5, 9),
-    column(5, 10),
-    column(5, 11),
-    column(6, 9),
-    column(6, 10),
-    column(6, 11),
-    column(7, 9),
-    column(7, 10),
-    column(7, 11),
+    column(4, 9, 3, 3),
 
     // Planter boxes
     planterBox(1, "Buttercup", 20, 3, "horizontal"),
@@ -113,13 +104,13 @@ export const KRONEN_GRID: GreenhouseGridConfig = {
     planterBox(9, "Seabuck", 1, 9, "horizontal"),
     planterBox(10, "Stellaria", 2, 12, "vertical"),
     planterBox(11, "Honeysuckle", 5, 8, "vertical"),
-    planterBox(12, "Thistle", 9, 9, "horizontal"),
+    planterBox(12, "Thistle", 7, 9, "horizontal"),
     planterBox(13, "Anemone", 18, 12, "vertical"),
     planterBox(14, "Alder", 20, 9, "horizontal"),
     
     // Shared community boxes (center area)
-    sharedBox("Community A", 10, 12, "vertical"),
-    sharedBox("Community B", 12, 12, "vertical"),
+    sharedBox("Community Box", 10, 11, 2, 2),
+    sharedBox("Community Box", 12, 11, 2, 2),
 
     // Tables (center)
     { type: "table", row: 8, col: 3, width: 3, height: 11, label: "Table" },
@@ -147,8 +138,8 @@ export const SOEN_GRID: GreenhouseGridConfig = {
   cols: 12,
   items: [
     // Sliding glass doors (middle 4 columns at top and bottom)
-    door(1, 5),
-    door(24, 5),
+    door(1, 5, "bottom"),
+    door(24, 5, "top"),
 
     // Structural columns
     column(6, 1),
@@ -178,8 +169,8 @@ export const SOEN_GRID: GreenhouseGridConfig = {
     planterBox(29, "Black bird", 13, 10, "vertical"),
 
     // Shared community boxes (center area)
-    sharedBox("Community C", 15, 5, "horizontal"),
-    sharedBox("Community D", 15, 8, "horizontal"),
+    sharedBox("Community C", 15, 5, 2, 1),
+    sharedBox("Community D", 15, 8, 2, 1),
 
     // Tables (center)
     { type: "table", row: 17, col: 5, width: 4, height: 2, label: "Table" },

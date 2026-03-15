@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type {
   PlanterBoxPublic,
@@ -12,6 +12,87 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import type { TranslationKey } from "@/i18n/translations";
 import { BOX_STATE_COLORS, SHARED_BOX_COLORS } from "./boxStateColors";
 import { colors, fonts } from "@/styles/theme";
+
+function FitText({
+  text,
+  color,
+  fontWeight,
+  vertical,
+}: {
+  text: string;
+  color: string;
+  fontWeight: number;
+  vertical?: boolean;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [fontSize, setFontSize] = useState(10);
+
+  const fit = useCallback(() => {
+    const container = containerRef.current;
+    const span = textRef.current;
+    if (!container || !span) return;
+
+    const maxW = container.clientWidth;
+    const maxH = container.clientHeight;
+    if (maxW === 0 || maxH === 0) return;
+
+    if (vertical) {
+      let size = maxW;
+      span.style.fontSize = `${size}px`;
+      while (size > 4 && (span.scrollHeight > maxH || span.scrollWidth > maxW)) {
+        size -= 1;
+        span.style.fontSize = `${size}px`;
+      }
+      setFontSize(size);
+    } else {
+      let size = maxH;
+      span.style.fontSize = `${size}px`;
+      while (size > 4 && span.scrollWidth > maxW) {
+        size -= 1;
+        span.style.fontSize = `${size}px`;
+      }
+      setFontSize(size);
+    }
+  }, [vertical]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [fit]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        flex: 1,
+        minWidth: 0,
+        minHeight: 0,
+        overflow: "hidden",
+        display: "flex",
+        alignItems: vertical ? "flex-start" : "center",
+        justifyContent: vertical ? "center" : undefined,
+      }}
+    >
+      <span
+        ref={textRef}
+        style={{
+          fontSize,
+          color,
+          fontWeight,
+          whiteSpace: "nowrap",
+          fontFamily: fonts.body,
+          writingMode: vertical ? "vertical-rl" : undefined,
+        }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
 
 interface GreenhouseGridProps {
   config: GreenhouseGridConfig;
@@ -44,27 +125,35 @@ const FIXED_ITEM_LABELS: Record<string, TranslationKey> = {
 function GridDoor({ item, t }: { item: GridItemPlacement; t: (key: TranslationKey) => string }) {
   return (
     <div
-      role="img"
-      aria-label={t("map.grid.door")}
       style={{
         gridRow: `${item.row} / span ${item.height}`,
         gridColumn: `${item.col} / span ${item.width}`,
-        background: ITEM_STYLES.door.background,
-        border: `1px solid ${ITEM_STYLES.door.border}`,
-        borderRadius: 4,
         display: "flex",
-        alignItems: "center",
+        alignItems: item.verticalAlign === "top" ? "flex-start" : "flex-end",
         justifyContent: "center",
-        fontSize: "0.65rem",
-        fontWeight: 600,
-        color: ITEM_STYLES.door.text,
-        fontFamily: fonts.body,
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
-        minHeight: 24,
       }}
     >
-      {t("map.grid.door")}
+      <div
+        role="img"
+        aria-label={t("map.grid.door")}
+        style={{
+          width: "100%",
+          height: "50%",
+          background: ITEM_STYLES.door.background,
+          border: `1px solid ${ITEM_STYLES.door.border}`,
+          borderRadius: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "0.65rem",
+          fontWeight: 600,
+          color: ITEM_STYLES.door.text,
+          fontFamily: fonts.body,
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        }}
+      >
+      </div>
     </div>
   );
 }
@@ -79,16 +168,19 @@ function GridFixedElement({
   const style = ITEM_STYLES[item.type];
   const labelKey = FIXED_ITEM_LABELS[item.type] ?? "map.grid.column" as TranslationKey;
 
-  return (
+  const isChair = item.type === "chair";
+  const isBench = item.type === "bench";
+  const needsWrapper = isChair || isBench;
+
+  const inner = (
     <div
       role="img"
       aria-label={t(labelKey)}
       style={{
-        gridRow: `${item.row} / span ${item.height}`,
-        gridColumn: `${item.col} / span ${item.width}`,
         background: style.background,
         border: `1px solid ${style.border}`,
-        borderRadius: item.type === "column" ? "50%" : 4,
+        borderRadius: 4,
+        aspectRatio: item.type === "column" ? "1" : undefined,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -96,11 +188,35 @@ function GridFixedElement({
         color: style.text,
         fontFamily: fonts.body,
         minHeight: 24,
+        width: isChair ? "50%" : isBench ? "85%" : undefined,
+        height: "100%",
+        ...(needsWrapper ? {} : {
+          gridRow: `${item.row} / span ${item.height}`,
+          gridColumn: `${item.col} / span ${item.width}`,
+        }),
       }}
     >
-      {item.type === "column" ? "" : t(labelKey)}
+      {item.type === "door" ? t(labelKey) : ""}
     </div>
   );
+
+  if (needsWrapper) {
+    return (
+      <div
+        style={{
+          gridRow: `${item.row} / span ${item.height}`,
+          gridColumn: `${item.col} / span ${item.width}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {inner}
+      </div>
+    );
+  }
+
+  return inner;
 }
 
 function GridPlanterBox({
@@ -131,15 +247,15 @@ function GridPlanterBox({
         gridRow: `${item.row} / span ${item.height}`,
         gridColumn: `${item.col} / span ${item.width}`,
         display: "flex",
-        flexDirection: isVertical ? "column" : "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: isVertical ? "0.15rem" : "0.35rem",
+        flexDirection: "column",
+        alignItems: "stretch",
+        justifyContent: "flex-start",
+        gap: "0.15rem",
         border: `2px solid ${boxColors.border}`,
         borderRadius: 6,
         background: "#fdfdfd",
         cursor: isClickable ? "pointer" : "default",
-        padding: isVertical ? "0.25rem 0.15rem" : "0.15rem 0.35rem",
+        padding: "0.25rem 0.15rem",
         fontFamily: fonts.body,
         fontSize: "inherit",
         overflow: "hidden",
@@ -158,47 +274,77 @@ function GridPlanterBox({
           padding: "0.1rem 0.25rem",
           borderRadius: 3,
           whiteSpace: "nowrap",
+          width: "100%",
+          textAlign: "center",
         }}
       >
         {t(`map.state.${state}` as TranslationKey)}
       </span>
-      <Image
-        src={boxImagePath(name)}
-        alt=""
-        width={20}
-        height={20}
-        style={{ objectFit: "contain", flexShrink: 0 }}
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-      <span
-        style={{
-          fontSize: "0.6rem",
-          color: colors.warmBrown,
-          fontWeight: 500,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          writingMode: isVertical ? "vertical-rl" : undefined,
-          textOrientation: isVertical ? "mixed" : undefined,
-          maxHeight: isVertical ? "100%" : undefined,
-          maxWidth: isVertical ? undefined : "100%",
-        }}
-      >
-        {name}
-      </span>
+      {isVertical ? (
+        <>
+          <Image
+            src={boxImagePath(name)}
+            alt=""
+            width={40}
+            height={40}
+            style={{
+              objectFit: "contain",
+              flexShrink: 0,
+              maxWidth: "80%",
+              transform: "rotate(90deg)",
+            }}
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+          <FitText
+            text={name}
+            color={colors.warmBrown}
+            fontWeight={500}
+            vertical
+          />
+        </>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.25rem",
+            flex: 1,
+            minHeight: 0,
+            width: "100%",
+            overflow: "hidden",
+          }}
+        >
+          <Image
+            src={boxImagePath(name)}
+            alt=""
+            width={60}
+            height={60}
+            style={{
+              objectFit: "contain",
+              flexShrink: 0,
+              height: "100%",
+              width: "auto",
+            }}
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+          <FitText text={name} color={colors.warmBrown} fontWeight={500} />
+        </div>
+      )}
     </button>
   );
 }
 
 function GridSharedBox({
   item,
-  isVertical,
   t,
 }: {
   item: GridItemPlacement;
-  isVertical: boolean;
   t: (key: TranslationKey) => string;
 }) {
   const name = item.label ?? "";
@@ -211,14 +357,14 @@ function GridSharedBox({
         gridRow: `${item.row} / span ${item.height}`,
         gridColumn: `${item.col} / span ${item.width}`,
         display: "flex",
-        flexDirection: isVertical ? "column" : "row",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: isVertical ? "0.15rem" : "0.35rem",
+        gap: "0.15rem",
         border: `2px solid ${SHARED_BOX_COLORS.border}`,
         borderRadius: 6,
         background: SHARED_BOX_COLORS.background,
-        padding: isVertical ? "0.25rem 0.15rem" : "0.15rem 0.35rem",
+        padding: "0.25rem 0.15rem",
         fontFamily: fonts.body,
         overflow: "hidden",
         minHeight: 0,
@@ -267,7 +413,7 @@ export function GreenhouseGrid({ config, boxes, onSelectBox }: GreenhouseGridPro
         aspectRatio: `${config.cols} / ${config.rows}`,
         gap: "3px",
         width: "100%",
-        maxWidth: 600,
+        maxWidth: 750,
         margin: "0 auto",
         fontFamily: fonts.body,
         background: colors.parchment,
@@ -307,7 +453,6 @@ export function GreenhouseGrid({ config, boxes, onSelectBox }: GreenhouseGridPro
               <GridSharedBox
                 key={key}
                 item={item}
-                isVertical={isVertical}
                 t={t}
               />
             );
