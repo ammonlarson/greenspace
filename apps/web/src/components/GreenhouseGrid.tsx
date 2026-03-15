@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Image from "next/image";
 import type {
   PlanterBoxPublic,
@@ -31,9 +32,7 @@ const ITEM_STYLES: Record<GridItemType, { background: string; border: string; te
   door: { background: "#D6E8F0", border: "#89B4C8", text: "#3D6B80" },
 };
 
-const ITEM_LABELS: Record<GridItemType, TranslationKey> = {
-  planter_box: "map.grid.sharedBox",
-  shared_box: "map.grid.sharedBox",
+const FIXED_ITEM_LABELS: Record<string, TranslationKey> = {
   column: "map.grid.column",
   table: "map.grid.table",
   chair: "map.grid.chair",
@@ -76,7 +75,7 @@ function GridFixedElement({
   t: (key: TranslationKey) => string;
 }) {
   const style = ITEM_STYLES[item.type];
-  const labelKey = ITEM_LABELS[item.type];
+  const labelKey = FIXED_ITEM_LABELS[item.type] ?? "map.grid.column" as TranslationKey;
 
   return (
     <div
@@ -254,7 +253,7 @@ function GridSharedBox({
 export function GreenhouseGrid({ config, boxes, onSelectBox }: GreenhouseGridProps) {
   const { t } = useLanguage();
 
-  const boxMap = new Map(boxes.map((b) => [b.id, b]));
+  const boxMap = useMemo(() => new Map(boxes.map((b) => [b.id, b])), [boxes]);
 
   return (
     <div
@@ -282,21 +281,23 @@ export function GreenhouseGrid({ config, boxes, onSelectBox }: GreenhouseGridPro
           case "door":
             return <GridDoor key={key} item={item} t={t} />;
 
-          case "planter_box":
+          case "planter_box": {
+            const boxId = item.boxId;
             return (
               <GridPlanterBox
                 key={key}
                 item={item}
-                box={item.boxId ? boxMap.get(item.boxId) : undefined}
+                box={boxId ? boxMap.get(boxId) : undefined}
                 isVertical={isVertical}
                 onSelect={
-                  item.boxId && onSelectBox
-                    ? () => onSelectBox(item.boxId!)
+                  boxId && onSelectBox
+                    ? () => onSelectBox(boxId)
                     : undefined
                 }
                 t={t}
               />
             );
+          }
 
           case "shared_box":
             return (
