@@ -56,9 +56,13 @@ export function buildConfusionMatrix(
   for (let i = 0; i < ratings1.length; i++) {
     const row = categoryIndex.get(ratings1[i]);
     const col = categoryIndex.get(ratings2[i]);
-    if (row !== undefined && col !== undefined) {
-      matrix[row][col]++;
+    if (row === undefined) {
+      throw new Error(`Rating "${ratings1[i]}" at index ${i} (rater 1) is not in the categories list`);
     }
+    if (col === undefined) {
+      throw new Error(`Rating "${ratings2[i]}" at index ${i} (rater 2) is not in the categories list`);
+    }
+    matrix[row][col]++;
   }
 
   return matrix;
@@ -161,6 +165,9 @@ export function computeCohensKappa(
  * | 0.81 - 1.00  | Almost perfect   |
  */
 export function interpretKappa(kappa: number): KappaInterpretation {
+  if (!Number.isFinite(kappa)) {
+    throw new Error("Kappa value must be a finite number");
+  }
   if (kappa < 0) return "poor";
   if (kappa <= 0.2) return "slight";
   if (kappa <= 0.4) return "fair";

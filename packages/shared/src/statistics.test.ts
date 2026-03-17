@@ -43,6 +43,16 @@ describe("buildConfusionMatrix", () => {
       [0, 0],
     ]);
   });
+
+  it("throws when a rating is not in the categories list", () => {
+    const r1 = ["a", "b", "c"];
+    const r2 = ["a", "b", "b"];
+    const categories = ["a", "b"];
+
+    expect(() => buildConfusionMatrix(r1, r2, categories)).toThrow(
+      'Rating "c" at index 2 (rater 1) is not in the categories list',
+    );
+  });
 });
 
 describe("computeCohensKappa", () => {
@@ -166,6 +176,21 @@ describe("computeCohensKappa", () => {
     expect(result.categories).toEqual(["a", "m", "z"]);
   });
 
+  it("handles asymmetric category usage between raters", () => {
+    // Rater 1 uses {a, b, c} but rater 2 only uses {a, b}
+    const r1 = ["a", "b", "c", "a"];
+    const r2 = ["a", "b", "b", "a"];
+
+    const result = computeCohensKappa(r1, r2);
+
+    expect(result.categories).toEqual(["a", "b", "c"]);
+    expect(result.totalItems).toBe(4);
+    // 3 out of 4 agree (indices 0, 1, 3)
+    expect(result.observedAgreement).toBeCloseTo(0.75, 10);
+    expect(result.kappa).toBeGreaterThan(0);
+    expect(result.kappa).toBeLessThan(1);
+  });
+
   it("produces correct confusion matrix dimensions", () => {
     const r1 = ["a", "b", "c"];
     const r2 = ["b", "c", "a"];
@@ -209,5 +234,14 @@ describe("interpretKappa", () => {
   it("interprets 0.81-1.0 as almost perfect", () => {
     expect(interpretKappa(0.81)).toBe("almost perfect");
     expect(interpretKappa(1.0)).toBe("almost perfect");
+  });
+
+  it("throws for NaN", () => {
+    expect(() => interpretKappa(NaN)).toThrow("Kappa value must be a finite number");
+  });
+
+  it("throws for Infinity", () => {
+    expect(() => interpretKappa(Infinity)).toThrow("Kappa value must be a finite number");
+    expect(() => interpretKappa(-Infinity)).toThrow("Kappa value must be a finite number");
   });
 });
