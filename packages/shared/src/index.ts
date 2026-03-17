@@ -88,3 +88,14 @@ export type { DawaAutocompleteSuggestion, DawaAddress } from "./dawa.js";
 export { I18N_KEYS, LANGUAGE_LABELS } from "./i18n.js";
 
 export type { I18nKey } from "./i18n.js";
+
+export {
+  buildConfusionMatrix,
+  computeCohensKappa,
+  interpretKappa,
+} from "./statistics.js";
+
+export type {
+  CohensKappaResult,
+  KappaInterpretation,
+} from "./statistics.js";
