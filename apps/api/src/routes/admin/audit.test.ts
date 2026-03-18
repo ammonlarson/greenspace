@@ -17,13 +17,24 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
   };
 }
 
-function createMockDb(rows: unknown[]) {
+function createMockDb(rows: unknown[], adminRows: unknown[] = []) {
   const executeFn = vi.fn().mockResolvedValue(rows);
   const limitFn = vi.fn().mockReturnValue({ execute: executeFn, where: vi.fn().mockReturnValue({ execute: executeFn }) });
   const orderBy2 = vi.fn().mockReturnValue({ limit: limitFn });
   const orderBy1 = vi.fn().mockReturnValue({ orderBy: orderBy2 });
   const selectFn = vi.fn().mockReturnValue({ orderBy: orderBy1 });
-  const selectFromFn = vi.fn().mockReturnValue({ select: selectFn });
+
+  const adminExecuteFn = vi.fn().mockResolvedValue(adminRows);
+  const adminWhereFn = vi.fn().mockReturnValue({ execute: adminExecuteFn });
+  const adminSelectFn = vi.fn().mockReturnValue({ where: adminWhereFn });
+
+  const selectFromFn = vi.fn().mockImplementation((table: string) => {
+    if (table === "admins") {
+      return { select: adminSelectFn };
+    }
+    return { select: selectFn };
+  });
+
   return {
     db: { selectFrom: selectFromFn } as unknown as Kysely<Database>,
     mocks: { executeFn, limitFn, orderBy2, orderBy1, selectFn, selectFromFn },
@@ -123,7 +134,7 @@ describe("handleListAuditEvents", () => {
       },
     ];
 
-    const { db } = createMockDb(mockEvents);
+    const { db } = createMockDb(mockEvents, [{ id: "admin-1", email: "alice@example.com" }]);
 
     const res = await handleListAuditEvents(
       makeCtx({ adminId: "admin-1", db, body: {} }),
@@ -136,6 +147,7 @@ describe("handleListAuditEvents", () => {
     expect(body.nextCursor).toBeNull();
     expect((body.events[0] as Record<string, unknown>).action).toBe("admin_create");
     expect((body.events[0] as Record<string, unknown>).actorType).toBe("admin");
+    expect((body.events[0] as Record<string, unknown>).actorName).toBe("alice@example.com");
   });
 
   it("applies action filter to query", async () => {
@@ -171,7 +183,7 @@ describe("handleListAuditEvents", () => {
       reason: null,
     }));
 
-    const { db } = createMockDb(events);
+    const { db } = createMockDb(events, [{ id: "admin-1", email: "alice@example.com" }]);
 
     const res = await handleListAuditEvents(
       makeCtx({ adminId: "admin-1", db, body: {} }),

@@ -10,6 +10,7 @@ interface AuditEvent {
   timestamp: string;
   actorType: "public" | "admin" | "system";
   actorId: string | null;
+  actorName: string | null;
   action: string;
   entityType: string;
   entityId: string;
