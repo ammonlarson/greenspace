@@ -147,6 +147,24 @@ export async function handleListAuditEvents(ctx: RequestContext): Promise<RouteR
     ? encodeCursor(new Date(lastEvent.timestamp).toISOString(), lastEvent.id)
     : null;
 
+  const adminActorIds = [
+    ...new Set(
+      events
+        .filter((e) => e.actor_type === "admin" && e.actor_id)
+        .map((e) => e.actor_id as string),
+    ),
+  ];
+
+  let adminMap = new Map<string, string>();
+  if (adminActorIds.length > 0) {
+    const admins = await ctx.db
+      .selectFrom("admins")
+      .select(["id", "email"])
+      .where("id", "in", adminActorIds)
+      .execute();
+    adminMap = new Map(admins.map((a) => [a.id, a.email]));
+  }
+
   return {
     statusCode: 200,
     body: {
@@ -155,6 +173,9 @@ export async function handleListAuditEvents(ctx: RequestContext): Promise<RouteR
         timestamp: new Date(e.timestamp).toISOString(),
         actorType: e.actor_type,
         actorId: e.actor_id,
+        actorName: e.actor_type === "admin" && e.actor_id
+          ? adminMap.get(e.actor_id) ?? null
+          : null,
         action: e.action,
         entityType: e.entity_type,
         entityId: e.entity_id,
