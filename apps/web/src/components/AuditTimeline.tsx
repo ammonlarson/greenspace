@@ -21,6 +21,7 @@ interface AuditEvent {
 
 interface AuditTimelineProps {
   events: AuditEvent[];
+  boxLabels: Record<string, string>;
   hasMore?: boolean;
   onLoadMore?: () => void;
   actionFilter?: string;
@@ -62,8 +63,197 @@ function formatSnapshot(data: Record<string, unknown> | null): string {
     .join(", ");
 }
 
+export function resolveBoxLabel(boxId: unknown, boxLabels: Record<string, string>): string | null {
+  if (typeof boxId === "number" || typeof boxId === "string") {
+    return boxLabels[String(boxId)] ?? null;
+  }
+  return null;
+}
+
+export function formatAddressFromSnapshot(data: Record<string, unknown>): string | null {
+  const street = data.street ?? data.address_street;
+  const houseNumber = data.house_number ?? data.address_house_number;
+  if (typeof street !== "string" || (typeof houseNumber !== "number" && typeof houseNumber !== "string")) {
+    return null;
+  }
+  let result = `${street} ${houseNumber}`;
+  const floor = data.floor ?? data.address_floor;
+  const door = data.door ?? data.address_door;
+  const floorStr = typeof floor === "string" ? floor.trim() : null;
+  const doorStr = typeof door === "string" ? door.trim() : null;
+  if (floorStr) {
+    result += ` ${floorStr}.`;
+    if (doorStr) {
+      result += ` ${doorStr}`;
+    }
+  }
+  return result;
+}
+
+export function formatApartmentKeyAsAddress(key: unknown): string | null {
+  if (typeof key !== "string") return null;
+  const parts = key.split("/");
+  const streetAndHouse = parts[0];
+  if (!streetAndHouse) return null;
+  let result = streetAndHouse
+    .split(" ")
+    .filter((w) => w.length > 0)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  if (parts[1]) {
+    const floorDoor = parts[1].split("-");
+    result += ` ${floorDoor[0]}.`;
+    if (floorDoor[1]) {
+      result += ` ${floorDoor[1]}`;
+    }
+  }
+  return result;
+}
+
+function getStr(data: Record<string, unknown> | null, ...keys: string[]): string | null {
+  if (!data) return null;
+  for (const key of keys) {
+    const val = data[key];
+    if (typeof val === "string" && val.trim()) return val;
+  }
+  return null;
+}
+
+export interface DetailLine {
+  label: string;
+  value: string;
+}
+
+export function formatEventDetails(
+  evt: AuditEvent,
+  boxLabels: Record<string, string>,
+  t: (key: TranslationKey) => string,
+): DetailLine[] {
+  const lines: DetailLine[] = [];
+  const after = evt.after;
+  const before = evt.before;
+
+  switch (evt.action) {
+    case "waitlist_add": {
+      const name = getStr(after, "name");
+      if (name) lines.push({ label: t("audit.detail.name"), value: name });
+      const email = getStr(after, "email");
+      if (email) lines.push({ label: t("audit.detail.email"), value: email });
+      const addr = (after && formatAddressFromSnapshot(after))
+        ?? formatApartmentKeyAsAddress(after?.apartmentKey ?? after?.apartment_key);
+      if (addr) lines.push({ label: t("audit.detail.address"), value: addr });
+      break;
+    }
+
+    case "email_sent": {
+      const recipient = getStr(after, "recipient", "recipient_email");
+      if (recipient) lines.push({ label: t("audit.detail.recipient"), value: recipient });
+      const subject = getStr(after, "subject");
+      if (subject) lines.push({ label: t("audit.detail.subject"), value: subject });
+      break;
+    }
+
+    case "notification_sent": {
+      const recipient = getStr(after, "recipient_email", "recipient");
+      const displayName = getStr(after, "recipient_name");
+      if (displayName) {
+        lines.push({ label: t("audit.detail.recipient"), value: displayName });
+      } else if (recipient) {
+        lines.push({ label: t("audit.detail.recipient"), value: recipient });
+      }
+      const subject = getStr(after, "subject");
+      if (subject) lines.push({ label: t("audit.detail.subject"), value: subject });
+      break;
+    }
+
+    case "box_state_change": {
+      const boxLabel = resolveBoxLabel(evt.entityId, boxLabels);
+      if (boxLabel) lines.push({ label: t("audit.detail.box"), value: boxLabel });
+      const stateBefore = getStr(before, "state");
+      const stateAfter = getStr(after, "state");
+      if (stateBefore && stateAfter) {
+        lines.push({ label: t("audit.detail.stateChange"), value: `${stateBefore} \u2192 ${stateAfter}` });
+      }
+      break;
+    }
+
+    case "registration_create": {
+      const boxId = after?.box_id;
+      const boxLabel = resolveBoxLabel(boxId, boxLabels);
+      if (boxLabel) lines.push({ label: t("audit.detail.box"), value: boxLabel });
+      const name = getStr(after, "name");
+      if (name) lines.push({ label: t("audit.detail.name"), value: name });
+      const addr = (after && formatAddressFromSnapshot(after))
+        ?? formatApartmentKeyAsAddress(after?.apartmentKey ?? after?.apartment_key);
+      if (addr) lines.push({ label: t("audit.detail.address"), value: addr });
+      break;
+    }
+
+    case "registration_remove": {
+      const boxId = before?.box_id;
+      const boxLabel = resolveBoxLabel(boxId, boxLabels);
+      if (boxLabel) lines.push({ label: t("audit.detail.box"), value: boxLabel });
+      const name = getStr(before, "name");
+      if (name) lines.push({ label: t("audit.detail.name"), value: name });
+      const addr = (before && formatAddressFromSnapshot(before))
+        ?? formatApartmentKeyAsAddress(before?.apartmentKey ?? before?.apartment_key);
+      if (addr) lines.push({ label: t("audit.detail.address"), value: addr });
+      break;
+    }
+
+    case "registration_switch":
+    case "registration_move": {
+      const beforeBoxId = before?.box_id;
+      const afterBoxId = after?.box_id;
+      const fromLabel = resolveBoxLabel(beforeBoxId, boxLabels);
+      const toLabel = resolveBoxLabel(afterBoxId, boxLabels);
+      if (fromLabel && toLabel) {
+        lines.push({ label: t("audit.detail.box"), value: `${fromLabel} \u2192 ${toLabel}` });
+      } else if (toLabel) {
+        lines.push({ label: t("audit.detail.box"), value: toLabel });
+      }
+      const name = getStr(before, "name") ?? getStr(after, "name");
+      if (name) lines.push({ label: t("audit.detail.name"), value: name });
+      break;
+    }
+
+    case "notification_skipped": {
+      const recipient = getStr(after, "recipient_email", "recipient");
+      const displayName = getStr(after, "recipient_name");
+      if (displayName) {
+        lines.push({ label: t("audit.detail.name"), value: displayName });
+      } else if (recipient) {
+        lines.push({ label: t("audit.detail.recipient"), value: recipient });
+      }
+      const action = getStr(after, "notification_action");
+      if (action) {
+        const actionKey = `audit.action.${action}`;
+        const actionText = actionKey in translations.en
+          ? t(actionKey as TranslationKey)
+          : action;
+        lines.push({ label: t("audit.detail.action"), value: actionText });
+      }
+      break;
+    }
+
+    default: {
+      if (before) lines.push({ label: t("audit.detail.before"), value: formatSnapshot(before) });
+      if (after) lines.push({ label: t("audit.detail.after"), value: formatSnapshot(after) });
+      if (evt.reason) lines.push({ label: t("audit.detail.reason"), value: evt.reason });
+      break;
+    }
+  }
+
+  if (lines.length === 0 && evt.reason) {
+    lines.push({ label: t("audit.detail.reason"), value: evt.reason });
+  }
+
+  return lines;
+}
+
 export function AuditTimeline({
   events,
+  boxLabels,
   hasMore,
   onLoadMore,
   actionFilter,
@@ -125,52 +315,42 @@ export function AuditTimeline({
                 <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.timestamp")}</th>
                 <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.action")}</th>
                 <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.actor")}</th>
-                <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.entity")}</th>
                 <th style={{ padding: "0.5rem", color: colors.warmBrown, fontFamily: fonts.body }}>{t("audit.details")}</th>
               </tr>
             </thead>
             <tbody>
-              {events.map((evt) => (
-                <tr key={evt.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
-                  <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>
-                    {formatTimestamp(evt.timestamp, language)}
-                  </td>
-                  <td style={{ padding: "0.5rem" }}>
-                    <code style={{ fontSize: "0.8rem", background: colors.parchment, color: colors.inkBrown, padding: "0.1rem 0.3rem", borderRadius: 3 }}>
-                      {actionLabel(evt.action, t)}
-                    </code>
-                  </td>
-                  <td style={{ padding: "0.5rem" }}>
-                    {evt.actorType}
-                    {evt.actorName
-                      ? ` (${evt.actorName})`
-                      : evt.actorId
-                        ? ` (${truncateId(evt.actorId)})`
-                        : ""}
-                  </td>
-                  <td style={{ padding: "0.5rem" }}>
-                    {evt.entityType} / {truncateId(evt.entityId)}
-                  </td>
-                  <td style={{ padding: "0.5rem", fontSize: "0.8rem", color: colors.warmBrown }}>
-                    {evt.before && (
-                      <div>
-                        <strong>Before:</strong> {formatSnapshot(evt.before)}
-                      </div>
-                    )}
-                    {evt.after && (
-                      <div>
-                        <strong>After:</strong> {formatSnapshot(evt.after)}
-                      </div>
-                    )}
-                    {evt.reason && (
-                      <div>
-                        <strong>Reason:</strong> {evt.reason}
-                      </div>
-                    )}
-                    {!evt.before && !evt.after && !evt.reason && "\u2014"}
-                  </td>
-                </tr>
-              ))}
+              {events.map((evt) => {
+                const details = formatEventDetails(evt, boxLabels, t);
+                return (
+                  <tr key={evt.id} style={{ borderBottom: `1px solid ${colors.parchment}` }}>
+                    <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>
+                      {formatTimestamp(evt.timestamp, language)}
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <code style={{ fontSize: "0.8rem", background: colors.parchment, color: colors.inkBrown, padding: "0.1rem 0.3rem", borderRadius: 3 }}>
+                        {actionLabel(evt.action, t)}
+                      </code>
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      {evt.actorType}
+                      {evt.actorName
+                        ? ` (${evt.actorName})`
+                        : evt.actorId
+                          ? ` (${truncateId(evt.actorId)})`
+                          : ""}
+                    </td>
+                    <td style={{ padding: "0.5rem", fontSize: "0.8rem", color: colors.warmBrown }}>
+                      {details.length > 0
+                        ? details.map((d, i) => (
+                            <div key={i}>
+                              <strong>{d.label}:</strong> {d.value}
+                            </div>
+                          ))
+                        : "\u2014"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
