@@ -173,8 +173,14 @@ export async function handleListAuditEvents(ctx: RequestContext): Promise<RouteR
     }
     const beforeBoxId = (e.before as Record<string, unknown> | null)?.box_id;
     const afterBoxId = (e.after as Record<string, unknown> | null)?.box_id;
-    if (typeof beforeBoxId === "number") boxIds.add(beforeBoxId);
-    if (typeof afterBoxId === "number") boxIds.add(afterBoxId);
+    for (const rawId of [beforeBoxId, afterBoxId]) {
+      if (typeof rawId === "number") {
+        boxIds.add(rawId);
+      } else if (typeof rawId === "string") {
+        const parsed = Number(rawId);
+        if (!isNaN(parsed)) boxIds.add(parsed);
+      }
+    }
   }
 
   let boxMap = new Map<number, string>();

@@ -17,7 +17,7 @@ function makeCtx(overrides: Partial<RequestContext> = {}): RequestContext {
   };
 }
 
-function createMockDb(rows: unknown[], adminRows: unknown[] = []) {
+function createMockDb(rows: unknown[], adminRows: unknown[] = [], boxRows: unknown[] = []) {
   const executeFn = vi.fn().mockResolvedValue(rows);
   const limitFn = vi.fn().mockReturnValue({ execute: executeFn, where: vi.fn().mockReturnValue({ execute: executeFn }) });
   const orderBy2 = vi.fn().mockReturnValue({ limit: limitFn });
@@ -28,9 +28,16 @@ function createMockDb(rows: unknown[], adminRows: unknown[] = []) {
   const adminWhereFn = vi.fn().mockReturnValue({ execute: adminExecuteFn });
   const adminSelectFn = vi.fn().mockReturnValue({ where: adminWhereFn });
 
+  const boxExecuteFn = vi.fn().mockResolvedValue(boxRows);
+  const boxWhereFn = vi.fn().mockReturnValue({ execute: boxExecuteFn });
+  const boxSelectFn = vi.fn().mockReturnValue({ where: boxWhereFn });
+
   const selectFromFn = vi.fn().mockImplementation((table: string) => {
     if (table === "admins") {
       return { select: adminSelectFn };
+    }
+    if (table === "planter_boxes") {
+      return { select: boxSelectFn };
     }
     return { select: selectFn };
   });
@@ -167,6 +174,92 @@ describe("handleListAuditEvents", () => {
 
     expect(res.statusCode).toBe(200);
     expect(whereFn).toHaveBeenCalledWith("action", "=", "admin_create");
+  });
+
+  it("resolves box labels from planter_box entity events", async () => {
+    const mockEvents = [
+      {
+        id: "evt-1",
+        timestamp: new Date("2026-03-01T10:00:00Z"),
+        actor_type: "admin" as const,
+        actor_id: null,
+        action: "box_state_change",
+        entity_type: "planter_box",
+        entity_id: "5",
+        before: { state: "available" },
+        after: { state: "occupied" },
+        reason: null,
+      },
+    ];
+
+    const boxRows = [{ id: 5, name: "Blue Tit", greenhouse_name: "Kronen" }];
+    const { db } = createMockDb(mockEvents, [], boxRows);
+
+    const res = await handleListAuditEvents(
+      makeCtx({ adminId: "admin-1", db, body: {} }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { boxLabels: Record<string, string> };
+    expect(body.boxLabels).toEqual({ "5": "Kronen - Blue Tit" });
+  });
+
+  it("resolves box labels from before/after box_id fields", async () => {
+    const mockEvents = [
+      {
+        id: "evt-1",
+        timestamp: new Date("2026-03-01T10:00:00Z"),
+        actor_type: "admin" as const,
+        actor_id: null,
+        action: "registration_move",
+        entity_type: "registration",
+        entity_id: "reg-1",
+        before: { box_id: 5 },
+        after: { box_id: 10 },
+        reason: null,
+      },
+    ];
+
+    const boxRows = [
+      { id: 5, name: "Blue Tit", greenhouse_name: "Kronen" },
+      { id: 10, name: "Robin", greenhouse_name: "Søen" },
+    ];
+    const { db } = createMockDb(mockEvents, [], boxRows);
+
+    const res = await handleListAuditEvents(
+      makeCtx({ adminId: "admin-1", db, body: {} }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { boxLabels: Record<string, string> };
+    expect(body.boxLabels).toEqual({ "5": "Kronen - Blue Tit", "10": "Søen - Robin" });
+  });
+
+  it("returns empty boxLabels when no box IDs are present", async () => {
+    const mockEvents = [
+      {
+        id: "evt-1",
+        timestamp: new Date("2026-03-01T10:00:00Z"),
+        actor_type: "admin" as const,
+        actor_id: null,
+        action: "admin_create",
+        entity_type: "admin",
+        entity_id: "admin-2",
+        before: null,
+        after: { email: "new@example.com" },
+        reason: null,
+      },
+    ];
+
+    const { db } = createMockDb(mockEvents);
+
+    const res = await handleListAuditEvents(
+      makeCtx({ adminId: "admin-1", db, body: {} }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { boxLabels: Record<string, string> };
+    expect(body.boxLabels).toEqual({});
   });
 
   it("detects hasMore and returns nextCursor when extra rows returned", async () => {

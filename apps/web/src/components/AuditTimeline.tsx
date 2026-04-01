@@ -63,14 +63,14 @@ function formatSnapshot(data: Record<string, unknown> | null): string {
     .join(", ");
 }
 
-function resolveBoxLabel(boxId: unknown, boxLabels: Record<string, string>): string | null {
+export function resolveBoxLabel(boxId: unknown, boxLabels: Record<string, string>): string | null {
   if (typeof boxId === "number" || typeof boxId === "string") {
     return boxLabels[String(boxId)] ?? null;
   }
   return null;
 }
 
-function formatAddressFromSnapshot(data: Record<string, unknown>): string | null {
+export function formatAddressFromSnapshot(data: Record<string, unknown>): string | null {
   const street = data.street ?? data.address_street;
   const houseNumber = data.house_number ?? data.address_house_number;
   if (typeof street !== "string" || (typeof houseNumber !== "number" && typeof houseNumber !== "string")) {
@@ -90,13 +90,14 @@ function formatAddressFromSnapshot(data: Record<string, unknown>): string | null
   return result;
 }
 
-function formatApartmentKeyAsAddress(key: unknown): string | null {
+export function formatApartmentKeyAsAddress(key: unknown): string | null {
   if (typeof key !== "string") return null;
   const parts = key.split("/");
   const streetAndHouse = parts[0];
   if (!streetAndHouse) return null;
   let result = streetAndHouse
     .split(" ")
+    .filter((w) => w.length > 0)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
   if (parts[1]) {
@@ -118,12 +119,12 @@ function getStr(data: Record<string, unknown> | null, ...keys: string[]): string
   return null;
 }
 
-interface DetailLine {
+export interface DetailLine {
   label: string;
   value: string;
 }
 
-function formatEventDetails(
+export function formatEventDetails(
   evt: AuditEvent,
   boxLabels: Record<string, string>,
   t: (key: TranslationKey) => string,
