@@ -165,6 +165,33 @@ export async function handleListAuditEvents(ctx: RequestContext): Promise<RouteR
     adminMap = new Map(admins.map((a) => [a.id, a.email]));
   }
 
+  const boxIds = new Set<number>();
+  for (const e of events) {
+    if (e.entity_type === "planter_box") {
+      const parsed = Number(e.entity_id);
+      if (!isNaN(parsed)) boxIds.add(parsed);
+    }
+    const beforeBoxId = (e.before as Record<string, unknown> | null)?.box_id;
+    const afterBoxId = (e.after as Record<string, unknown> | null)?.box_id;
+    if (typeof beforeBoxId === "number") boxIds.add(beforeBoxId);
+    if (typeof afterBoxId === "number") boxIds.add(afterBoxId);
+  }
+
+  let boxMap = new Map<number, string>();
+  if (boxIds.size > 0) {
+    const boxes = await ctx.db
+      .selectFrom("planter_boxes")
+      .select(["id", "name", "greenhouse_name"])
+      .where("id", "in", [...boxIds])
+      .execute();
+    boxMap = new Map(boxes.map((b) => [b.id, `${b.greenhouse_name} - ${b.name}`]));
+  }
+
+  const boxLabels: Record<string, string> = {};
+  for (const [id, label] of boxMap) {
+    boxLabels[String(id)] = label;
+  }
+
   return {
     statusCode: 200,
     body: {
@@ -183,6 +210,7 @@ export async function handleListAuditEvents(ctx: RequestContext): Promise<RouteR
         after: e.after,
         reason: e.reason,
       })),
+      boxLabels,
       nextCursor,
       hasMore,
     },

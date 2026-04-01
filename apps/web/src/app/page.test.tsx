@@ -115,7 +115,6 @@ describe("translations", () => {
       "audit.timestamp",
       "audit.action",
       "audit.actor",
-      "audit.entity",
       "audit.details",
       "audit.noEvents",
       "audit.loadMore",
@@ -123,6 +122,17 @@ describe("translations", () => {
       "audit.filterByActor",
       "audit.allActions",
       "audit.allActors",
+      "audit.detail.name",
+      "audit.detail.email",
+      "audit.detail.address",
+      "audit.detail.recipient",
+      "audit.detail.subject",
+      "audit.detail.box",
+      "audit.detail.stateChange",
+      "audit.detail.action",
+      "audit.detail.before",
+      "audit.detail.after",
+      "audit.detail.reason",
     ];
     for (const lang of LANGUAGES) {
       for (const key of auditKeys) {
