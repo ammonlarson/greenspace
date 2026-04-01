@@ -97,6 +97,7 @@ export interface AuditEvent {
   timestamp: string;
   actorType: ActorType;
   actorId: string | null;
+  actorName: string | null;
   action: AuditAction;
   entityType: string;
   entityId: string;

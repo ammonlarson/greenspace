@@ -10,6 +10,7 @@ interface AuditEvent {
   timestamp: string;
   actorType: "public" | "admin" | "system";
   actorId: string | null;
+  actorName: string | null;
   action: string;
   entityType: string;
   entityId: string;
@@ -141,7 +142,11 @@ export function AuditTimeline({
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {evt.actorType}
-                    {evt.actorId ? ` (${truncateId(evt.actorId)})` : ""}
+                    {evt.actorName
+                      ? ` (${evt.actorName})`
+                      : evt.actorId
+                        ? ` (${truncateId(evt.actorId)})`
+                        : ""}
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {evt.entityType} / {truncateId(evt.entityId)}
