@@ -240,7 +240,7 @@ variable "log_retention_days" {
 }
 
 variable "alarm_email" {
-  description = "Email address for CloudWatch alarm notifications. Set to null to skip subscription."
+  description = "Email address for CloudWatch alarm notifications. Set to null to skip subscription. Ignored when var.enable_alarms is false."
   type        = string
   default     = null
 }
@@ -249,4 +249,16 @@ variable "alarm_rds_connections_threshold" {
   description = "Threshold for the RDS database connections alarm. Adjust per instance class (e.g. ~85 for db.t4g.micro, ~170 for db.t4g.small)."
   type        = number
   default     = 80
+}
+
+variable "enable_alarms" {
+  description = "Whether to provision the SNS alarm topic, email subscription, and all CloudWatch metric alarms."
+  type        = bool
+  default     = true
+}
+
+variable "enable_dashboard" {
+  description = "Whether to provision the CloudWatch operational dashboard."
+  type        = bool
+  default     = true
 }

@@ -87,14 +87,13 @@ FROM system_settings;
 
 ### 1.6 Monitoring
 
-- [x] CloudWatch dashboard loads with all 8 metric widgets
-  - Dashboard: `greenspace-staging-2026-dashboard`
-- [x] SNS alarm topic has email subscription confirmed
-  - Topic: `greenspace-staging-2026-alarms`
-- [x] Test alarm triggers notification email delivery
-- [x] Lambda error alarm is configured (>0 errors for 2×5 min)
-- [x] RDS alarms configured (CPU, memory, connections)
-- [x] SES alarms configured (bounces, complaints)
+Staging does not provision a CloudWatch dashboard, SNS alarm topic, or metric
+alarms. All alarm and dashboard verification happens in production (section 2.2).
+Staging retains its CloudWatch log groups and VPC flow logs for ad-hoc
+investigation.
+
+- [x] API log group is receiving Lambda logs
+  - Log group: `/greenspace-staging-2026/api`
 
 **Staging sign-off:**
 
