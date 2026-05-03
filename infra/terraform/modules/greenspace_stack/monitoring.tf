@@ -470,3 +470,55 @@ resource "aws_cloudwatch_dashboard" "main" {
     ]
   })
 }
+
+# ---------- State migrations ----------
+#
+# These resources gained `count` to make alarms/dashboard optional per environment.
+# In prod (where var.enable_alarms and var.enable_dashboard remain true), the
+# `moved` blocks rename existing state entries to their indexed addresses so the
+# plan stays a no-op rather than a destroy/recreate.
+
+moved {
+  from = aws_sns_topic.alarms
+  to   = aws_sns_topic.alarms[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.lambda_errors
+  to   = aws_cloudwatch_metric_alarm.lambda_errors[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.lambda_throttles
+  to   = aws_cloudwatch_metric_alarm.lambda_throttles[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.rds_cpu
+  to   = aws_cloudwatch_metric_alarm.rds_cpu[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.rds_freeable_memory
+  to   = aws_cloudwatch_metric_alarm.rds_freeable_memory[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.rds_connections
+  to   = aws_cloudwatch_metric_alarm.rds_connections[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.ses_bounces
+  to   = aws_cloudwatch_metric_alarm.ses_bounces[0]
+}
+
+moved {
+  from = aws_cloudwatch_metric_alarm.ses_complaints
+  to   = aws_cloudwatch_metric_alarm.ses_complaints[0]
+}
+
+moved {
+  from = aws_cloudwatch_dashboard.main
+  to   = aws_cloudwatch_dashboard.main[0]
+}
