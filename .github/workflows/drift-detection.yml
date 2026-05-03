@@ -192,37 +192,61 @@ jobs:
           fi
 
       - name: Create drift issue
-        if: failure() && steps.validate.outputs.drift == 'true'
+        if: always() && (steps.fetch.outcome == 'failure' || steps.validate.outputs.drift == 'true')
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const fetchFailed = '${{ steps.fetch.outcome }}' === 'failure';
             const statementCount = '${{ steps.validate.outputs.statement_count }}';
             const actionCount = '${{ steps.validate.outputs.action_count }}';
             const unauthorized = '${{ steps.validate.outputs.unauthorized }}';
+            const title = fetchFailed
+              ? `Bootstrap policy unreadable in ${{ matrix.environment }}`
+              : `Bootstrap policy drift detected in ${{ matrix.environment }}`;
+            const body = fetchFailed
+              ? [
+                  `## Bootstrap policy unreadable`,
+                  '',
+                  `**Environment:** ${{ matrix.environment }}`,
+                  `**Role:** ${{ matrix.role_name }}`,
+                  `**Inline policy:** terraform-resources-bootstrap`,
+                  `**Detected at:** ${new Date().toISOString()}`,
+                  `**Workflow run:** [View run](${runUrl})`,
+                  '',
+                  '`aws iam get-role-policy` failed for the bootstrap policy. Possible causes:',
+                  '',
+                  '- The policy was detached out-of-band (security incident).',
+                  '- The role was renamed without updating this workflow.',
+                  '- A transient AWS API error.',
+                  '',
+                  'Investigate the workflow logs and either restore the policy or update',
+                  'the workflow.',
+                ].join('\n')
+              : [
+                  `## Bootstrap policy drift detected`,
+                  '',
+                  `**Environment:** ${{ matrix.environment }}`,
+                  `**Role:** ${{ matrix.role_name }}`,
+                  `**Inline policy:** terraform-resources-bootstrap`,
+                  `**Detected at:** ${new Date().toISOString()}`,
+                  `**Workflow run:** [View run](${runUrl})`,
+                  '',
+                  '### Live policy stats',
+                  '',
+                  `- Statement count: \`${statementCount}\` (cap: 4)`,
+                  `- Action count: \`${actionCount}\` (cap: 80)`,
+                  `- Non-allowlisted actions: \`${unauthorized || '(none)'}\``,
+                  '',
+                  'The bootstrap policy is meant to stay small (broad reads + a curated ec2',
+                  'destroy-side write allowlist). Investigate whether this growth was',
+                  'intentional and either roll the live policy back or update the caps and',
+                  'allowlist deliberately in `iam.tf` and `iam_bootstrap.tftest.hcl`.',
+                ].join('\n');
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Bootstrap policy drift detected in ${{ matrix.environment }}`,
+              title,
               labels: ['ops', 'drift', 'security'],
-              body: [
-                `## Bootstrap policy drift detected`,
-                '',
-                `**Environment:** ${{ matrix.environment }}`,
-                `**Role:** ${{ matrix.role_name }}`,
-                `**Inline policy:** terraform-resources-bootstrap`,
-                `**Detected at:** ${new Date().toISOString()}`,
-                `**Workflow run:** [View run](${runUrl})`,
-                '',
-                '### Live policy stats',
-                '',
-                `- Statement count: \`${statementCount}\` (cap: 4)`,
-                `- Action count: \`${actionCount}\` (cap: 80)`,
-                `- Non-allowlisted actions: \`${unauthorized || '(none)'}\``,
-                '',
-                'The bootstrap policy is meant to stay small (broad reads + a curated ec2',
-                'destroy-side write allowlist). Investigate whether this growth was',
-                'intentional and either roll the live policy back or update the caps and',
-                'allowlist deliberately in `iam.tf` and `iam.tftest.hcl`.',
-              ].join('\n'),
+              body,
             });

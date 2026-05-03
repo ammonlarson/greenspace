@@ -168,9 +168,16 @@ The bootstrap policy is meant to stay small. Two guards enforce that:
    the live policy fetched from AWS via `aws iam get-role-policy`. Catches
    both code-side bloat that slipped past PR review and AWS-side tampering.
 
-When a guard fires, intentionally raise the cap (in both `iam.tftest.hcl`
-and the workflow) only after a brief review of whether the new action
-genuinely belongs in the bootstrap policy or in `terraform-resources`.
+When a guard fires, intentionally raise the cap (in both
+`iam_bootstrap.tftest.hcl` and the workflow) only after a brief review of
+whether the new action genuinely belongs in the bootstrap policy or in
+`terraform-resources`.
+
+The first apply that lands the bootstrap policy may overwrite a stale
+`terraform-resources-bootstrap` inline policy left over from a manual
+bootstrap dance (the name is intentionally reused — see #326). This is
+safe: `aws_iam_role_policy` upserts, so the live policy converges to the
+Terraform-managed contents.
 
 ## Amplify Hosting
 
