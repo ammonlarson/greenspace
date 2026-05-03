@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "api_secrets" {
       "secretsmanager:GetSecretValue",
     ]
     resources = [
-      "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
+      "arn:aws:secretsmanager:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
     ]
   }
 
@@ -69,7 +69,7 @@ data "aws_iam_policy_document" "api_ses" {
     ]
     resources = [
       aws_ses_domain_identity.main.arn,
-      "arn:aws:ses:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:identity/*",
+      "arn:aws:ses:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:identity/*",
     ]
   }
 }
@@ -131,7 +131,7 @@ data "aws_iam_policy_document" "ci_deploy_permissions" {
       "lambda:InvokeFunction",
     ]
     resources = [
-      "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",
+      "arn:aws:lambda:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",
     ]
   }
 
@@ -260,7 +260,7 @@ data "aws_iam_policy_document" "ci_terraform_state" {
       "dynamodb:DeleteItem",
     ]
     resources = [
-      "arn:aws:dynamodb:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:table/${var.tf_lock_table}",
+      "arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.tf_lock_table}",
     ]
   }
 }
@@ -426,8 +426,8 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "logs:DisassociateKmsKey",
     ]
     resources = [
-      "arn:aws:logs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*",
-      "arn:aws:logs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*:*",
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*",
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*:*",
     ]
   }
 
@@ -514,7 +514,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "lambda:GetFunctionCodeSigningConfig",
     ]
     resources = [
-      "arn:aws:lambda:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",
+      "arn:aws:lambda:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:function:${local.naming_prefix}-*",
     ]
   }
 
@@ -535,7 +535,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "secretsmanager:DeleteResourcePolicy",
     ]
     resources = [
-      "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
+      "arn:aws:secretsmanager:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:secret:${local.naming_prefix}-*",
     ]
   }
 
@@ -562,7 +562,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "sns:GetSubscriptionAttributes",
     ]
     resources = [
-      "arn:aws:sns:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:${local.naming_prefix}-*",
+      "arn:aws:sns:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${local.naming_prefix}-*",
     ]
   }
 
@@ -582,7 +582,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "cloudwatch:ListDashboards",
     ]
     resources = [
-      "arn:aws:cloudwatch:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:alarm:${local.naming_prefix}-*",
+      "arn:aws:cloudwatch:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:alarm:${local.naming_prefix}-*",
       "arn:aws:cloudwatch::${data.aws_caller_identity.current.account_id}:dashboard/${local.naming_prefix}-*",
     ]
   }
@@ -617,8 +617,8 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "rds:RemoveTagsFromResource",
     ]
     resources = [
-      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:db:${local.naming_prefix}-*",
-      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:snapshot:${local.naming_prefix}-*",
+      "arn:aws:rds:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:db:${local.naming_prefix}-*",
+      "arn:aws:rds:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:snapshot:${local.naming_prefix}-*",
     ]
   }
 
@@ -633,7 +633,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "rds:RemoveTagsFromResource",
     ]
     resources = [
-      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:subgrp:${local.naming_prefix}-*",
+      "arn:aws:rds:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:subgrp:${local.naming_prefix}-*",
     ]
   }
 
@@ -649,7 +649,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "rds:RemoveTagsFromResource",
     ]
     resources = [
-      "arn:aws:rds:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:pg:${local.naming_prefix}-*",
+      "arn:aws:rds:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:pg:${local.naming_prefix}-*",
     ]
   }
 
@@ -668,7 +668,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "events:ListTargetsByRule",
     ]
     resources = [
-      "arn:aws:events:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:rule/${local.naming_prefix}-*",
+      "arn:aws:events:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:rule/${local.naming_prefix}-*",
     ]
   }
 
@@ -696,7 +696,7 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "amplify:ListDomainAssociations",
     ]
     resources = [
-      "arn:aws:amplify:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:apps/*",
+      "arn:aws:amplify:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:apps/*",
     ]
   }
 }

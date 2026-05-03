@@ -36,7 +36,7 @@ resource "aws_kms_key_policy" "logs" {
         Sid    = "CloudWatchLogs"
         Effect = "Allow"
         Principal = {
-          Service = "logs.${data.aws_region.current.id}.amazonaws.com"
+          Service = "logs.${data.aws_region.current.region}.amazonaws.com"
         }
         Action = [
           "kms:Encrypt",
@@ -48,7 +48,7 @@ resource "aws_kms_key_policy" "logs" {
         Resource = "*"
         Condition = {
           ArnLike = {
-            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*"
+            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/${local.naming_prefix}/*"
           }
         }
       },
@@ -344,7 +344,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "Lambda Invocations & Errors"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/Lambda", "Invocations", "FunctionName", aws_lambda_function.api.function_name, { stat = "Sum", label = "Invocations" }],
             ["AWS/Lambda", "Errors", "FunctionName", aws_lambda_function.api.function_name, { stat = "Sum", label = "Errors", color = "#d62728" }],
@@ -361,7 +361,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "Lambda Duration (ms)"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/Lambda", "Duration", "FunctionName", aws_lambda_function.api.function_name, { stat = "Average", label = "Avg Duration" }],
             ["AWS/Lambda", "Duration", "FunctionName", aws_lambda_function.api.function_name, { stat = "p99", label = "p99 Duration", color = "#ff7f0e" }],
@@ -378,7 +378,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "Lambda Throttles & Concurrent Executions"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/Lambda", "Throttles", "FunctionName", aws_lambda_function.api.function_name, { stat = "Sum", label = "Throttles" }],
             ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", aws_lambda_function.api.function_name, { stat = "Maximum", label = "Concurrent Executions" }],
@@ -395,7 +395,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "RDS CPU Utilization"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "CPU %" }],
           ]
@@ -414,7 +414,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "RDS Freeable Memory & Connections"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Freeable Memory (bytes)" }],
             ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Connections", yAxis = "right" }],
@@ -431,7 +431,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "RDS Read/Write IOPS"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Read IOPS" }],
             ["AWS/RDS", "WriteIOPS", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Write IOPS" }],
@@ -448,7 +448,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title  = "SES Sends, Bounces & Complaints"
-          region = data.aws_region.current.id
+          region = data.aws_region.current.region
           metrics = [
             ["AWS/SES", "Send", { stat = "Sum", label = "Sends" }],
             ["AWS/SES", "Bounce", { stat = "Sum", label = "Bounces", color = "#d62728" }],
