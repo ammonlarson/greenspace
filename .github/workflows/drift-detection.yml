@@ -112,3 +112,141 @@ jobs:
                 'Review the plan output and either apply the expected changes or investigate the drift.',
               ].join('\n'),
             });
+
+  validate-bootstrap-policy:
+    name: "Validate bootstrap policy (${{ matrix.environment }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - environment: staging
+            role_var: TF_ROLE_ARN_STAGING
+            role_name: greenspace-staging-2026-ci-terraform
+          - environment: prod
+            role_var: TF_ROLE_ARN_PROD
+            role_name: greenspace-prod-2026-ci-terraform
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars[matrix.role_var] }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Fetch live bootstrap policy
+        id: fetch
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws iam get-role-policy \
+            --role-name ${{ matrix.role_name }} \
+            --policy-name terraform-resources-bootstrap \
+            --output json > policy.json
+          jq '.PolicyDocument' policy.json > policy-document.json
+
+      - name: Validate bootstrap policy shape
+        id: validate
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          STATEMENT_COUNT=$(jq '.Statement | length' policy-document.json)
+          ACTION_COUNT=$(jq '[.Statement[].Action] | flatten | length' policy-document.json)
+
+          ALLOW_PATTERN=':(Describe|Get|List)'
+          ALLOW_WRITES='["ec2:AssociateAddress","ec2:DisassociateAddress","ec2:CreateTags","ec2:DeleteTags"]'
+
+          UNAUTHORIZED=$(jq -r --argjson allow "$ALLOW_WRITES" --arg pattern "$ALLOW_PATTERN" '
+            [.Statement[].Action]
+            | flatten
+            | map(select(test($pattern) | not))
+            | map(select(. as $a | $allow | index($a) | not))
+            | join(",")
+          ' policy-document.json)
+
+          {
+            echo "statement_count=$STATEMENT_COUNT"
+            echo "action_count=$ACTION_COUNT"
+            echo "unauthorized=$UNAUTHORIZED"
+          } >> "$GITHUB_OUTPUT"
+
+          FAILED=false
+          if [ "$STATEMENT_COUNT" -gt 4 ]; then
+            echo "::error::Bootstrap policy statement count $STATEMENT_COUNT exceeds cap of 4."
+            FAILED=true
+          fi
+          if [ "$ACTION_COUNT" -gt 80 ]; then
+            echo "::error::Bootstrap policy action count $ACTION_COUNT exceeds cap of 80."
+            FAILED=true
+          fi
+          if [ -n "$UNAUTHORIZED" ]; then
+            echo "::error::Bootstrap policy contains non-allowlisted actions: $UNAUTHORIZED"
+            FAILED=true
+          fi
+
+          if [ "$FAILED" = "true" ]; then
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          else
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create drift issue
+        if: always() && (steps.fetch.outcome == 'failure' || steps.validate.outputs.drift == 'true')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const fetchFailed = '${{ steps.fetch.outcome }}' === 'failure';
+            const statementCount = '${{ steps.validate.outputs.statement_count }}';
+            const actionCount = '${{ steps.validate.outputs.action_count }}';
+            const unauthorized = '${{ steps.validate.outputs.unauthorized }}';
+            const title = fetchFailed
+              ? `Bootstrap policy unreadable in ${{ matrix.environment }}`
+              : `Bootstrap policy drift detected in ${{ matrix.environment }}`;
+            const body = fetchFailed
+              ? [
+                  `## Bootstrap policy unreadable`,
+                  '',
+                  `**Environment:** ${{ matrix.environment }}`,
+                  `**Role:** ${{ matrix.role_name }}`,
+                  `**Inline policy:** terraform-resources-bootstrap`,
+                  `**Detected at:** ${new Date().toISOString()}`,
+                  `**Workflow run:** [View run](${runUrl})`,
+                  '',
+                  '`aws iam get-role-policy` failed for the bootstrap policy. Possible causes:',
+                  '',
+                  '- The policy was detached out-of-band (security incident).',
+                  '- The role was renamed without updating this workflow.',
+                  '- A transient AWS API error.',
+                  '',
+                  'Investigate the workflow logs and either restore the policy or update',
+                  'the workflow.',
+                ].join('\n')
+              : [
+                  `## Bootstrap policy drift detected`,
+                  '',
+                  `**Environment:** ${{ matrix.environment }}`,
+                  `**Role:** ${{ matrix.role_name }}`,
+                  `**Inline policy:** terraform-resources-bootstrap`,
+                  `**Detected at:** ${new Date().toISOString()}`,
+                  `**Workflow run:** [View run](${runUrl})`,
+                  '',
+                  '### Live policy stats',
+                  '',
+                  `- Statement count: \`${statementCount}\` (cap: 4)`,
+                  `- Action count: \`${actionCount}\` (cap: 80)`,
+                  `- Non-allowlisted actions: \`${unauthorized || '(none)'}\``,
+                  '',
+                  'The bootstrap policy is meant to stay small (broad reads + a curated ec2',
+                  'destroy-side write allowlist). Investigate whether this growth was',
+                  'intentional and either roll the live policy back or update the caps and',
+                  'allowlist deliberately in `iam.tf` and `iam_bootstrap.tftest.hcl`.',
+                ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              labels: ['ops', 'drift', 'security'],
+              body,
+            });

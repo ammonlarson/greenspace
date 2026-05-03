@@ -697,3 +697,96 @@ resource "aws_iam_role_policy" "ci_terraform_resources" {
   role   = aws_iam_role.ci_terraform.id
   policy = data.aws_iam_policy_document.ci_terraform_resources.json
 }
+
+# ---------- CI Terraform Bootstrap Policy ----------
+#
+# Permanent companion to `terraform-resources` whose sole purpose is to break
+# the chicken-and-egg problem when a new resource type is added to the stack
+# module: `terraform plan` refresh fails on the unauthorized read before any
+# apply can grant the missing perms.
+#
+# Contents are deliberately bounded:
+#   - Broad reads (Describe* / Get* / List*) for every AWS service the stack
+#     uses. Read on `*` covers refresh on any new resource type without code
+#     changes.
+#   - A small, curated set of destroy-side ec2 writes that have caused
+#     repeated cycles in past applies. EC2 does not support resource-level
+#     permissions for most of these, so wildcard resource is unavoidable.
+#
+# Drift guards:
+#   - `iam.tftest.hcl` asserts statement and action counts stay below caps
+#     and that every action matches an allowlisted prefix.
+#   - The daily `Drift Detection` workflow re-validates the live policy
+#     against the same shape, catching code-side bloat and AWS-side
+#     tampering alike.
+
+data "aws_iam_policy_document" "ci_terraform_bootstrap" {
+  statement {
+    sid    = "RefreshReads"
+    effect = "Allow"
+    actions = [
+      "amplify:Get*",
+      "amplify:List*",
+      "cloudwatch:Describe*",
+      "cloudwatch:Get*",
+      "cloudwatch:List*",
+      "dynamodb:Describe*",
+      "dynamodb:List*",
+      "ec2:Describe*",
+      "ec2:Get*",
+      "events:Describe*",
+      "events:List*",
+      "iam:Get*",
+      "iam:List*",
+      "kms:Describe*",
+      "kms:Get*",
+      "kms:List*",
+      "lambda:Get*",
+      "lambda:List*",
+      "logs:Describe*",
+      "logs:List*",
+      "rds:Describe*",
+      "rds:List*",
+      "route53:Get*",
+      "route53:List*",
+      "s3:GetBucket*",
+      "s3:GetAccelerateConfiguration",
+      "s3:GetEncryptionConfiguration",
+      "s3:GetLifecycleConfiguration",
+      "s3:GetReplicationConfiguration",
+      "s3:ListBucket*",
+      "s3:ListAllMyBuckets",
+      "secretsmanager:Describe*",
+      "secretsmanager:List*",
+      "secretsmanager:GetResourcePolicy",
+      "ses:Describe*",
+      "ses:Get*",
+      "ses:List*",
+      "sns:Get*",
+      "sns:List*",
+      "sts:GetCallerIdentity",
+    ]
+    resources = ["*"]
+  }
+
+  # EC2 destroy-side writes that have repeatedly broken applies when omitted
+  # from the main policy. Scoped to `*` because EC2 does not support
+  # resource-level permissions for these actions.
+  statement {
+    sid    = "Ec2DestroyHelpers"
+    effect = "Allow"
+    actions = [
+      "ec2:AssociateAddress",
+      "ec2:DisassociateAddress",
+      "ec2:CreateTags",
+      "ec2:DeleteTags",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ci_terraform_bootstrap" {
+  name   = "terraform-resources-bootstrap"
+  role   = aws_iam_role.ci_terraform.id
+  policy = data.aws_iam_policy_document.ci_terraform_bootstrap.json
+}

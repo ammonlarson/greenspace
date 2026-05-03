@@ -143,6 +143,42 @@ are stored in GitHub repository variables:
 | `TF_ROLE_ARN_STAGING` | OIDC role ARN for staging plan/apply |
 | `TF_ROLE_ARN_PROD`    | OIDC role ARN for prod plan/apply    |
 
+The `ci-terraform` role carries two managed inline policies:
+
+| Inline policy                    | Purpose                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| `terraform-resources`            | Least-privilege actions actually used to manage the stack's resources.  |
+| `terraform-resources-bootstrap`  | Permanent broad reads + a small curated ec2 destroy-write allowlist.    |
+
+The bootstrap policy exists to break the chicken-and-egg cycle that recurred
+each time a new resource type was added: `terraform plan` refresh fails on
+an unauthorized read before any apply can grant the missing permissions, so
+an operator had to attach a temporary inline policy by hand. With the
+permanent bootstrap in place, plan refresh keeps working when a new resource
+type is added; the next apply still updates `terraform-resources` to grant
+the least-privilege subset that resource type needs at runtime.
+
+The bootstrap policy is meant to stay small. Two guards enforce that:
+
+1. **`terraform test`** — `iam.tftest.hcl` asserts the policy stays under 4
+   statements / 80 actions and that every action is either a Describe/Get/List
+   prefix or in the curated ec2 destroy-write allowlist.
+2. **Daily drift check** — the `Validate bootstrap policy` job in
+   `.github/workflows/drift-detection.yml` re-runs the same checks against
+   the live policy fetched from AWS via `aws iam get-role-policy`. Catches
+   both code-side bloat that slipped past PR review and AWS-side tampering.
+
+When a guard fires, intentionally raise the cap (in both
+`iam_bootstrap.tftest.hcl` and the workflow) only after a brief review of
+whether the new action genuinely belongs in the bootstrap policy or in
+`terraform-resources`.
+
+The first apply that lands the bootstrap policy may overwrite a stale
+`terraform-resources-bootstrap` inline policy left over from a manual
+bootstrap dance (the name is intentionally reused). This is safe:
+`aws_iam_role_policy` upserts, so the live policy converges to the
+Terraform-managed contents.
+
 ## Amplify Hosting
 
 Each environment provisions an AWS Amplify app for the Next.js frontend
