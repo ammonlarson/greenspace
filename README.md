@@ -191,9 +191,11 @@ CloudWatch alarms cover the major failure modes:
 | SES bounces | Bounce > 5/hr | 1 period |
 | SES complaints | Complaint > 1/hr | 1 period |
 
-Alarm notifications are delivered via SNS email subscription (configured per environment via `alarm_email`).
+Alarm notifications are delivered via SNS email subscription (configured via `alarm_email`).
 
 A CloudWatch dashboard aggregates Lambda, RDS, and SES metrics.
+
+Alarms and the dashboard are provisioned only in production. Staging sets `enable_alarms = false` and `enable_dashboard = false` on the shared module, so it ships with log groups and VPC flow logs only.
 
 **Drift detection** runs daily via `.github/workflows/drift-detection.yml`. If Terraform detects infrastructure drift, a GitHub issue is created automatically.
 
