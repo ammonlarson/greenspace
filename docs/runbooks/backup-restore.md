@@ -10,7 +10,7 @@ This runbook covers RDS automated backup management and point-in-time restore pr
 |---------|---------|------------|
 | Backup retention | 7 days | 35 days |
 | Backup window | 03:00–04:00 UTC | 03:00–04:00 UTC |
-| Multi-AZ | No | Yes |
+| Multi-AZ | No | No |
 | Final snapshot on delete | No | Yes |
 | Encryption | KMS (data key) | KMS (data key) |
 
@@ -41,7 +41,7 @@ aws rds restore-db-instance-to-point-in-time \
   --source-db-instance-identifier greenspace-<environment>-2026-postgres \
   --target-db-instance-identifier greenspace-<environment>-2026-postgres-restored \
   --restore-time "2026-03-01T12:00:00Z" \
-  --db-instance-class db.t4g.small \
+  --db-instance-class db.t4g.micro \
   --db-subnet-group-name greenspace-<environment>-2026-db \
   --vpc-security-group-ids <db-security-group-id> \
   --no-multi-az \
@@ -50,7 +50,7 @@ aws rds restore-db-instance-to-point-in-time \
 
 **Important:** Always restore to a **new** instance. Never restore in-place on the production instance.
 
-**Note:** The example uses `--no-multi-az` for faster initial restore. For production promotion, add `--multi-az` to match the production configuration.
+**Note:** Both staging and prod run single-AZ on `db.t4g.micro`. Adjust `--db-instance-class` if the source environment has been resized.
 
 ### 3. Wait for the restored instance to become available
 
@@ -103,7 +103,7 @@ To restore from a specific snapshot instead of point-in-time:
 aws rds restore-db-instance-from-db-snapshot \
   --db-instance-identifier greenspace-<environment>-2026-postgres-restored \
   --db-snapshot-identifier <snapshot-identifier> \
-  --db-instance-class db.t4g.small \
+  --db-instance-class db.t4g.micro \
   --db-subnet-group-name greenspace-<environment>-2026-db \
   --vpc-security-group-ids <db-security-group-id> \
   --region eu-north-1
