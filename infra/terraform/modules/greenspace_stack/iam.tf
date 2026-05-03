@@ -710,7 +710,7 @@ resource "aws_iam_role_policy" "ci_terraform_resources" {
 #     uses. Read on `*` covers refresh on any new resource type without code
 #     changes.
 #   - A small, curated set of destroy-side ec2 writes that have caused
-#     repeated cycles (#326, #329). EC2 does not support resource-level
+#     repeated cycles in past applies. EC2 does not support resource-level
 #     permissions for most of these, so wildcard resource is unavoidable.
 #
 # Drift guards:
