@@ -166,7 +166,7 @@ resource "aws_vpc_security_group_ingress_rule" "vpc_endpoints_from_api" {
 
 resource "aws_vpc_endpoint" "ses" {
   vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.${data.aws_region.current.id}.email"
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.email"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
   security_group_ids  = [aws_security_group.vpc_endpoints.id]
@@ -179,7 +179,7 @@ resource "aws_vpc_endpoint" "ses" {
 
 resource "aws_vpc_endpoint" "secretsmanager" {
   vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.${data.aws_region.current.id}.secretsmanager"
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.secretsmanager"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private[*].id
   security_group_ids  = [aws_security_group.vpc_endpoints.id]
