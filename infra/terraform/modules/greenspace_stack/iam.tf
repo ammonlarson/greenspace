@@ -301,6 +301,8 @@ data "aws_iam_policy_document" "ci_terraform_resources" {
       "ec2:DescribePrefixLists",
       "ec2:AllocateAddress",
       "ec2:ReleaseAddress",
+      "ec2:AssociateAddress",
+      "ec2:DisassociateAddress",
       "ec2:DescribeAddresses",
       "ec2:DescribeAddressesAttribute",
       "ec2:CreateRouteTable",
