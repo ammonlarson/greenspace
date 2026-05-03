@@ -150,8 +150,8 @@ The `ci-terraform` role carries two managed inline policies:
 | `terraform-resources`            | Least-privilege actions actually used to manage the stack's resources.  |
 | `terraform-resources-bootstrap`  | Permanent broad reads + a small curated ec2 destroy-write allowlist.    |
 
-The bootstrap policy exists to break the chicken-and-egg cycle that hit when
-adding new resource types in #326 and #329: `terraform plan` refresh fails on
+The bootstrap policy exists to break the chicken-and-egg cycle that recurred
+each time a new resource type was added: `terraform plan` refresh fails on
 an unauthorized read before any apply can grant the missing permissions, so
 an operator had to attach a temporary inline policy by hand. With the
 permanent bootstrap in place, plan refresh keeps working when a new resource
@@ -175,8 +175,8 @@ whether the new action genuinely belongs in the bootstrap policy or in
 
 The first apply that lands the bootstrap policy may overwrite a stale
 `terraform-resources-bootstrap` inline policy left over from a manual
-bootstrap dance (the name is intentionally reused — see #326). This is
-safe: `aws_iam_role_policy` upserts, so the live policy converges to the
+bootstrap dance (the name is intentionally reused). This is safe:
+`aws_iam_role_policy` upserts, so the live policy converges to the
 Terraform-managed contents.
 
 ## Amplify Hosting
