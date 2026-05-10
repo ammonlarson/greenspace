@@ -22,6 +22,28 @@ Out of scope: tearing down the dedicated RDS instances (#337), wiring the
 runtime to the shared-db secret contract (#342), the cutover itself (#340),
 and connectivity (#338, already shipped — see ADR-0001).
 
+## Expected duration and on-call
+
+End-to-end runtime, from the first snapshot kicked off in Phase 1 to a
+green Phase 5 validation, is roughly:
+
+| Phase | Activity | Wall time |
+|-------|----------|-----------|
+| 1.1   | RDS manual snapshots (both envs) | 5–15 min (parallel) |
+| 1.2   | `pg_dump` of both sources via SSM | 1–2 min each |
+| 1.3   | Source row-count capture | < 1 min |
+| 2     | `db:setup` against both shared targets | 1–2 min each |
+| 3     | Truncate + `pg_restore` for prod | 1–2 min |
+| 4     | Staging admin rotation | < 1 min |
+| 5     | Validation queries + diff | 2–5 min |
+
+Total operator time: **~30 minutes of active work**. Schedule a 60-minute
+window to absorb retries.
+
+On-call: ammonl is the primary contact. The runbook is written so a single
+operator can execute it; pair only if that operator wants a second pair of
+eyes on Phase 5 diffs before signalling "good to cut over" to #340.
+
 ## Prerequisites
 
 - Operator workstation IP `/32` is currently in `allowed_ingress_cidrs` on
@@ -39,16 +61,66 @@ and connectivity (#338, already shipped — see ADR-0001).
   production this means running this immediately before #340 cutover, after
   registration is closed or while traffic is gated.
 
+## Source-DB access path
+
+The dedicated Greenspace RDS instances are **not** publicly accessible.
+Their Terraform module does not set `publicly_accessible`, so the AWS
+default (`false`) applies, and the DB security group only permits ingress
+from the Lambda security group. The operator laptop cannot dial them
+directly. To run `pg_dump` and `psql` from the laptop, open a port-forward
+through a temporary EC2 bastion in the Greenspace VPC using SSM Session
+Manager.
+
+Bastion bootstrap (do this once, in each environment that you're operating
+on, before Phase 1.2):
+
+```bash
+ENV=prod   # or staging
+NAMING_PREFIX=greenspace-${ENV}-2026
+
+# Pick a private subnet in the Greenspace VPC.
+PRIV_SUBNET=$(aws ec2 describe-subnets \
+  --filters "Name=tag:Name,Values=${NAMING_PREFIX}-private-*" \
+  --query 'Subnets[0].SubnetId' --output text --region eu-north-1)
+
+# Create a one-off SG that allows egress to the RDS SG on 5432.
+DB_SG=$(aws rds describe-db-instances \
+  --db-instance-identifier ${NAMING_PREFIX}-postgres \
+  --query 'DBInstances[0].VpcSecurityGroups[0].VpcSecurityGroupId' \
+  --output text --region eu-north-1)
+
+# Launch a t3.nano Amazon Linux 2023 instance with the SSM-managed IAM
+# instance profile (AmazonSSMManagedInstanceCore). It needs no public IP.
+# Add an ingress rule on $DB_SG allowing 5432 from the bastion's SG.
+
+# Then forward the RDS endpoint to localhost:
+aws ssm start-session \
+  --target <bastion-instance-id> \
+  --document-name AWS-StartPortForwardingSessionToRemoteHost \
+  --parameters "host=$SRC_PROD_HOST,portNumber=5432,localPortNumber=5432" \
+  --region eu-north-1
+```
+
+With the port-forward open, every command in Phases 1–3 that connects to
+the source RDS uses `--host=localhost` and the credentials from Secrets
+Manager. The bastion is destroyed when the migration window closes.
+
+If two source endpoints need to be reached concurrently (staging and prod
+in the same shell), forward them to different local ports (`5433` for the
+second one) and adjust the `--host` / `--port` flags accordingly.
+
 ## Variables used below
 
 ```bash
-# Source (dedicated)
+# Source (dedicated) — host is fetched for completeness; actual psql/pg_dump
+# connections go through the SSM port-forward at localhost.
 SRC_PROD_HOST=$(aws secretsmanager get-secret-value --secret-id greenspace-prod-2026-db-credentials --query SecretString --output text | jq -r .host)
 SRC_STG_HOST=$(aws secretsmanager get-secret-value --secret-id greenspace-staging-2026-db-credentials --query SecretString --output text | jq -r .host)
 SRC_PROD_PASS=$(aws secretsmanager get-secret-value --secret-id greenspace-prod-2026-db-credentials --query SecretString --output text | jq -r .password)
 SRC_STG_PASS=$(aws secretsmanager get-secret-value --secret-id greenspace-staging-2026-db-credentials --query SecretString --output text | jq -r .password)
 
-# Target (shared)
+# Target (shared) — the shared-db RDS is publicly accessible with the
+# operator /32 in `allowed_ingress_cidrs`, so connections go direct.
 SHARED_HOST=$(aws secretsmanager get-secret-value --secret-id rds/shared/greenspace_prod --query SecretString --output text | jq -r .host)
 TGT_PROD_USER=$(aws secretsmanager get-secret-value --secret-id rds/shared/greenspace_prod --query SecretString --output text | jq -r .username)
 TGT_PROD_PASS=$(aws secretsmanager get-secret-value --secret-id rds/shared/greenspace_prod --query SecretString --output text | jq -r .password)
@@ -102,12 +174,16 @@ least 30 days post-cutover.
 
 ### 1.2 `pg_dump` exports
 
+Run with the SSM port-forward from the **Source-DB access path** section
+already open. Each invocation connects to `localhost:<forwarded-port>`.
+
 ```bash
 mkdir -p ./greenspace-cutover-$TS
 cd ./greenspace-cutover-$TS
 
+# Port-forward 5432 → prod RDS first.
 PGPASSWORD="$SRC_PROD_PASS" pg_dump \
-  --host="$SRC_PROD_HOST" \
+  --host=localhost \
   --port=5432 \
   --username=greenspace \
   --dbname=greenspace \
@@ -117,8 +193,10 @@ PGPASSWORD="$SRC_PROD_PASS" pg_dump \
   --verbose \
   --file=greenspace_prod.dump
 
+# Tear down the prod port-forward, open one for staging on 5432 (or run
+# the second forward on 5433 and pass --port=5433 here).
 PGPASSWORD="$SRC_STG_PASS" pg_dump \
-  --host="$SRC_STG_HOST" \
+  --host=localhost \
   --port=5432 \
   --username=greenspace \
   --dbname=greenspace \
@@ -133,18 +211,18 @@ Both files contain schema **and** data. We will use the prod dump's data
 section in Phase 3. The staging dump is archived for reference only — see
 Phase 4 for why staging is rebuilt rather than restored.
 
-The dedicated RDS endpoints are publicly accessible (the dedicated stack
-provisions them with `publicly_accessible = true` in the default config) so
-this `pg_dump` runs from the operator laptop without needing to be inside
-the VPC.
+The Greenspace dataset is small (single-digit MB at the time of writing),
+so each dump completes in well under a minute. If the run takes longer
+than ~5 minutes, suspect the port-forward has stalled — restart the SSM
+session.
 
-### 1.3 Capture pre-migration counts (prod only)
+### 1.3 Capture pre-migration baselines (prod only)
 
-These row counts are used in Phase 5 validation. Run from the same operator
-shell:
+These values are diffed against the shared target in Phase 5. Run them
+with the SSM port-forward to prod still open.
 
 ```bash
-PGPASSWORD="$SRC_PROD_PASS" psql -h "$SRC_PROD_HOST" -U greenspace -d greenspace -c "
+PGPASSWORD="$SRC_PROD_PASS" psql -h localhost -p 5432 -U greenspace -d greenspace -c "
   SELECT 'greenhouses' AS t, count(*) FROM greenhouses
   UNION ALL SELECT 'planter_boxes', count(*) FROM planter_boxes
   UNION ALL SELECT 'admins', count(*) FROM admins
@@ -155,9 +233,22 @@ PGPASSWORD="$SRC_PROD_PASS" psql -h "$SRC_PROD_HOST" -U greenspace -d greenspace
   UNION ALL SELECT 'registrations', count(*) FROM registrations
   UNION ALL SELECT 'waitlist_entries', count(*) FROM waitlist_entries
   UNION ALL SELECT 'emails', count(*) FROM emails
-  UNION ALL SELECT 'audit_events', count(*) FROM audit_events;
+  UNION ALL SELECT 'audit_events', count(*) FROM audit_events
+  ORDER BY 1;
 " | tee prod-source-counts.txt
+
+PGPASSWORD="$SRC_PROD_PASS" psql -h localhost -p 5432 -U greenspace -d greenspace -c "
+  SELECT 'max_audit_ts' AS k, max(timestamp)::text  AS v FROM audit_events
+  UNION ALL SELECT 'max_reg_created', max(created_at)::text FROM registrations
+  UNION ALL SELECT 'max_wait_created', max(created_at)::text FROM waitlist_entries
+  UNION ALL SELECT 'max_email_created', max(created_at)::text FROM emails
+  UNION ALL SELECT 'system_settings_count', count(*)::text FROM system_settings;
+" | tee prod-source-baselines.txt
 ```
+
+`system_settings_count` should be exactly `1` — the table is a singleton
+holding the current `opening_datetime`. Anything else means the source is
+in an unexpected state; investigate before proceeding.
 
 ## Phase 2 — Bring the shared targets to current schema
 
@@ -219,8 +310,11 @@ aws lambda invoke \
   /tmp/migrate-staging.json
 ```
 
-Each response should contain
-`{"success":true,"executedMigrations":["001_initial_schema", ...]}`.
+Each response body (the `body` field of `LambdaResponse`) should be the
+JSON `{"task":"migrate","executedMigrations":["001_initial_schema", ...],"seeded":true}`
+with `statusCode` 200. On failure the body is
+`{"task":"migrate","error":"<message>"}` with `statusCode` 500. See the
+handler in `apps/api/src/index.ts`.
 
 ### 2.1 Verify schema landed on both targets
 
@@ -352,15 +446,30 @@ staging. That is **not** in scope for this ticket.
 
 ### 4.1 Rotate the seeded staging admin password
 
+The Phase 2 staging seed used whatever value you passed via
+`SEED_ADMIN_PASSWORD` (or the default `changeme123` if unset). Rotate it
+before staging gets any traffic post-cutover.
+
+Confirm the seed admin row landed:
+
 ```bash
 PGPASSWORD="$TGT_STG_PASS" psql -h "$SHARED_HOST" -U "$TGT_STG_USER" -d "$TGT_STG_DB" -c "
   SELECT a.email, ac.updated_at FROM admins a JOIN admin_credentials ac ON ac.admin_id = a.id;
 "
 ```
 
-Trigger an admin-initiated password reset via the normal admin flow once
-the cutover ships, or set a one-shot value via the seed env var
-`SEED_ADMIN_PASSWORD` and rotate immediately after.
+After #340 cuts staging over and the admin UI is reachable, log in with
+the seeded credentials and use the in-app **Account → Change password**
+flow. This exercises the same code path real admins use.
+
+Note that `seed.ts` is a no-op if an admin with the same email already
+exists (`apps/api/src/db/seed.ts:86-108`); it does **not** rotate the
+password for an existing admin. So a second `db:setup` run with a new
+`SEED_ADMIN_PASSWORD` will not change anything. If a console-based
+rotation is needed pre-cutover, write a small one-off script that calls
+the same `hashPassword` helper used by the seed
+(`apps/api/src/lib/password.ts`) and updates `admin_credentials` — never
+write a plaintext password directly via SQL.
 
 ## Phase 5 — Validation
 
@@ -390,7 +499,7 @@ diff prod-source-counts.txt prod-target-counts.txt
 
 Every row count must match. Any drift here blocks #340.
 
-### 5.2 Production invariant spot-checks
+### 5.2 Production invariant + baseline spot-checks
 
 ```bash
 PGPASSWORD="$TGT_PROD_PASS" psql -h "$SHARED_HOST" -U "$TGT_PROD_USER" -d "$TGT_PROD_DB" -c "
@@ -402,15 +511,29 @@ PGPASSWORD="$TGT_PROD_PASS" psql -h "$SHARED_HOST" -U "$TGT_PROD_USER" -d "$TGT_
   -- One active occupant per box
   SELECT box_id, count(*) FROM registrations
   WHERE status = 'active' GROUP BY 1 HAVING count(*) > 1;
-  -- Latest audit event matches source
-  SELECT max(timestamp) FROM audit_events;
-  -- Latest registration matches source
-  SELECT max(created_at) FROM registrations;
+  -- system_settings is a singleton
+  SELECT count(*) FROM system_settings;
 "
+
+# Diff the latest-timestamp baselines against the source capture from 1.3.
+PGPASSWORD="$TGT_PROD_PASS" psql -h "$SHARED_HOST" -U "$TGT_PROD_USER" -d "$TGT_PROD_DB" -c "
+  SELECT 'max_audit_ts' AS k, max(timestamp)::text  AS v FROM audit_events
+  UNION ALL SELECT 'max_reg_created', max(created_at)::text FROM registrations
+  UNION ALL SELECT 'max_wait_created', max(created_at)::text FROM waitlist_entries
+  UNION ALL SELECT 'max_email_created', max(created_at)::text FROM emails
+  UNION ALL SELECT 'system_settings_count', count(*)::text FROM system_settings;
+" | tee prod-target-baselines.txt
+
+diff prod-source-baselines.txt prod-target-baselines.txt
 ```
 
-The two duplicate-detection queries must return zero rows. Compare the
-`max()` values to the same queries run against the dedicated source.
+Required outcomes:
+
+- The two duplicate-detection queries return zero rows.
+- `system_settings` row count is `1`.
+- The `diff` between source and target baselines is empty.
+
+Any unmet check blocks #340 — investigate before proceeding.
 
 ### 5.3 Staging baseline check
 
@@ -461,12 +584,20 @@ Rollback scenarios:
 
 `migrateToLatest` runs each migration in its own transaction. A failure
 leaves the target in a known intermediate state and `kysely_migration` only
-records successful migrations.
+records successful migrations. There is no operator-friendly CLI for
+`migrateDown` today; the function exists in `apps/api/src/db/migrate.ts`
+but isn't wired to a script.
 
-There is no operator-friendly CLI for `migrateDown` today; the function
-exists in `apps/api/src/db/migrate.ts` but isn't wired to a script. The
-fastest recovery is to drop everything in the shared target's project
-schema and re-run Phase 2:
+Preferred recovery: ask the shared-db operator to drop and recreate the
+project database via `infra-shared-db` (taint + apply on the target
+project module). Roles, secrets, and ownership stay intact, the database
+comes back empty, and Phase 2 re-runs cleanly. This is the path of least
+surprise because it doesn't depend on what privilege the project app role
+holds inside its own database.
+
+Fallback (if shared-db's operator is unavailable in the cutover window):
+drop and recreate the `public` schema from inside the project DB and
+re-run Phase 2.
 
 ```bash
 PGPASSWORD="$TGT_PROD_PASS" psql -h "$SHARED_HOST" -U "$TGT_PROD_USER" -d "$TGT_PROD_DB" <<'SQL'
@@ -476,13 +607,8 @@ GRANT ALL ON SCHEMA public TO current_user;
 SQL
 ```
 
-Then re-run Phase 2.
-
-If the shared-db role lacks privilege to recreate `public` (depending on
-how `infra-shared-db` provisions ownership), fall back to asking the
-shared-db operator to drop and recreate the project database via
-`infra-shared-db` (taint + apply on the target project module). The
-shared-db roles, secrets, and ownership stay intact.
+If the role lacks privilege to recreate `public`, escalate to the
+shared-db operator and fall back to the preferred path above.
 
 ### 6.2 Data restore on `greenspace_prod` fails partway through Phase 3
 
