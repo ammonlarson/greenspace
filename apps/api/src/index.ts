@@ -173,18 +173,27 @@ export async function resolveDbConfig(): Promise<{
     const secret = await loadSharedDbSecret(secretId);
     if (!secret.host || !secret.dbname || !secret.username || !secret.password) {
       throw new Error(
-        `Shared-db secret '${secretId}' is missing required fields (host, port, dbname, username, password)`,
+        `Shared-db secret '${secretId}' is missing required fields (host, dbname, username, password)`,
+      );
+    }
+    const port = Number(secret.port ?? 5432);
+    if (!Number.isFinite(port)) {
+      throw new Error(
+        `Shared-db secret '${secretId}' has non-numeric port: ${String(secret.port)}`,
       );
     }
     return {
       host: secret.host,
-      port: Number(secret.port ?? 5432),
+      port,
       database: secret.dbname,
       user: secret.username,
       password: secret.password,
       ssl,
     };
   }
+  // Local-dev fallback. The defaults match the docker-compose Postgres in
+  // CLAUDE.md; deployed environments always set DB_SECRET_ID and never reach
+  // this branch.
   return {
     host: process.env["DB_HOST"] ?? "localhost",
     port: Number(process.env["DB_PORT"] ?? "5432"),

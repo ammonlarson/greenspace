@@ -90,6 +90,9 @@ describe("resolveDbConfig", () => {
     const config = await resolveDbConfig();
 
     expect(secretsManagerSendMock).toHaveBeenCalledOnce();
+    expect(secretsManagerSendMock).toHaveBeenCalledWith({
+      SecretId: "rds/shared/greenspace_staging",
+    });
     expect(config).toEqual({
       host: "shared-db.example.com",
       port: 5432,
@@ -100,6 +103,25 @@ describe("resolveDbConfig", () => {
     });
   });
 
+  it("coerces a string port from the secret payload", async () => {
+    secretsManagerSendMock.mockResolvedValueOnce({
+      SecretString: JSON.stringify({
+        host: "shared-db.example.com",
+        port: "5432",
+        dbname: "greenspace_staging",
+        username: "greenspace_staging_app",
+        password: "secret-password",
+      }),
+    });
+    process.env["DB_SECRET_ID"] = "rds/shared/greenspace_staging";
+    delete process.env["DB_SSL"];
+
+    const config = await resolveDbConfig();
+
+    expect(config.port).toBe(5432);
+    expect(config.ssl).toBe(false);
+  });
+
   it("throws when the shared-db secret is missing required fields", async () => {
     secretsManagerSendMock.mockResolvedValueOnce({
       SecretString: JSON.stringify({ host: "shared-db.example.com" }),
@@ -107,6 +129,21 @@ describe("resolveDbConfig", () => {
     process.env["DB_SECRET_ID"] = "rds/shared/greenspace_staging";
 
     await expect(resolveDbConfig()).rejects.toThrow(/missing required fields/);
+  });
+
+  it("throws when the shared-db secret has a non-numeric port", async () => {
+    secretsManagerSendMock.mockResolvedValueOnce({
+      SecretString: JSON.stringify({
+        host: "shared-db.example.com",
+        port: "abc",
+        dbname: "greenspace_staging",
+        username: "greenspace_staging_app",
+        password: "secret-password",
+      }),
+    });
+    process.env["DB_SECRET_ID"] = "rds/shared/greenspace_staging";
+
+    await expect(resolveDbConfig()).rejects.toThrow(/non-numeric port/);
   });
 
   it("falls back to individual env vars when DB_SECRET_ID is not set", async () => {
