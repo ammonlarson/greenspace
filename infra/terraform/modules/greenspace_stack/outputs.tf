@@ -26,7 +26,7 @@ output "db_security_group_id" {
 }
 
 output "vpc_cidr" {
-  description = "CIDR block of the VPC. The shared-db side consumes this when adding the accepter-side route and RDS SG ingress for the peering connection."
+  description = "CIDR block of the VPC. The shared-db side consumes this when adding the accepter-side route and RDS SG ingress for the peering connection. Account ID and region are not exposed; the shared-db side derives them from its own provider under the same-account assumption."
   value       = aws_vpc.main.cidr_block
 }
 

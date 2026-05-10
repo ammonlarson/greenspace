@@ -12,10 +12,10 @@
 # RDS SG ingress documented in `docs/adr/0001-shared-rds-connectivity.md`.
 #
 # `auto_accept = true` works because both VPCs live in the same AWS account
-# and region (validated by the same-account assumption baked into the
-# CI Terraform IAM scoping). The accepter-side route, RDS SG ingress, and
-# `accepter.allow_remote_vpc_dns_resolution` are owned by the shared-db
-# repo so each side manages its own VPC's resources.
+# and region (per the same-account assumption documented in the ADR; the
+# CI Terraform IAM scoping does not enforce it). The accepter-side route,
+# RDS SG ingress, and `accepter.allow_remote_vpc_dns_resolution` are owned
+# by the shared-db repo so each side manages its own VPC's resources.
 
 resource "aws_vpc_peering_connection" "shared_db" {
   count = var.shared_db_vpc_id == null ? 0 : 1
