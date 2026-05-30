@@ -52,28 +52,6 @@ output "ci_terraform_role_arn" {
   value       = aws_iam_role.ci_terraform.arn
 }
 
-# ---------- Database ----------
-
-output "db_endpoint" {
-  description = "RDS instance endpoint address."
-  value       = aws_db_instance.main.address
-}
-
-output "db_port" {
-  description = "RDS instance port."
-  value       = aws_db_instance.main.port
-}
-
-output "db_secret_arn" {
-  description = "ARN of the Secrets Manager secret containing DB credentials."
-  value       = aws_secretsmanager_secret.db_credentials.arn
-}
-
-output "app_secret_arn" {
-  description = "ARN of the Secrets Manager secret for application secrets."
-  value       = aws_secretsmanager_secret.app.arn
-}
-
 # ---------- SES ----------
 
 output "ses_domain_identity_arn" {

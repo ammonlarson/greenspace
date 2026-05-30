@@ -47,12 +47,6 @@ module "greenspace_stack" {
   private_subnet_cidrs = ["10.1.10.0/24", "10.1.11.0/24"]
   log_retention_days   = 90
 
-  db_instance_class        = "db.t4g.micro"
-  db_allocated_storage     = 20
-  db_max_allocated_storage = 100
-  db_backup_retention_days = 35
-  db_multi_az              = false
-
   lambda_reserved_concurrency = -1
 
   ses_sender_domain  = "un17hub.com"
@@ -119,18 +113,6 @@ output "ci_deploy_role_arn" {
 
 output "ci_terraform_role_arn" {
   value = module.greenspace_stack.ci_terraform_role_arn
-}
-
-output "db_endpoint" {
-  value = module.greenspace_stack.db_endpoint
-}
-
-output "db_secret_arn" {
-  value = module.greenspace_stack.db_secret_arn
-}
-
-output "app_secret_arn" {
-  value = module.greenspace_stack.app_secret_arn
 }
 
 output "api_function_name" {

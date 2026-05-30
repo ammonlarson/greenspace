@@ -10,9 +10,6 @@ This runbook covers initial triage steps when a CloudWatch alarm fires or an ope
 |-------|--------|-----------|--------------|
 | `*-lambda-errors` | Lambda Errors | >0 for 2×5 min | Application bug, dependency failure |
 | `*-lambda-throttles` | Lambda Throttles | >0 | Concurrency limit reached |
-| `*-rds-cpu` | RDS CPUUtilization | >80% for 3×5 min | Slow queries, missing indexes, traffic spike |
-| `*-rds-freeable-memory` | RDS FreeableMemory | <128 MB | Instance under-provisioned, connection leak |
-| `*-rds-connections` | RDS DatabaseConnections | >80 | Connection pool exhaustion, Lambda scaling |
 | `*-ses-bounces` | SES Bounce | >5/hr | Invalid recipient addresses |
 | `*-ses-complaints` | SES Complaint | >1/hr | Spam reports, consent issue |
 
@@ -59,13 +56,24 @@ This runbook covers initial triage steps when a CloudWatch alarm fires or an ope
 3. If `lambda_reserved_concurrency` is set to `-1` (unrestricted), throttles indicate an **account-level** concurrent execution limit has been reached, not a function-level issue. Check the AWS Lambda service quota.
 4. If traffic is legitimate, increase `lambda_reserved_concurrency` via Terraform or request an account-level limit increase.
 
-### 5. Investigate RDS issues
+### 5. Investigate database (shared RDS) issues
 
-1. Open RDS Performance Insights in the AWS Console.
-2. Check for long-running or blocked queries.
-3. Review connection count trends on the dashboard.
-4. For CPU spikes, identify top SQL statements in Performance Insights.
-5. For connection exhaustion, check if Lambda is scaling faster than the connection pool can handle.
+Greenspace runs on the **shared RDS instance owned by
+`ammonlarson/infra-shared-db`**; the dedicated per-environment RDS instances
+and their CloudWatch alarms/dashboard widgets were removed in #347. Database
+metrics, alarms, and Performance Insights for the shared instance live in that
+repo's monitoring, so coordinate with the shared-db owner for instance-level
+investigation.
+
+From the Greenspace side:
+
+1. Check the API Lambda logs (`/<naming-prefix>/api`) for database connection
+   errors or timeouts — these surface as elevated `*-lambda-errors`.
+2. For suspected long-running or blocked queries, escalate to the shared-db
+   owner to inspect Performance Insights and top SQL statements on the shared
+   instance.
+3. For connection exhaustion, check if Lambda is scaling faster than the shared
+   instance's connection pool can handle, and review `lambda_reserved_concurrency`.
 
 ### 6. Investigate SES issues
 

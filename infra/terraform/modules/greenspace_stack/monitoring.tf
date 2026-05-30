@@ -206,83 +206,6 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
   }
 }
 
-# ---------- CloudWatch Alarms: RDS ----------
-
-resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
-  count               = var.enable_alarms ? 1 : 0
-  alarm_name          = "${local.naming_prefix}-rds-cpu"
-  alarm_description   = "RDS CPU utilization above 80%"
-  namespace           = "AWS/RDS"
-  metric_name         = "CPUUtilization"
-  statistic           = "Average"
-  period              = 300
-  evaluation_periods  = 3
-  threshold           = 80
-  comparison_operator = "GreaterThanThreshold"
-  treat_missing_data  = "missing"
-
-  dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.identifier
-  }
-
-  alarm_actions = [aws_sns_topic.alarms[0].arn]
-  ok_actions    = [aws_sns_topic.alarms[0].arn]
-
-  tags = {
-    Name = "${local.naming_prefix}-rds-cpu"
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "rds_freeable_memory" {
-  count               = var.enable_alarms ? 1 : 0
-  alarm_name          = "${local.naming_prefix}-rds-freeable-memory"
-  alarm_description   = "RDS freeable memory below 128 MB"
-  namespace           = "AWS/RDS"
-  metric_name         = "FreeableMemory"
-  statistic           = "Average"
-  period              = 300
-  evaluation_periods  = 2
-  threshold           = 134217728
-  comparison_operator = "LessThanThreshold"
-  treat_missing_data  = "missing"
-
-  dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.identifier
-  }
-
-  alarm_actions = [aws_sns_topic.alarms[0].arn]
-  ok_actions    = [aws_sns_topic.alarms[0].arn]
-
-  tags = {
-    Name = "${local.naming_prefix}-rds-freeable-memory"
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "rds_connections" {
-  count               = var.enable_alarms ? 1 : 0
-  alarm_name          = "${local.naming_prefix}-rds-connections"
-  alarm_description   = "RDS database connections above threshold"
-  namespace           = "AWS/RDS"
-  metric_name         = "DatabaseConnections"
-  statistic           = "Average"
-  period              = 300
-  evaluation_periods  = 2
-  threshold           = var.alarm_rds_connections_threshold
-  comparison_operator = "GreaterThanThreshold"
-  treat_missing_data  = "notBreaching"
-
-  dimensions = {
-    DBInstanceIdentifier = aws_db_instance.main.identifier
-  }
-
-  alarm_actions = [aws_sns_topic.alarms[0].arn]
-  ok_actions    = [aws_sns_topic.alarms[0].arn]
-
-  tags = {
-    Name = "${local.naming_prefix}-rds-connections"
-  }
-}
-
 # ---------- CloudWatch Alarms: SES ----------
 
 resource "aws_cloudwatch_metric_alarm" "ses_bounces" {
@@ -400,59 +323,6 @@ resource "aws_cloudwatch_dashboard" "main" {
         type   = "metric"
         x      = 0
         y      = 7
-        width  = 8
-        height = 6
-        properties = {
-          title  = "RDS CPU Utilization"
-          region = data.aws_region.current.region
-          metrics = [
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "CPU %" }],
-          ]
-          period = 300
-          view   = "timeSeries"
-          yAxis = {
-            left = { min = 0, max = 100 }
-          }
-        }
-      },
-      {
-        type   = "metric"
-        x      = 8
-        y      = 7
-        width  = 8
-        height = 6
-        properties = {
-          title  = "RDS Freeable Memory & Connections"
-          region = data.aws_region.current.region
-          metrics = [
-            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Freeable Memory (bytes)" }],
-            ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Connections", yAxis = "right" }],
-          ]
-          period = 300
-          view   = "timeSeries"
-        }
-      },
-      {
-        type   = "metric"
-        x      = 16
-        y      = 7
-        width  = 8
-        height = 6
-        properties = {
-          title  = "RDS Read/Write IOPS"
-          region = data.aws_region.current.region
-          metrics = [
-            ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Read IOPS" }],
-            ["AWS/RDS", "WriteIOPS", "DBInstanceIdentifier", aws_db_instance.main.identifier, { stat = "Average", label = "Write IOPS" }],
-          ]
-          period = 300
-          view   = "timeSeries"
-        }
-      },
-      {
-        type   = "metric"
-        x      = 0
-        y      = 13
         width  = 12
         height = 6
         properties = {
@@ -493,21 +363,6 @@ moved {
 moved {
   from = aws_cloudwatch_metric_alarm.lambda_throttles
   to   = aws_cloudwatch_metric_alarm.lambda_throttles[0]
-}
-
-moved {
-  from = aws_cloudwatch_metric_alarm.rds_cpu
-  to   = aws_cloudwatch_metric_alarm.rds_cpu[0]
-}
-
-moved {
-  from = aws_cloudwatch_metric_alarm.rds_freeable_memory
-  to   = aws_cloudwatch_metric_alarm.rds_freeable_memory[0]
-}
-
-moved {
-  from = aws_cloudwatch_metric_alarm.rds_connections
-  to   = aws_cloudwatch_metric_alarm.rds_connections[0]
 }
 
 moved {

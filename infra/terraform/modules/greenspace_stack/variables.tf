@@ -199,55 +199,6 @@ variable "lambda_reserved_concurrency" {
   }
 }
 
-# ---------- Database ----------
-
-variable "db_instance_class" {
-  description = "RDS instance class."
-  type        = string
-  default     = "db.t4g.micro"
-}
-
-variable "db_allocated_storage" {
-  description = "Initial allocated storage in GB."
-  type        = number
-  default     = 20
-}
-
-variable "db_max_allocated_storage" {
-  description = "Maximum storage autoscaling limit in GB."
-  type        = number
-  default     = 50
-}
-
-variable "db_backup_retention_days" {
-  description = "Number of days to retain automated backups."
-  type        = number
-  default     = 7
-
-  validation {
-    condition     = var.db_backup_retention_days >= 1 && var.db_backup_retention_days <= 35
-    error_message = "db_backup_retention_days must be between 1 and 35."
-  }
-}
-
-variable "db_multi_az" {
-  description = "Enable Multi-AZ deployment for RDS."
-  type        = bool
-  default     = false
-}
-
-variable "db_name" {
-  description = "Name of the default database to create."
-  type        = string
-  default     = "greenspace"
-}
-
-variable "db_master_username" {
-  description = "Master username for the RDS instance."
-  type        = string
-  default     = "greenspace"
-}
-
 # ---------- Monitoring ----------
 
 variable "log_retention_days" {
@@ -265,12 +216,6 @@ variable "alarm_email" {
   description = "Email address for CloudWatch alarm notifications. Set to null to skip subscription. Ignored when var.enable_alarms is false."
   type        = string
   default     = null
-}
-
-variable "alarm_rds_connections_threshold" {
-  description = "Threshold for the RDS database connections alarm. Adjust per instance class (e.g. ~85 for db.t4g.micro, ~170 for db.t4g.small)."
-  type        = number
-  default     = 80
 }
 
 variable "enable_alarms" {
