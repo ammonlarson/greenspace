@@ -10,7 +10,6 @@ the staging and production environment stacks.
 | `networking.tf`  | VPC, public/private subnets, internet gateway, VPC endpoints |
 | `peering.tf`     | Optional VPC peering to the shared-RDS VPC (gated)         |
 | `iam.tf`         | API runtime role, CI deploy role, CI Terraform role        |
-| `database.tf`    | RDS PostgreSQL instance, subnet group, Secrets Manager     |
 | `ses.tf`         | SES domain identity, DKIM, configuration set               |
 | `dns.tf`         | Route 53 hosted zone, SES verification/DKIM DNS records    |
 | `monitoring.tf`  | CloudWatch log groups, KMS encryption key, SNS alarm topic, metric alarms, dashboard (alarms/dashboard gated) |
@@ -93,7 +92,6 @@ are managed by Terraform. After the first `terraform apply`:
 | `vpc_cidr`                    | CIDR block for the VPC                               |
 | `ses_sender_domain`           | Domain for SES identity and Route 53 zone            |
 | `ses_reply_to_email`          | Default Reply-To (defaults to `elise7284@gmail.com`) |
-| `db_instance_class`           | RDS instance class                                   |
 | `shared_db_vpc_id`            | Shared-RDS VPC ID; null disables peering             |
 | `shared_db_vpc_cidr`          | Shared-RDS VPC CIDR (required when peering enabled)  |
 | `enable_alarms`               | Seasonal toggle for SNS topic + all CloudWatch alarms |

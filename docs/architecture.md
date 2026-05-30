@@ -21,7 +21,7 @@ graph TB
 
     subgraph AWS
         SES[SES<br/>Email Delivery]
-        RDS[(RDS PostgreSQL 16)]
+        RDS[(Shared RDS PostgreSQL 16<br/>infra-shared-db)]
         SM[Secrets Manager]
     end
 
@@ -277,7 +277,10 @@ graph TB
             LAMBDA[Lambda<br/>API Function]
             LAMBDA_URL[Function URL]
             EB[EventBridge<br/>Session Cleanup]
-            RDS[(RDS PostgreSQL)]
+        end
+
+        subgraph "Shared Data (infra-shared-db)"
+            RDS[(Shared RDS PostgreSQL)]
         end
 
         subgraph "Frontend Hosting"
@@ -320,7 +323,6 @@ graph TB
     TF_WF -->|OIDC| IAM_TF
     IAM_TF --> VPC
     IAM_TF --> LAMBDA
-    IAM_TF --> RDS
     IAM_TF --> SES_ID
     IAM_TF --> R53
     IAM_TF --> AMPLIFY
@@ -339,8 +341,9 @@ graph TB
 
 ### Shared-RDS connectivity
 
-Greenspace is migrating off its dedicated per-environment RDS onto the
-shared instance owned by `ammonlarson/infra-shared-db`. Because the
+Greenspace runs on the shared RDS instance owned by
+`ammonlarson/infra-shared-db`; the dedicated per-environment RDS stack was
+decommissioned in #347 after the runtime cutover (#342 / #346). Because the
 Greenspace VPCs run without NAT (only VPC interface endpoints for SES and
 Secrets Manager), Lambda has no internet egress and therefore no public
 path to the shared RDS endpoint. The connectivity model is **VPC peering**
@@ -353,10 +356,10 @@ during cutover.
 
 ### Environments
 
-| Environment | Domain                | VPC CIDR       | RDS Instance    |
-|-------------|----------------------|----------------|-----------------|
-| staging     | `staging.un17hub.com`| `10.0.0.0/16`  | `db.t4g.micro`  |
-| prod        | `un17hub.com`        | `10.1.0.0/16`  | `db.t4g.micro`  |
+| Environment | Domain                | VPC CIDR       | Database                          |
+|-------------|----------------------|----------------|-----------------------------------|
+| staging     | `staging.un17hub.com`| `10.0.0.0/16`  | Shared RDS (`greenspace_staging`) |
+| prod        | `un17hub.com`        | `10.1.0.0/16`  | Shared RDS (`greenspace_prod`)    |
 
 ### Terraform Module Structure
 
@@ -373,7 +376,6 @@ infra/terraform/
         ├── main.tf            Naming prefix, provider config
         ├── amplify.tf         Amplify app, branch, and domain association
         ├── api_runtime.tf     Lambda function, Function URL, EventBridge schedule
-        ├── database.tf        RDS, Secrets Manager
         ├── dns.tf             Route 53 zone and records
         ├── iam.tf             IAM roles and policies
         ├── monitoring.tf      CloudWatch, KMS, Alarms, Dashboard, SNS

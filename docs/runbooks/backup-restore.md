@@ -2,125 +2,64 @@
 
 ## Overview
 
-This runbook covers RDS automated backup management and point-in-time restore procedures for the UN17 Village Rooftop Gardens PostgreSQL database.
+Greenspace's transactional data lives on the **shared RDS instance owned by
+`ammonlarson/infra-shared-db`** (databases `greenspace_staging` and
+`greenspace_prod`). The dedicated per-environment RDS instances were
+decommissioned in #347 after the shared-db cutover (#342 / #346).
 
-## Backup Configuration
+As a result, RDS automated backups, snapshots, and point-in-time restore for
+the live database are **managed by the `ammonlarson/infra-shared-db` repo**, not
+by this stack. Backup retention, the backup window, and encryption settings for
+the shared instance are configured there. Refer to that repo's runbook for the
+authoritative restore procedure.
 
-| Setting | Staging | Production |
-|---------|---------|------------|
-| Backup retention | 7 days | 35 days |
-| Backup window | 03:00–04:00 UTC | 03:00–04:00 UTC |
-| Multi-AZ | No | No |
-| Final snapshot on delete | No | Yes |
-| Encryption | KMS (data key) | KMS (data key) |
+For the data-migration context (how the Greenspace schema and data were moved
+onto the shared instance), see `docs/runbooks/shared-rds-migration.md`.
 
-Backups are configured via Terraform in `infra/terraform/modules/greenspace_stack/database.tf`.
+## Restoring Greenspace data on the shared RDS
 
-## Listing Available Backups
+The shared RDS hosts one database per Greenspace environment. Restore work is
+performed by the shared-db owner, but the Greenspace-specific steps are:
 
-```bash
-aws rds describe-db-snapshots \
-  --db-instance-identifier greenspace-<environment>-2026-postgres \
-  --query "DBSnapshots[*].{ID:DBSnapshotIdentifier,Created:SnapshotCreateTime,Status:Status}" \
-  --output table \
-  --region eu-north-1
-```
+1. **Identify the target restore point** — the UTC timestamp just before the
+   data-loss or corruption event.
+2. **Coordinate with the shared-db owner** to restore the shared instance (or a
+   clone of it) to that point in time. Never restore in place on the live shared
+   instance; restore to a new instance and validate first.
+3. **Verify restored Greenspace data** against the restored instance:
 
-## Point-in-Time Restore
+   ```bash
+   psql -h <restored-endpoint> -U greenspace_<env> -d greenspace_<env> -c "
+     SELECT COUNT(*) FROM registrations;
+     SELECT COUNT(*) FROM emails;
+     SELECT MAX(created_at) FROM audit_events;
+   "
+   ```
 
-RDS supports restoring to any point within the backup retention window.
+   Compare row counts and latest timestamps against expected values.
+4. **Cut back over** by repointing the relevant `rds/shared/greenspace_<env>`
+   Secrets Manager secret (consumed by the API Lambda via `DB_SECRET_ID`) at the
+   validated host, or by promoting the restored instance. For production, always
+   get explicit approval before proceeding.
 
-### 1. Identify the target restore time
+## Decommission retention (one-time, completed in #347)
 
-Determine the exact UTC timestamp to restore to. This is typically just before the data loss or corruption event.
+When the dedicated RDS instances were torn down, the following retention steps
+applied:
 
-### 2. Restore to a new instance
+- **Staging:** no final snapshot retained — the dedicated staging DB was QA
+  scratch space and its data was already migrated.
+- **Production:** before destroy, disable `deletion_protection` and take a
+  **manual final snapshot** of `greenspace-prod-2026-postgres` so the
+  pre-cutover prod data remains recoverable independently of the shared
+  instance. The data itself was already migrated to and validated on the shared
+  RDS (#340).
 
-```bash
-aws rds restore-db-instance-to-point-in-time \
-  --source-db-instance-identifier greenspace-<environment>-2026-postgres \
-  --target-db-instance-identifier greenspace-<environment>-2026-postgres-restored \
-  --restore-time "2026-03-01T12:00:00Z" \
-  --db-instance-class db.t4g.micro \
-  --db-subnet-group-name greenspace-<environment>-2026-db \
-  --vpc-security-group-ids <db-security-group-id> \
-  --no-multi-az \
-  --region eu-north-1
-```
-
-**Important:** Always restore to a **new** instance. Never restore in-place on the production instance.
-
-**Note:** Both staging and prod run single-AZ on `db.t4g.micro`. Adjust `--db-instance-class` if the source environment has been resized.
-
-### 3. Wait for the restored instance to become available
-
-```bash
-aws rds wait db-instance-available \
-  --db-instance-identifier greenspace-<environment>-2026-postgres-restored \
-  --region eu-north-1
-```
-
-### 4. Verify restored data
-
-Connect to the restored instance and verify:
-
-```bash
-psql -h <restored-endpoint> -U greenspace -d greenspace -c "
-  SELECT COUNT(*) FROM registrations;
-  SELECT COUNT(*) FROM emails;
-  SELECT MAX(created_at) FROM audit_events;
-"
-```
-
-Compare row counts and latest timestamps against expected values.
-
-### 5. Promote restored instance (if applicable)
-
-If the restored data is correct and you need to replace the primary:
-
-1. Update the application to point to the restored instance endpoint.
-2. Update Terraform state to adopt the restored instance (or rename it).
-3. Delete the original (corrupted) instance once the restored one is confirmed working.
-
-**For production restores, always get explicit approval before proceeding.**
-
-### 6. Clean up
-
-If the restore was a drill or the restored instance is no longer needed:
-
-```bash
-aws rds delete-db-instance \
-  --db-instance-identifier greenspace-<environment>-2026-postgres-restored \
-  --skip-final-snapshot \
-  --region eu-north-1
-```
-
-## Snapshot Restore
-
-To restore from a specific snapshot instead of point-in-time:
-
-```bash
-aws rds restore-db-instance-from-db-snapshot \
-  --db-instance-identifier greenspace-<environment>-2026-postgres-restored \
-  --db-snapshot-identifier <snapshot-identifier> \
-  --db-instance-class db.t4g.micro \
-  --db-subnet-group-name greenspace-<environment>-2026-db \
-  --vpc-security-group-ids <db-security-group-id> \
-  --region eu-north-1
-```
-
-## Restore Drill Schedule
-
-Run a restore drill quarterly to verify backup integrity:
-
-1. Restore to a new instance (staging environment).
-2. Verify data integrity (row counts, recent records).
-3. Document results in a GitHub issue.
-4. Delete the test instance.
+These steps are historical; the dedicated instances no longer exist.
 
 ## References
 
 - [RDS Point-in-Time Recovery](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.html)
-- Database Terraform config: `infra/terraform/modules/greenspace_stack/database.tf`
-- Incident triage: `docs/runbooks/incident-triage.md`
+- Shared-RDS connectivity ADR: `docs/adr/0001-shared-rds-connectivity.md`
 - Shared-RDS migration runbook: `docs/runbooks/shared-rds-migration.md`
+- Incident triage: `docs/runbooks/incident-triage.md`
