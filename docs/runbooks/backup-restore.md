@@ -61,12 +61,12 @@ teardown applies (destroys) carry two operational caveats:
   `aws rds modify-db-instance --no-deletion-protection`) **before** approving
   the prod apply, or the destroy aborts.
 
-The CI Terraform role keeps its `rds:Delete*` / `rds:CreateDBSnapshot` /
+The CI Terraform role kept its `rds:Delete*` / `rds:CreateDBSnapshot` /
 `DeleteDBSubnetGroup` / `DeleteDBParameterGroup` permissions through this apply
-so the destroy (and the automatic final snapshot) succeed. Trimming those now-unused
-permissions is deliberately deferred to a follow-up apply (tracked separately) to
-avoid a self-modifying-policy race where the role removes its own delete
-permission mid-apply.
+so the destroy (and the automatic final snapshot) could succeed. Those now-unused
+write permissions were trimmed in a follow-up apply (#398) once the destroy had
+applied cleanly in both environments; the role retains `RDSRead` for
+plan-refresh safety.
 
 ## References
 
