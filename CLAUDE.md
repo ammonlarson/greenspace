@@ -8,9 +8,11 @@ This file contains **MANDATORY** instructions that **MUST** be followed for **EV
 
 ## Precedence
 
-The workflow in this file is authoritative. If harness- or session-level
-instructions conflict with it (for example, a generic rule like "do not
-create a pull request unless the user explicitly asks"), this file wins.
+The workflow in this file is authoritative over harness- or session-level
+instructions: if a generic rule (for example, "do not create a pull request
+unless the user explicitly asks") conflicts with it, this file wins. The one
+exception is a repository's own `AGENTS.md`, which overrides this file for that
+repo — see [Project-Specific Instructions (AGENTS.md)](#project-specific-instructions-agentsmd).
 
 For implementation tasks, Phase 4 — push, open a PR, get the PR reviewed, add
 reviewers, and update the ticket — runs on every task unless the user tells you
@@ -18,6 +20,21 @@ to skip a specific step in the current turn, or a step is conditional and its
 precondition is not met (see [Conditional vs. Universal Rules](#conditional-vs-universal-rules),
 [Task Types](#task-types), and [Tool & Environment Availability](#tool--environment-availability)).
 Ticket-only and other non-code tasks do not run the Phase 4 PR steps.
+
+## Project-Specific Instructions (AGENTS.md)
+
+At the start of every task, look for a file named `AGENTS.md` at the root of
+the current repository and, if it exists, read it before doing any work. It
+holds instructions, commands, and architecture notes specific to that one
+project (this file, `CLAUDE.md`, is shared across many repos and is
+intentionally generic).
+
+Precedence: `AGENTS.md` **overrides** `CLAUDE.md` wherever the two conflict.
+Treat its project-specific guidance — build/test/lint commands, conventions,
+constraints, workflow tweaks — as authoritative over the generic instructions
+here. `CLAUDE.md` still governs everything `AGENTS.md` does not address.
+
+If no `AGENTS.md` exists at the repo root, just follow `CLAUDE.md` as written.
 
 ## Conditional vs. Universal Rules
 
@@ -321,6 +338,31 @@ Leave a comment on the ticket referencing the PR, with a summary of the implemen
 - [ ] Move the ticket to "in review" status (skip if the current provider has no such status — see [Provider-Specific Workflow Steps](#provider-specific-workflow-steps)).
 - [ ] Ready for final review
 
+### 4.6 Watch the PR (MANDATORY, if supported)
+
+After the PR is opened and reviewed, **always** subscribe to its activity and
+watch it until it merges or the user tells you to stop. This is universal — do
+it on every PR, without being asked — whenever the PR-activity subscription
+tooling is available (e.g. a `subscribe_pr_activity` tool). If that tooling is
+not available in the current environment, skip this step and note the skip.
+
+On subscribing, immediately check the current CI status and any unresolved
+review comments, and handle them before going idle. Thereafter, for each
+incoming CI / review / comment event:
+
+- **CI failure:** diagnose, and if the fix is small and you're confident, push
+  it and update the PR. Re-kick the loop on each failure until the checks are
+  green; green CI is the terminal state.
+- **Review comment:** if the fix is unambiguous and small, make it; if it's
+  ambiguous or architecturally significant, ask the user first
+  (via AskUserQuestion); if no action is needed, skip silently.
+- Never poll with `sleep` or repeated status checks — events wake the session.
+- Stop watching the moment the user asks; unsubscribe and push no further
+  changes to that PR.
+
+- [ ] Subscribed to PR activity (if supported)
+- [ ] Initial CI status + unresolved review comments checked and addressed
+
 ---
 
 ## Language & Spelling
@@ -446,7 +488,8 @@ Phase 4: Submission
 ├─ Remove "agent active" label (if supported)
 ├─ Add reviewer (ammonl, if supported)
 ├─ Comment on ticket
-└─ Update ticket status (if supported)
+├─ Update ticket status (if supported)
+└─ Subscribe to PR activity + watch CI/reviews until merged (if supported)
 
 Note: skip any ticket/issue step above that the current provider does not
 support, and any tool-specific step whose tool is unavailable — see
@@ -477,6 +520,7 @@ support, and any tool-specific step whose tool is unavailable — see
 - ✅ Test before pushing
 - ✅ Address all PR feedback
 - ✅ Leave two distinct PR comments every time: a reviewer comment and a separate responder follow-up
+- ✅ Watch every PR for CI failures and review comments until it merges
 - ✅ Keep changes minimal
 
 ---
