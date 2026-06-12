@@ -3,6 +3,7 @@
 - **Ticket Provider**: GitHub Issues
 - **Branch Format**: `<type>/<ticket-number>` (e.g., `feature/123`)
 - **Main Branch**: `main`
+- **Designated Assigneed(s)**: @ammonl
 
 ## Project Overview
 
@@ -18,7 +19,7 @@ Primary references:
 Working agreement: contract-first changes. Update spec/ADR/API/data contract first, then implementation, then tests.
 
 ## Repository Layout
-
+˜
 npm workspaces monorepo:
 
 - `apps/api` (`@greenspace/api`) — Node 20 / TypeScript backend. Runs as both an AWS Lambda (`src/lambda.ts`) and a local HTTP dev server (`src/dev-server.ts`) wrapping the same `handler` from `src/index.ts`.
