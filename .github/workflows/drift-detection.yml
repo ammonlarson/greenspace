@@ -151,14 +151,15 @@ jobs:
               --policy-name terraform-resources-bootstrap \
               --cli-connect-timeout 10 \
               --cli-read-timeout 30 \
-              --output json > policy.json; then
+              --output json > policy.json 2> fetch-error.txt; then
               break
             fi
             if [ "$attempt" -ge "$max_attempts" ]; then
-              echo "::error::get-role-policy failed after $max_attempts attempts."
+              echo "::error::get-role-policy failed after $max_attempts attempts: $(tr '\n' ' ' < fetch-error.txt)"
               exit 1
             fi
             echo "Attempt $attempt failed; retrying in ${delay}s..."
+            cat fetch-error.txt
             sleep "$delay"
             attempt=$((attempt + 1))
             delay=$((delay * 2))
