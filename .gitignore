@@ -35,6 +35,7 @@ coverage
 
 # Agents
 .agent
+.claude/agent-memory
 settings.local.json
 TODO.md
 
